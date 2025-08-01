@@ -1,0 +1,97 @@
+.launch-ticket {
+  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  background: #fff;
+  padding: 16px 24px;
+  overflow: hidden;
+
+  .launch-ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: 38px;
+    font-weight: bold;
+    font-size: 16px;
+    color: darkblue;
+    border-bottom: 1px solid #e1e1e1;
+
+    .status {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      font-size: 14px;
+      font-weight: normal;
+
+      span {
+        padding: 0 16px;
+
+        &:before {
+          display: inline-block;
+          content: "";
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          background-color: #ebebeb;
+          margin-right: 6px;
+        }
+
+        &.assigned:before {
+          background-color: #8db2f0;
+        }
+      }
+    }
+
+    .tools {
+      display: flex;
+      border-bottom: none;
+
+      .btn-more {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .launch-ticket-content {
+    display: table;
+    width: 100%;
+    height: calc(100% - 38px);
+    overflow: hidden;
+  }
+
+  .launch-ticket-item {
+    float: left;
+    height: 50%;
+    padding: 16px 0 0 16px;
+    overflow: hidden;
+
+    &.auto {
+      width: 100%;
+    }
+
+    .title {
+      display: flex;
+      font-size: 16px;
+      color: rgba(0, 0, 0, 0.85);
+      margin-bottom: 12px;
+
+      .item-inner-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+      }
+
+      .item-inner-name {
+        margin-left: 16px;
+        margin-top: 16px;
+      }
+    }
+
+    .content {
+      line-height: 20px;
+      color: rgba(0, 0, 0, 0.45);
+    }
+  }
+}
