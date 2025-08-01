@@ -17,7 +17,7 @@ export interface ComponentItem {
   /** 组件唯一标识符（格式：分类ID-组件ID） */
   key: string
   /** 组件对应的Vue组件路径（可选） */
-  url?: string
+  url: string
   /** 组件最小宽度（栅格单位） */
   minWidth: number
   /** 组件最小高度（栅格单位） */

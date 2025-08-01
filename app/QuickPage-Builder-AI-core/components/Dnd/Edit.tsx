@@ -17,25 +17,37 @@ import type {
   FormState,
   TempInfoData,
 } from "../types/dnd";
+import type { MicroCardsType } from "../../MicroParts/types/common";
 
 // 导入数据 (临时获取数据来源)
-import data from "../../lib/data/micro-parts";
+import selfServiceItemList from "../../lib/data/self-service-item-list";
+import tempInfo from "../../lib/data/temp-Info";
 
-export default function Edit({ microParts }: { microParts: Record<string, React.FC<any>> }) {
+export default function Edit({ microParts }: { microParts: MicroCardsType }) {
   // 合并微件
-  const _MicroCards = {
+  const _MicroCards: MicroCardsType = {
     ...MicroCards,
     ...microParts,
   };
 
   // ======================
-  // 响应式状态
+  // 响应式变量
   // ======================
 
   const [loading, setLoading] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [components, setComponents] = useState<ComponentItem[][]>([]);
+  const [tempId, setTempId] = useState<string>("");
   const [terminalType, setTerminalType] = useState<number>(0);
+  const [contentId, setContentId] = useState<number>(0);
+  const [oldContent, setOldContent] = useState<string>("");
+  const [activatedComponents, setActivatedComponents] = useState<
+    ComponentItem[]
+  >([]);
+
+  // ======================
+  // 纯变量
+  // ======================
+  let components: ComponentItem[][] = [];
 
   /** end */
 
@@ -64,6 +76,50 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
   // ======================
 
   /**
+   * 获取微件数据
+   * @param itemType 微件类型
+   * @param terminalType 终端类型
+   * @returns Promise包装的响应数据或null
+   */
+  const getSelfServiceItemList = async (
+    itemType: number,
+    terminalType: number
+  ) => {
+    return handleApiRequest(async () => {
+      const res: SelfServiceData = await selfServiceItemList;
+
+      if (!res?.dataList || res?.dataList.length === 0)
+        message.error("数据加载失败");
+
+      return res;
+    }, "获取微件数据失败");
+  };
+
+  // 获取页面数据
+  const getTempInfo = (data: {
+    tempId: string | number;
+    navigationId?: number;
+  }) => {
+    return handleApiRequest(async () => {
+      const res: TempInfoData = await tempInfo;
+
+      // res内容判断，如果没有数据或者提示错误，直接返回
+      if (!res?.tempId && !res?.dataList) {
+        message.error("没有TempId数据加载失败");
+        return null;
+      }
+
+      const { content: _content, id: _contentId } = res!.dataList || {};
+
+      return {
+        contentId: _contentId || 0,
+        activatedComponents: (JSON.parse(_content) as ComponentItem[]) || [],
+        oldContent: _content || "[]",
+      };
+    }, "获取页面数据失败");
+  };
+
+    /**
    * 更新组件列表
    * @param item 微件
    * @param minRowSpan 最小行距
@@ -89,27 +145,27 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
   });
 
   /**
-   * 获取微件数据
-   * @param itemType 微件类型
-   * @param terminalType 终端类型
-   * @returns Promise包装的响应数据或null
+   * 获取已激活模板信息
+   * 注意: 直接修改外部变量activatedComponents
+   * @param contentId
+   * @param activatedComponents
+   * @param oldContent
    */
-  const getSelfServiceItemList = async (
-    itemType: number,
-    terminalType: number
+  const updateActivatedComponents = (
+    _contentId: number,
+    _activatedComponents: ComponentItem[],
+    _oldContent: string
   ) => {
-    return handleApiRequest(async () => {
-      const res: SelfServiceData = data;
-
-      if (!res?.dataList || res?.dataList.length === 0)
-        message.error("数据加载失败");
-
-      return res;
-    }, "获取微件数据失败");
+    setContentId(_contentId);
+    setOldContent(_oldContent);
+    setActivatedComponents(_activatedComponents);
   };
 
   // 数据获取方法
-  const fetchComponentData = async () => {
+  const fetchComponentData = async (activatedComponents: ComponentItem[]) => {
+    const _components: ComponentItem[][] = [];
+    const _activatedComponents: ComponentItem[] = JSON.parse(JSON.stringify(activatedComponents));
+
     // 设置路由参数
     // if (route.query.tempIdQuery || route.query.terminalTypeQuery) {
     //   catchRouterData();
@@ -127,7 +183,7 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
           //console.log(dataList);
 
           //获取组件基本信息
-          components[index] = (dataList || []).map((item) => {
+          _components[index] = (dataList || []).map((item) => {
             return {
               title: item.itemName,
               key: String(item.id),
@@ -139,10 +195,10 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
               editTitle: false,
               positionX: 0,
               positionY: 0,
-              selfServiceData: {} as SelfServiceDataItem,
               menuKey: "",
               ccs: "",
               rowIndex: 0,
+              selfServiceData: {} as SelfServiceDataItem,
             };
           });
 
@@ -153,8 +209,8 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
           // PC端
           if (terminalType === 0) {
             //删除不存在的微件
-            components[index] = components[index].filter((item, index) => {
-              const microCard: CardData = item.url && _MicroCards[item.url];
+            _components[index] = _components[index].filter((item, index) => {
+              const microCard = item.url && _MicroCards[item.url];
               if (microCard) {
                 const { minRowSpan, minColSpan } = microCard.minShape();
                 Object.assign(
@@ -178,24 +234,22 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
               window.sessionStorage.getItem("activatedComponents") || "{}"
             );
 
-            if (workbenchData[tempId.value]) {
+            if (workbenchData[tempId]) {
               const {
                 contentId: _contentId = 0,
                 activatedComponents: _activatedComponents = [],
                 oldContent: _oldContent = "[]",
-                checkedKeys: _checkedKeys,
-              } = workbenchData[tempId.value];
+              } = workbenchData[tempId];
 
               // 更新state.activatedComponents
-              activatedComponents(
+              updateActivatedComponents(
                 _contentId,
                 _activatedComponents,
-                _oldContent,
-                _checkedKeys
+                _oldContent
               );
             } else
               getTempInfo({
-                tempId: tempId.value,
+                tempId: tempId,
               }).then((res) => {
                 if (res) {
                   const {
@@ -205,41 +259,21 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
                   } = res;
 
                   // 更新state.activatedComponents
-                  activatedComponents(
+                  updateActivatedComponents(
                     _contentId,
                     _activatedComponents,
                     _oldContent
                   );
-
-                  //临时记录选中模块 in store
-                  store.commit("dnd/PUSH_CHECKEDKEYS", [
-                    ...(MicroCardsList.value || [])
-                      .filter((item) =>
-                        (state.activatedComponents || []).find(
-                          (iitem) =>
-                            iitem.key === item.key.split("-")[2].split("_")[1]
-                        )
-                      )
-                      .map((item) => item.key),
-                    ...(ContainersList.value || [])
-                      .filter((item) =>
-                        (state.activatedComponents || []).find(
-                          (iitem) =>
-                            iitem.key === item.key.split("-")[2].split("_")[1]
-                        )
-                      )
-                      .map((item) => item.key),
-                  ]);
                 }
               });
 
             // 设置画布高度
             if (
-              state.activatedComponents &&
-              state.activatedComponents.length > 0
+              _activatedComponents &&
+              _activatedComponents.length > 0
             ) {
-              let _gridRow = state.activatedComponents[
-                state.activatedComponents.length - 1
+              let _gridRow = _activatedComponents[
+                _activatedComponents.length - 1
               ]["ccs"]
                 .split("/")
                 .map((item) => Number(item))[2];
@@ -247,6 +281,8 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
             }
           }
         });
+
+        return { _components, _activatedComponents };
       })
       .catch((err) => {
         console.error("获取模板信息失败:", err);
@@ -259,7 +295,8 @@ export default function Edit({ microParts }: { microParts: Record<string, React.
   // 页面挂在后，设置树结构
   useEffect(() => {
     // 获取微件数据
-    fetchComponentData();
+    const { _components, _activatedComponents } = fetchComponentData(activatedComponents);
+    setActivatedComponents(_activatedComponents);
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 
-const data = {
+const selfServiceItemList = {
     dataList: [
     {
       id: 1,
@@ -28,4 +28,4 @@ const data = {
     }
   ]
 }
-export default data
+export default selfServiceItemList
