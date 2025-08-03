@@ -1,0 +1,137 @@
+.container {
+  position: relative;
+  display: grid;
+  background-color: #f3f3f3;
+  /*grid-template-areas: none;*/
+  margin: 0 auto;
+}
+
+.container.mobile {
+  width: 383px;
+  grid-row-gap: 8px;
+  grid-column-gap: 8px;
+  /* 网格 */
+  background-image: -webkit-linear-gradient(white 8px, transparent 0),
+    -webkit-linear-gradient(90deg, white 8px, transparent 0);
+  background-image: -moz-linear-gradient(white 8px, transparent 0),
+    -moz-linear-gradient(90deg, white 8px, transparent 0);
+  background-image: -o-linear-gradient(white 8px, transparent 0),
+    -o-linear-gradient(90deg, white 8px, transparent 0);
+  background-image: linear-gradient(white 8px, transparent 0),
+    linear-gradient(90deg, white 8px, transparent 0);
+  background-size: 38.3px 38.3px;
+  background-position: -8px -8px;
+}
+
+.container.pc {
+  grid-row-gap: 20px;
+  grid-column-gap: 20px;
+  /* 网格 */
+  background-image: -webkit-linear-gradient(white 20px, transparent 0),
+    -webkit-linear-gradient(90deg, white 20px, transparent 0);
+  background-image: -moz-linear-gradient(white 20px, transparent 0),
+    -moz-linear-gradient(90deg, white 20px, transparent 0);
+  background-image: -o-linear-gradient(white 20px, transparent 0),
+    -o-linear-gradient(90deg, white 20px, transparent 0);
+  background-image: linear-gradient(white 20px, transparent 0),
+    linear-gradient(90deg, white 20px, transparent 0);
+  background-size: 50px 50px;
+  background-position: -20px -20px;
+}
+
+.block {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  user-select: none;
+  background: #fff;
+  background: rgba(255, 255, 255, 0.4);
+
+  .shape {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 2px dashed #979797;
+  }
+
+  .title {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    padding: 0 10px;
+    width: 100%;
+    color: #4285f4;
+
+    a {
+      background-color: white;
+      padding: 0 5px;
+    }
+
+    .form a {
+      padding-right: 5px;
+    }
+  }
+
+  .delete {
+    position: absolute;
+    display: none;
+    bottom: 10px;
+    right: 20px;
+  }
+
+  .morph {
+    span {
+      display: block;
+      position: absolute;
+      width: 30px;
+      height: 31px;
+      text-indent: -999px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    span:before {
+      display: block;
+      content: "";
+      width: 5px;
+      height: 5px;
+      background-color: #979797;
+      margin: 13px auto;
+    }
+
+    span.up {
+      top: -16px;
+      left: 50%;
+      margin-left: -15px;
+    }
+
+    span.right {
+      top: 50%;
+      right: -16px;
+      margin-top: -16px;
+    }
+
+    span.down {
+      bottom: -16px;
+      left: 50%;
+      margin-left: -15px;
+    }
+
+    span.left {
+      top: 50%;
+      left: -15px;
+      margin-top: -16px;
+    }
+  }
+}
+
+.block:hover .delete {
+  display: block;
+}
