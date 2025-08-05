@@ -1,15 +1,22 @@
+"use client";
+
+import { useMemo, useRef, useContext } from "react";
+import { Modal } from "antd";
+
+// 导入类型
 import type { ComponentItem } from "../../types/dnd";
-import { useMemo, useRef } from "react";
-import "./style.css"
+
+// 导入上下文
+import EditContext from "../context";
+
+import "./container-pc.css";
 
 export default function ContainerPC({
-  activatedComponents,
   gridRow,
   gridColumn,
   gridScale,
   gridPadding,
 }: {
-  activatedComponents: ComponentItem[];
   gridRow: number;
   gridColumn: number;
   gridScale: number;
@@ -17,6 +24,16 @@ export default function ContainerPC({
 }) {
   // ======================
   // 响应式变量
+  // ======================
+  const { activatedComponents, setActivatedComponents } = useContext<{
+    activatedComponents: ComponentItem[];
+    setActivatedComponents: React.Dispatch<
+      React.SetStateAction<ComponentItem[]>
+    >;
+  }>(EditContext);
+
+  // ======================
+  // 非响应式变量
   // ======================
   const columnDifferences = useRef(0);
   const rowDifferences = useRef(0);
@@ -26,6 +43,7 @@ export default function ContainerPC({
   const topMax = useRef(0);
   const downMax = useRef(0);
   const rightMax = useRef(0);
+  let _activatedComponents = [...activatedComponents];
 
   // ======================
   // 计算属性
@@ -33,26 +51,16 @@ export default function ContainerPC({
 
   // 计算网格列数
   const getGridTemplateColumns = useMemo(() => {
-    console.log("getGridTemplateColumns", Array(gridColumn).fill(`${gridScale}px`).join(" "))
     return Array(gridColumn).fill(`${gridScale}px`).join(" ");
   }, [gridColumn, gridScale]);
 
   // 计算网格行数
   const getGridTemplateRows = useMemo(() => {
-    console.log("getGridTemplateRows", gridRow)
     return Array(gridRow).fill(`${gridScale}px`).join(" ");
   }, [gridRow, gridScale]);
 
   // 计算网格区域
   const getGridTemplateAreas = useMemo(() => {
-    console.log("getGridTemplateAreas", Array.from(
-      { length: gridRow },
-      (_, i) =>
-        `'${Array.from(
-          { length: gridColumn },
-          (_, j) => `g${i + 1}x${j + 1}`
-        ).join(" ")}'`
-    ).join(" "))
     return Array.from(
       { length: gridRow },
       (_, i) =>
@@ -64,6 +72,8 @@ export default function ContainerPC({
   }, [gridRow, gridColumn]);
 
   const blockRefs = useRef<Record<string, HTMLDivElement>>({});
+
+  const [modal, contextHolder] = Modal.useModal();
 
   /* ====================== 核心方法 ====================== */
 
@@ -109,6 +119,7 @@ export default function ContainerPC({
   };
 
   /**
+   * 已弃用思路，现已用递归方式查找代替
    * 获取折行元素的同行元素中元素的最大长度
    * 不包括折行元素
    * 当前元素为行末元素
@@ -803,7 +814,7 @@ export default function ContainerPC({
 
     let oBlock = blockRefs.current["block" + index], //获取当前点击微件
       disX = e.clientX - 0,
-      oLeft = 0;
+      oLeft: number | string = 0;
 
     oBlock.style.borderColor = "red";
     oBlock.style.zIndex = "999";
@@ -812,8 +823,8 @@ export default function ContainerPC({
       e.preventDefault(); // 阻止默认事件
 
       if (String(oLeft) === "$") return;
-      let left = e.clientX - disX;
-      if (oLeft < left) {
+      let left: number | string = e.clientX - disX;
+      if (typeof oLeft === 'number' && typeof left === 'number' && oLeft < left) {
         //减去一个gridPadding才是微件的大小
         let _rminWidth =
           activatedComponents[index].minWidth * (gridScale + gridPadding) -
@@ -929,7 +940,10 @@ export default function ContainerPC({
    * @param e 鼠标事件
    * @param gDiv 容器
    */
-  const getPosition = (e: MouseEvent, gDiv: HTMLElement) => {
+  const getPosition = (
+    e: MouseEvent | React.MouseEvent<HTMLSpanElement>,
+    gDiv: HTMLElement
+  ) => {
     e.preventDefault(); // 阻止默认事件
 
     let _positions = "";
@@ -954,7 +968,6 @@ export default function ContainerPC({
     // console.log('_yy', e.clientY - gDiv.offsetTop);
 
     //找出当前点击格子, 出现未知值时固定为1
-
     for (let i = 0; i < gridRow; i++) {
       if (
         _y >= i * (gridScale + gridPadding) &&
@@ -986,24 +999,23 @@ export default function ContainerPC({
   };
 
   /**
-   * 交换位置
+   * 移动位置
    * @param blockName dom名称
    * @param oDiv 容器
-   * @param component 微件
+   * @param component 微件信息
    */
   const changeBlock = (
     blockName: string,
     oDiv: HTMLElement,
-    component: ComponentItem
+    component: ComponentItem,
+    index: number
   ) => {
-    component.positionX = 0;
-    component.positionY = 0;
     //console.log(blockName);
     let _cs = blockName
       .replace("g", "")
       .split("x")
       .map((item) => Number(item));
-    //console.log('_cs', _cs);
+    //console.log("_cs", _cs);
     let _row = _cs[0] + component.height;
     let _column = _cs[1] + component.width;
     //设置元素大小位置
@@ -1016,11 +1028,20 @@ export default function ContainerPC({
       "/" +
       (_column < gridColumn + 1 ? _column : gridColumn + 1);
 
-    component.ccs = oDiv.style.gridArea;
-    //console.log('area', oDiv.style.gridArea);
+    _activatedComponents[index] = {
+      ...component,
+      ccs: oDiv.style.gridArea,
+    };
+
+    console.log("area", oDiv.style.gridArea);
   };
 
-  // 鼠标按下
+  /**
+   * 鼠标按下
+   * @param e 鼠标事件
+   * @param component 微件信息
+   * @param index 微件索引
+   */
   const mousedown = (
     e: React.MouseEvent<HTMLDivElement>,
     component: ComponentItem,
@@ -1030,7 +1051,7 @@ export default function ContainerPC({
 
     // 获取点击的目标元素，处理 e.target 可能为 null 的情况，同时转换类型以访问 parentElement 属性
     let oDiv = e.target ? (e.target as HTMLElement).parentElement : null;
-
+    //console.log("oDiv", oDiv);
     if (
       oDiv === null ||
       oDiv.className === "title" ||
@@ -1044,71 +1065,71 @@ export default function ContainerPC({
     )
       return;
 
-    let _component = component; //被点击元素相关属性
-    let _componentCcs = _component.ccs.split("/").map((item) => Number(item));
-    //console.log('component', _component);
-    let _componentIndex = index; //在激活微件数组中索引
-    //获取点击元素的父级元素，移动端直接抓取tabs
-    //console.log(e.path);
+    let _componentCcs = getComponentCcs(component.ccs);
+    //console.log("_componentCcs", _componentCcs);
+
+    // 获取点击元素的父级元素，移动端直接抓取tabs
     let gDiv = oDiv.parentElement;
+
     let disX = e.clientX - 0;
     let disY = e.clientY - 0;
     oDiv.style.borderColor = " red";
     oDiv.style.zIndex = "999";
 
-    document.onmousedown = (e) => {
-      e.preventDefault();
-      if (gDiv === null) return;
+    if (gDiv === null) return;
 
-      //因每次点击位置不同，故初始化差值
-      columnDifferences.current = 0;
-      rowDifferences.current = 0;
-      columnDeviationValue.current = 0;
-      rowDeviationValue.current = 0;
-      leftMax.current = 0;
-      topMax.current = 0;
-      downMax.current = 0;
-      rightMax.current = 0;
+    //因每次点击位置不同，故初始化差值
+    columnDifferences.current = 0;
+    rowDifferences.current = 0;
+    columnDeviationValue.current = 0;
+    rowDeviationValue.current = 0;
+    leftMax.current = 0;
+    topMax.current = 0;
+    downMax.current = 0;
+    rightMax.current = 0;
 
-      let _positions = getPosition(e, gDiv)
-        .replace("g", "")
-        .split("x")
-        .map((item) => Number(item));
-      //console.log('first', _positions);
-      rowDifferences.current = _positions[0] - _componentCcs[0];
-      //console.log('rowDifferences', rowDifferences.value);
-      rowDeviationValue.current =
-        e.clientY -
-        gDiv.offsetTop -
-        (_positions[0] - 1) * (gridScale + gridPadding);
-      columnDifferences.current = _positions[1] - _componentCcs[1];
-      //console.log('columnDifferences', columnDifferences.value);
-      columnDeviationValue.current =
-        e.clientX -
-        gDiv.offsetLeft -
-        (_positions[1] - 1) * (gridScale + gridPadding);
-      //console.log('columnDeviationValue', columnDeviationValue.value);
+    let _positions = getPosition(e, gDiv)
+      .replace("g", "")
+      .split("x")
+      .map((item) => Number(item));
+    //console.log("first", _positions);
 
-      topMax.current =
-        e.clientY -
-        gDiv.offsetTop -
-        (_componentCcs[0] - 1) * (gridScale + gridPadding);
-      rightMax.current =
-        e.clientX -
-        gDiv.offsetLeft +
-        (gridColumn + 1 - _componentCcs[3]) * (gridScale + gridPadding);
-      downMax.current =
-        e.clientY -
-        gDiv.offsetTop +
-        (gridRow + 1 - _componentCcs[2]) * (gridScale + gridPadding);
-      //console.log('downMax', rightMax.value);
-      leftMax.current =
-        e.clientX -
-        gDiv.offsetLeft -
-        (_componentCcs[1] - 1) * (gridScale + gridPadding);
-    };
+    rowDifferences.current = _positions[0] - _componentCcs[0];
+    //console.log("rowDifferences", rowDifferences.current);
+    rowDeviationValue.current =
+      e.clientY -
+      gDiv.offsetTop -
+      (_positions[0] - 1) * (gridScale + gridPadding);
+    //console.log("rowDeviationValue", rowDeviationValue.current);
+    columnDifferences.current = _positions[1] - _componentCcs[1];
+    //console.log("columnDifferences", columnDifferences.current);
+    columnDeviationValue.current =
+      e.clientX -
+      gDiv.offsetLeft -
+      (_positions[1] - 1) * (gridScale + gridPadding);
+    //console.log('columnDeviationValue', columnDeviationValue.value);
+
+    topMax.current =
+      e.clientY -
+      gDiv.offsetTop -
+      (_componentCcs[0] - 1) * (gridScale + gridPadding);
+    rightMax.current =
+      e.clientX -
+      gDiv.offsetLeft +
+      (gridColumn + 1 - _componentCcs[3]) * (gridScale + gridPadding);
+    downMax.current =
+      e.clientY -
+      gDiv.offsetTop +
+      (gridRow + 1 - _componentCcs[2]) * (gridScale + gridPadding);
+    //console.log('downMax', rightMax.value);
+    leftMax.current =
+      e.clientX -
+      gDiv.offsetLeft -
+      (_componentCcs[1] - 1) * (gridScale + gridPadding);
 
     document.onmousemove = (e) => {
+      e.preventDefault();
+
       let left = e.clientX - disX;
       let top = e.clientY - disY;
       if (oDiv === null) return;
@@ -1116,6 +1137,7 @@ export default function ContainerPC({
         oDiv.style.gridArea.split("/").map((item) => Number(item)) || [];
 
       if (_axis.length === 0) return;
+
       //上边界
       let _topBoundary =
         0 + _axis[0] * (gridScale + gridPadding) - (gridScale + gridPadding);
@@ -1140,222 +1162,228 @@ export default function ContainerPC({
 
       oDiv.style.left = left + "px";
       oDiv.style.top = top + "px";
-      component.positionX = left;
-      component.positionY = top;
+
+      _activatedComponents[index] = {
+        ...component,
+        positionX: left,
+        positionY: top,
+      };
     };
 
     document.onmouseup = (e) => {
+      e.preventDefault();
+
       if (gDiv === null || oDiv === null) return;
 
       let _positions = getPosition(e, gDiv);
-      //console.log('second', _positions);
+      //console.log("second", _positions);
       //console.log(e.target);
       if (_positions && _positions.split("x")[1] != "NaN") {
-        changeBlock(_positions, oDiv, _component);
+        changeBlock(_positions, oDiv, component, index);
+        oDiv.style.left = "0px";
+        oDiv.style.top = "0px";
+
         //console.log(_component);
         let _focusComponent = {};
         let _lastComponents = [];
         let _extraComponents = [];
-        let _componentCcs = _component.ccs
-          .split("/")
-          .map((item) => Number(item));
-        //console.log('componentCcs', _componentCcs);
+        // onsole.log("componentCcs", _componentCcs);
 
-        //替换位置逻辑，现已左上角顶点落点为判断条件
-        activatedComponents.map((item, i) => {
-          let _ccs = item.ccs.split("/").map((item) => Number(item));
+        //现已左上角顶点落点为判断条件
+        // activatedComponents.map((item, i) => {
+        //   let _ccs = item.ccs.split("/").map((item) => Number(item));
 
-          if (
-            _component.key !== item.key &&
-            _componentCcs[0] >= _ccs[0] &&
-            _componentCcs[0] < _ccs[2] &&
-            _componentCcs[1] >= _ccs[1] &&
-            _componentCcs[1] < _ccs[3]
-          ) {
-            //console.log('get', index);
-            let _ccs = item.ccs.split("/").map((item) => Number(item));
-            if (
-              Math.abs(_ccs[2] - _componentCcs[0]) /
-                Math.min(...[item.height, _component.height]) >=
-                0.7 &&
-              Math.abs(_ccs[3] - _componentCcs[1]) /
-                Math.min(...[item.width, _component.width]) >=
-                0.7
-            )
-              _focusComponent = { ...item, rowIndex: i };
-          }
-        });
+        //   if (
+        //     component.key !== item.key &&
+        //     _componentCcs[0] >= _ccs[0] &&
+        //     _componentCcs[0] < _ccs[2] &&
+        //     _componentCcs[1] >= _ccs[1] &&
+        //     _componentCcs[1] < _ccs[3]
+        //   ) {
+        //     //console.log('get', index);
+        //     let _ccs = item.ccs.split("/").map((item) => Number(item));
+        //     if (
+        //       Math.abs(_ccs[2] - _componentCcs[0]) /
+        //         Math.min(...[item.height, component.height]) >=
+        //         0.7 &&
+        //       Math.abs(_ccs[3] - _componentCcs[1]) /
+        //         Math.min(...[item.width, component.width]) >=
+        //         0.7
+        //     )
+        //       _focusComponent = { ...item, rowIndex: i };
+        //   }
+        // });
 
-        //console.log('_focusComponent', _focusComponent);
-        
-        //定位
-        if (Object.keys(_focusComponent).length > 0) {
-          let _focusComponentCcs = _focusComponent.ccs
-            .split("/")
-            .map((item) => Number(item));
-          //console.log('focusRowCcs', _focusComponentCcs);
-          //定位拖动元素
-          oDiv.style.gridArea =
-            _focusComponentCcs[0] +
-            "/" +
-            _focusComponentCcs[1] +
-            "/" +
-            (_focusComponentCcs[0] + _component.height) +
-            "/" +
-            (_focusComponentCcs[1] + _component.width);
+        // //console.log('_focusComponent', _focusComponent);
 
-          _component.ccs = oDiv.style.gridArea;
+        // //定位
+        // if (Object.keys(_focusComponent).length > 0) {
+        //   let _focusComponentCcs = _focusComponent.ccs
+        //     .split("/")
+        //     .map((item) => Number(item));
+        //   //console.log('focusRowCcs', _focusComponentCcs);
+        //   //定位拖动元素
+        //   oDiv.style.gridArea =
+        //     _focusComponentCcs[0] +
+        //     "/" +
+        //     _focusComponentCcs[1] +
+        //     "/" +
+        //     (_focusComponentCcs[0] + _component.height) +
+        //     "/" +
+        //     (_focusComponentCcs[1] + _component.width);
 
-          //console.log('focus', _focusComponent);
+        //   _component.ccs = oDiv.style.gridArea;
 
-          activatedComponents.splice(_focusComponent.rowIndex, 0, _component);
-          activatedComponents.splice(
-            _componentIndex > _focusComponent.rowIndex
-              ? _componentIndex + 1
-              : _componentIndex,
-            1
-          );
+        //   //console.log('focus', _focusComponent);
 
-          oDiv = blockRefs.current["block" + _focusComponent.rowIndex];
+        //   activatedComponents.splice(_focusComponent.rowIndex, 0, _component);
+        //   activatedComponents.splice(
+        //     _componentIndex > _focusComponent.rowIndex
+        //       ? _componentIndex + 1
+        //       : _componentIndex,
+        //     1
+        //   );
 
-          //获取插入元素新的位置信息
-          _componentCcs = _component.ccs.split("/").map((item) => Number(item));
-          //console.log('_componentCcs', _componentCcs);
+        //   oDiv = blockRefs.current["block" + _focusComponent.rowIndex];
 
-          //行累计宽度
-          let _lastWidth = 0;
-          //获取插入后同行元素和不同行元素
-          for (
-            let i =
-              (_componentIndex > _focusComponent.rowIndex
-                ? _focusComponent.rowIndex
-                : _focusComponent.rowIndex - 1) + 1;
-            i < activatedComponents.length;
-            i++
-          ) {
-            let _lastCcs = activatedComponents[i].ccs
-              .split("/")
-              .map((item) => Number(item));
-            if (
-              _componentCcs[0] <= _lastCcs[0] &&
-              _lastCcs[0] <= _componentCcs[2]
-            ) {
-              if (
-                _componentCcs[3] + activatedComponents[i].width + _lastWidth <=
-                gridColumn + 1
-              )
-                _lastComponents.push({
-                  ...activatedComponents[i],
-                  rowIndex: i,
-                });
-              else
-                _extraComponents.push({
-                  ...activatedComponents[i],
-                  rowIndex: i,
-                });
-              _lastWidth = activatedComponents[i].width + _lastWidth;
-            } else {
-              _extraComponents.push({
-                ...activatedComponents[i],
-                rowIndex: i,
-              });
-            }
-          }
-        }
+        //   //获取插入元素新的位置信息
+        //   _componentCcs = _component.ccs.split("/").map((item) => Number(item));
+        //   //console.log('_componentCcs', _componentCcs);
+
+        //   //行累计宽度
+        //   let _lastWidth = 0;
+        //   //获取插入后同行元素和不同行元素
+        //   for (
+        //     let i =
+        //       (_componentIndex > _focusComponent.rowIndex
+        //         ? _focusComponent.rowIndex
+        //         : _focusComponent.rowIndex - 1) + 1;
+        //     i < activatedComponents.length;
+        //     i++
+        //   ) {
+        //     let _lastCcs = activatedComponents[i].ccs
+        //       .split("/")
+        //       .map((item) => Number(item));
+        //     if (
+        //       _componentCcs[0] <= _lastCcs[0] &&
+        //       _lastCcs[0] <= _componentCcs[2]
+        //     ) {
+        //       if (
+        //         _componentCcs[3] + activatedComponents[i].width + _lastWidth <=
+        //         gridColumn + 1
+        //       )
+        //         _lastComponents.push({
+        //           ...activatedComponents[i],
+        //           rowIndex: i,
+        //         });
+        //       else
+        //         _extraComponents.push({
+        //           ...activatedComponents[i],
+        //           rowIndex: i,
+        //         });
+        //       _lastWidth = activatedComponents[i].width + _lastWidth;
+        //     } else {
+        //       _extraComponents.push({
+        //         ...activatedComponents[i],
+        //         rowIndex: i,
+        //       });
+        //     }
+        //   }
+        // }
 
         sortComponent();
-        focusComponent(_component.key);
-        judgeLocation(_lastComponents, 0, _extraComponents);
+        focusComponent(component.key);
       }
+
+      // 更新激活组件
+      setActivatedComponents([..._activatedComponents]);
+
+      console.log("activatedComponents", activatedComponents);
 
       //清空事件
       document.onmousemove = null;
-      document.onmousedown = null;
       document.onmouseup = null;
     };
   };
 
   // 确认信息
-  const showConfirm = (type, keys, actIndex) => {
-    this.$confirm({
+  const showConfirm = (index: number) => {
+    console.log(index);
+    modal.confirm({
       title: "提示",
       content: "是否确认删除此微件？",
+      okText: "确定",
+      cancelText: "取消",
       onOk: () => {
-        this.removeComponent(type, keys, actIndex);
-      },
-      onCancel: () => {
-        this.$store.commit("dnd/PUSH_CHECKEDKEYS", [keys.join("-")]);
+        removeComponent(index);
       },
     });
   };
 
   // 删除微件
-  const removeComponent = (type, keys, actIndex) => {
-    //console.log(actIndex);
-    let _arr = keys[2].split("_");
-    if (type === "list") {
-      activatedComponents = activatedComponents.filter(
-        (item) => item.key != _arr[1]
-      );
-    } else if (type === "component") {
-      activatedComponents.splice(actIndex, 1);
-    }
-
-    this.$store.commit("dnd/DELETE_CHECKEDKEYS", [keys.join("-")]);
+  const removeComponent = (index: number) => {
+    // 更新激活组件
+    setActivatedComponents([..._activatedComponents.filter((_, i) => i !== index)]);
   };
 
   return (
-    <div
-      className="container pc"
-      style={{
-        width: (gridScale + gridPadding) * gridColumn - 20 + "px",
-        gridTemplateColumns: getGridTemplateColumns,
-        gridTemplateRows: getGridTemplateRows,
-        gridTemplateAreas: getGridTemplateAreas,
-      }}
-    >
-      {activatedComponents.map((item, index) => (
-        <div
-          key={index}
-          className="block animated"
-          style={{
-            top: item.positionY,
-            left: item.positionX,
-            gridArea: item.ccs,
-          }}
-          ref={(el) => {
-            if (el) blockRefs.current["block" + index] = el;
-          }}
-        >
-          <div className="shape" onMouseDown={(e) => mousedown(e, item, index)}>
-            <div className="title">
-              <a href="javascript:void(0)">{item.title}</a>
-            </div>
-            <div className="delete">
-              <a
-                href="javascript:void(0)"
-                onClick={() => showConfirm("component", item.menuKey, index)}
-              >
-                删除
-              </a>
-            </div>
-            <div className="morph">
-              <span className="up" onMouseDown={(e) => moveTop(e, index)}>
-                上
-              </span>
-              <span className="right" onMouseDown={(e) => moveRight(e, index)}>
-                右
-              </span>
-              <span className="down" onMouseDown={(e) => moveDown(e, index)}>
-                下
-              </span>
-              <span className="left" onMouseDown={(e) => moveLeft(e, index)}>
-                左
-              </span>
+    <>
+      <div
+        className="container pc"
+        style={{
+          width: (gridScale + gridPadding) * gridColumn - 20 + "px",
+          gridTemplateColumns: getGridTemplateColumns,
+          gridTemplateRows: getGridTemplateRows,
+          gridTemplateAreas: getGridTemplateAreas,
+        }}
+      >
+        {activatedComponents.map((item, index) => (
+          <div
+            key={index}
+            className="block animated"
+            style={{
+              top: item.positionY,
+              left: item.positionX,
+              gridArea: item.ccs,
+            }}
+            ref={(el) => {
+              if (el) blockRefs.current["block" + index] = el;
+            }}
+          >
+            <div
+              className="shape"
+              onMouseDown={(e) => mousedown(e, item, index)}
+            >
+              <div className="title">
+                <a href="javascript:void(0)">{item.title}</a>
+              </div>
+              <div className="delete">
+                <button type="button" onClick={() => showConfirm(index)}>
+                  删除
+                </button>
+              </div>
+              <div className="morph">
+                <span className="up" onMouseDown={(e) => moveTop(e, index)}>
+                  上
+                </span>
+                <span
+                  className="right"
+                  onMouseDown={(e) => moveRight(e, index)}
+                >
+                  右
+                </span>
+                <span className="down" onMouseDown={(e) => moveDown(e, index)}>
+                  下
+                </span>
+                <span className="left" onMouseDown={(e) => moveLeft(e, index)}>
+                  左
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      {contextHolder}
+    </>
   );
 }

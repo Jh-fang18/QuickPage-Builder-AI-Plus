@@ -119,7 +119,8 @@ const updateComponentItem = (
  * @param gridRow 网格行数
  * @param tempId 模板id
  * @param terminalType 终端类型
- * @returns {components: ComponentItem[][], activatedComponents: ComponentItem[], gridRow: number, contentId: number, oldContent: string}
+ * @returns components 所有组件, activatedComponents  激活组件, gridRow 画布高度,contentId: 内容ID, oldContent: 内容
+ * 
  */
 export const fetchComponentData = async (
   MicroCards: MicroCardsType,
@@ -138,7 +139,7 @@ export const fetchComponentData = async (
   //   catchRouterData();
   // }
 
-  //获取组件列表
+  //获取组件列表, promise.all返回的是数组
   await Promise.all([
     getSelfServiceItemList(0, 0), //其他类
   ])
@@ -240,5 +241,7 @@ export const fetchComponentData = async (
     components: _components,
     activatedComponents: _activatedComponents,
     gridRow: _gridRow,
+    contentId: _contentId,
+    oldContent: _oldContent,
   };
 };

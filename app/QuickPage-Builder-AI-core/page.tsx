@@ -1,9 +1,7 @@
-import Editor from "./components/Dnd/editer";
-import "./ui/main.css";
+import Editor from "./components/Dnd/editor";
+import "./ui/global.css";
 
 export default function Page() {
-  const microParts = {};
-
   return (
     <main>
       <Editor
