@@ -522,9 +522,10 @@ export default function ContainerPC({
       oBlock.style.top = "0"; // 必须设为0，不然无法恢复正确位置
 
       // 更新元素状态
-      activatedComponents[index].ccs = _gridArea.join("/"); // 更新元素大小
-      activatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
+      _activatedComponents[index].ccs = _gridArea.join("/"); // 更新元素大小
+      _activatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
 
+      setActivatedComponents([..._activatedComponents]);
       //清空事件
       document.onmousemove = null;
       document.onmousedown = null;
@@ -657,10 +658,10 @@ export default function ContainerPC({
       oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法起效
 
       // 更新元素状态
-      activatedComponents[index].ccs = _gridArea.join("/");
-      activatedComponents[index].width = _gridArea[3] - _gridArea[1];
+      _activatedComponents[index].ccs = _gridArea.join("/");
+      _activatedComponents[index].width = _gridArea[3] - _gridArea[1];
 
-      //======== 处理当前元素后的元素 ========//
+      setActivatedComponents([..._activatedComponents]);
 
       // 清空事件
       document.onmousemove = null;
@@ -759,8 +760,11 @@ export default function ContainerPC({
       // 浏览器补丁 必须设回百分比，不然grid-area无法生效
       oBlock.style.height = "100%";
 
-      activatedComponents[index].ccs = _gridArea.join("/");
-      activatedComponents[index].height = _height;
+      _activatedComponents[index].ccs = _gridArea.join("/");
+      _activatedComponents[index].height = _height;
+
+      setActivatedComponents([..._activatedComponents]);
+
 
       //======== 处理当前元素后的元素 ========//
 
@@ -783,7 +787,7 @@ export default function ContainerPC({
             ) {
               console.log("activatedComponents[i]", activatedComponents[i]);
 
-              activatedComponents[i].ccs =
+              _activatedComponents[i].ccs =
                 _ccs[2] +
                 "/" +
                 _lastCcs[1] +
@@ -791,6 +795,8 @@ export default function ContainerPC({
                 (_ccs[2] + activatedComponents[i].height) +
                 "/" +
                 _lastCcs[3];
+
+              setActivatedComponents([..._activatedComponents]);
 
               _lastCcs = getComponentCcs(activatedComponents[i].ccs);
               downMoveComponents(_lastCcs, i);
@@ -824,7 +830,11 @@ export default function ContainerPC({
 
       if (String(oLeft) === "$") return;
       let left: number | string = e.clientX - disX;
-      if (typeof oLeft === 'number' && typeof left === 'number' && oLeft < left) {
+      if (
+        typeof oLeft === "number" &&
+        typeof left === "number" &&
+        oLeft < left
+      ) {
         //减去一个gridPadding才是微件的大小
         let _rminWidth =
           activatedComponents[index].minWidth * (gridScale + gridPadding) -
@@ -838,7 +848,7 @@ export default function ContainerPC({
           left = "$";
         }
       } else {
-        oBlock.style.width = oBlock.offsetWidth - (left - oLeft) + "px";
+        oBlock.style.width = `${Number(oBlock.offsetWidth) - (Number(left) - Number(oLeft))}px`;
         oBlock.style.left = left + "px";
       }
 
@@ -887,46 +897,14 @@ export default function ContainerPC({
       console.log(_gridArea);
 
       oBlock.style.gridArea = _gridArea.join("/");
-      oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法奇效
+      oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法见效
       oBlock.style.left = "0"; //必须设为0，不然无法恢复正确位置
-      activatedComponents[index].ccs = oBlock.style.gridArea;
-      activatedComponents[index].width = _gridArea[3] - _gridArea[1];
+      _activatedComponents[index].ccs = oBlock.style.gridArea;
+      _activatedComponents[index].width = _gridArea[3] - _gridArea[1];
 
-      let _componentCcs = activatedComponents[index].ccs
-        .split("/")
-        .map((item) => Number(item));
-      let _lastComponents = [];
-      let _extraComponents = [];
-      let _lastWidth = 0;
-
-      for (let i = index + 1; i < activatedComponents.length; i++) {
-        let _ccs = activatedComponents[i].ccs
-          .split("/")
-          .map((item) => Number(item));
-
-        if (
-          _componentCcs[0] === _ccs[0] &&
-          _componentCcs[3] + activatedComponents[i].width + _lastWidth <=
-            gridColumn + 1
-        ) {
-          _lastComponents.push({
-            ...activatedComponents[i],
-            rowIndex: i,
-          });
-          //console.log('_lastComponents', activatedComponents[i]);
-        } else {
-          _extraComponents.push({
-            ...activatedComponents[i],
-            rowIndex: i,
-          });
-          //console.log('_extraComponents', activatedComponents[i]);
-        }
-
-        _lastWidth = activatedComponents[i].width + _lastWidth;
-      }
+      setActivatedComponents([..._activatedComponents]);
 
       focusComponent(activatedComponents[index].key);
-      judgeLocation(_lastComponents, 0, _extraComponents);
 
       //清空事件
       document.onmousemove = null;
@@ -1323,7 +1301,9 @@ export default function ContainerPC({
   // 删除微件
   const removeComponent = (index: number) => {
     // 更新激活组件
-    setActivatedComponents([..._activatedComponents.filter((_, i) => i !== index)]);
+    setActivatedComponents([
+      ..._activatedComponents.filter((_, i) => i !== index),
+    ]);
   };
 
   return (
