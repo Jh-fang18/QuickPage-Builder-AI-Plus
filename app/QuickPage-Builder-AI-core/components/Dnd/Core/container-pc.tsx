@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useContext } from "react";
+import { useMemo, useState, useRef, useContext } from "react";
 import { Modal } from "antd";
 
 // 导入类型
@@ -31,6 +31,7 @@ export default function ContainerPC({
       React.SetStateAction<ComponentItem[]>
     >;
   }>(EditContext);
+  const [oDivTop, setODivTop] = useState(0);
 
   // ======================
   // 非响应式变量
@@ -1109,7 +1110,7 @@ export default function ContainerPC({
     document.onmousemove = (e) => {
       e.preventDefault();
 
-      let oDivTop = oDiv.offsetTop;
+      setODivTop(oDiv.offsetTop);
       let oDivLeft = oDiv.offsetLeft;
       let oDivRight = gDiv.offsetWidth - oDivLeft - oDiv.offsetWidth;
       let oDivBottom = gDiv.offsetHeight - oDivTop - oDiv.offsetHeight;
@@ -1368,6 +1369,14 @@ export default function ContainerPC({
                 </span>
                 <span className="left" onMouseDown={(e) => moveLeft(e, index)}>
                   左
+                </span>
+              </div>
+              <div className="morph">
+                <span
+                  className="padding up"
+                  style={{ top: -oDivTop -10, height: oDivTop }}
+                >
+                  {oDivTop}
                 </span>
               </div>
             </div>
