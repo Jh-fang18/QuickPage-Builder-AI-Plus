@@ -92,7 +92,7 @@ export interface TempInfoData {
 }
 
 /** 组件数据规范（用于动态加载组件） */
-export interface SelfServiceData extends AuthInfo {
+export interface SelfServiceData{
   /** 组件列表 */
   dataList: SelfServiceDataItem[];
 }
