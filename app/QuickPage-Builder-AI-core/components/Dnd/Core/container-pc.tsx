@@ -765,7 +765,6 @@ export default function ContainerPC({
 
       setActivatedComponents([..._activatedComponents]);
 
-
       //======== 处理当前元素后的元素 ========//
 
       const // 当前变形元素
@@ -848,7 +847,9 @@ export default function ContainerPC({
           left = "$";
         }
       } else {
-        oBlock.style.width = `${Number(oBlock.offsetWidth) - (Number(left) - Number(oLeft))}px`;
+        oBlock.style.width = `${
+          Number(oBlock.offsetWidth) - (Number(left) - Number(oLeft))
+        }px`;
         oBlock.style.left = left + "px";
       }
 
@@ -1107,6 +1108,16 @@ export default function ContainerPC({
 
     document.onmousemove = (e) => {
       e.preventDefault();
+
+      let oDivTop = oDiv.offsetTop;
+      let oDivLeft = oDiv.offsetLeft;
+      let oDivRight = gDiv.offsetWidth - oDivLeft - oDiv.offsetWidth;
+      let oDivBottom = gDiv.offsetHeight - oDivTop - oDiv.offsetHeight;
+
+      console.log("oDivTop", oDivTop);
+      console.log("oDivLeft", oDivLeft);
+      console.log("oDivRight", oDivRight);
+      console.log("oDivBottom", oDivBottom);
 
       let left = e.clientX - disX;
       let top = e.clientY - disY;
