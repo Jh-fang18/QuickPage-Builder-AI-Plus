@@ -4,6 +4,7 @@
   background-color: #f3f3f3;
   /*grid-template-areas: none;*/
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .container.mobile {
@@ -59,16 +60,17 @@
     top: 0;
     left: 0;
     border: 2px dashed #979797;
+    background-color: #fff;
   }
 
   .title {
     position: absolute;
-    top: -15px;
+    top: 0;
     left: 0;
-    padding: 0 10px;
+    padding: 0 5px;
     width: 100%;
     color: #4285f4;
-
+    font-size: 12px;
     a {
       background-color: white;
       padding: 0 5px;
@@ -106,14 +108,68 @@
       margin: 13px auto;
     }
 
+    span.padding {
+      display: flex;
+      text-indent: 0;
+    }
+
+    span.padding:before {
+      position: absolute;
+      z-index: -1;
+      background-color: #4285f4;
+      margin: auto;
+    }
+
+    span.padding:after {
+      display: block;
+      content: "";
+      width: 100%;
+      height: 20px;
+      background-color: #fff;
+      position: absolute;
+      z-index: -1;
+    }
+
+    span.up.padding,
+    span.down.padding {
+      justify-content: center;
+      width: 60px;
+    }
+
+    span.up.padding:before,
+    span.down.padding:before {
+      width: 2px;
+      height: 100%;
+      left: 50%;
+      bottom: 0;
+      margin-left: -1px;
+    }
+
+    span.right.padding,
+    span.left.padding {
+      align-items: center;
+    }
+
+    span.right.padding:before,
+    span.left.padding:before {
+      width: 100%;
+      height: 2px;
+    }
+
     span.up {
       top: -16px;
       left: 50%;
       margin-left: -15px;
     }
 
-    span.padding.up {
-      border-right: 2px solid #979797;
+    span.up.padding {
+      align-items: flex-end;
+      padding-bottom: 50px;
+      margin-left: -30px;
+    }
+
+    span.up.padding:after {
+      bottom: 50px;
     }
 
     span.right {
@@ -122,16 +178,52 @@
       margin-top: -16px;
     }
 
+    span.right.padding {
+      left: 0;
+      right: auto;
+      padding-left: 50px;
+    }
+
+    span.right.padding:before {
+      left: 0;
+    }
+
+    span.right.padding:after {
+      width: 60px;
+      margin-left: -20px;
+    }
+
     span.down {
       bottom: -16px;
       left: 50%;
       margin-left: -15px;
     }
 
+    span.down.padding {
+      bottom: auto;
+      align-items: flex-start;
+      padding-top: 50px;
+      margin-left: -30px;
+    }
+
     span.left {
       top: 50%;
       left: -15px;
       margin-top: -16px;
+    }
+
+    span.left.padding {
+      justify-content: flex-end;
+      padding-right: 50px;
+    }
+
+    span.left.padding:before {
+      right: 0;
+    }
+
+    span.left.padding:after {
+      width: 60px;
+      margin-right: -20px;
     }
   }
 }

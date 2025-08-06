@@ -31,7 +31,14 @@ export default function ContainerPC({
       React.SetStateAction<ComponentItem[]>
     >;
   }>(EditContext);
-  const [oDivTop, setODivTop] = useState(0);
+  const [divTop, setDivTop] = useState(0);
+  const [divBottom, setDivBottom] = useState(0);
+  const [divBottomTop, setDivBottomTop] = useState(0);
+  const [divRight, setDivRight] = useState(0);
+  const [divRightLeft, setDivRightLeft] = useState(0);
+  const [divLeft, setDivLeft] = useState(0);
+
+  const [shouldShow, setShouldShow] = useState<number>(-1);
 
   // ======================
   // 非响应式变量
@@ -1107,18 +1114,22 @@ export default function ContainerPC({
       gDiv.offsetLeft -
       (_componentCcs[1] - 1) * (gridScale + gridPadding);
 
+    const setDiv = () => {
+      setDivTop(oDiv.offsetTop);
+      setDivBottomTop(oDiv.offsetHeight + 10);
+      setDivBottom(gDiv.offsetHeight - oDiv.offsetTop - oDiv.offsetHeight);
+      setDivRightLeft(oDiv.offsetWidth + 10);
+      setDivRight(gDiv.offsetWidth - oDiv.offsetLeft - oDiv.offsetWidth);
+      setDivLeft(oDiv.offsetLeft);
+    };
+
+    setShouldShow(index);
+    setDiv();
+
     document.onmousemove = (e) => {
       e.preventDefault();
 
-      setODivTop(oDiv.offsetTop);
-      let oDivLeft = oDiv.offsetLeft;
-      let oDivRight = gDiv.offsetWidth - oDivLeft - oDiv.offsetWidth;
-      let oDivBottom = gDiv.offsetHeight - oDivTop - oDiv.offsetHeight;
-
-      console.log("oDivTop", oDivTop);
-      console.log("oDivLeft", oDivLeft);
-      console.log("oDivRight", oDivRight);
-      console.log("oDivBottom", oDivBottom);
+      setDiv();
 
       let left = e.clientX - disX;
       let top = e.clientY - disY;
@@ -1285,8 +1296,11 @@ export default function ContainerPC({
         focusComponent(component.key);
       }
 
-      // 更新激活组件
+      // 副作用
+      focusComponent(component.key);
       setActivatedComponents([..._activatedComponents]);
+      setShouldShow(-1);
+      setDiv();
 
       console.log("activatedComponents", activatedComponents);
 
@@ -1371,12 +1385,33 @@ export default function ContainerPC({
                   左
                 </span>
               </div>
-              <div className="morph">
+              <div
+                className="morph"
+                style={{ display: shouldShow === index ? "block" : "none" }}
+              >
                 <span
                   className="padding up"
-                  style={{ top: -oDivTop -10, height: oDivTop }}
+                  style={{ top: -divTop - 10, height: divTop }}
                 >
-                  {oDivTop}
+                  {divTop}
+                </span>
+                <span
+                  className="padding right"
+                  style={{ left: divRightLeft, width: divRight }}
+                >
+                  {divRight}
+                </span>
+                <span
+                  className="padding down"
+                  style={{ top: divBottomTop, height: divBottom }}
+                >
+                  {divBottom}
+                </span>
+                <span
+                  className="padding left"
+                  style={{ left: -divLeft - 10, width: divLeft }}
+                >
+                  {divLeft}
                 </span>
               </div>
             </div>
