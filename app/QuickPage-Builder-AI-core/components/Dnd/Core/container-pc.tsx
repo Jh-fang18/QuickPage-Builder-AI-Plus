@@ -459,7 +459,6 @@ export default function ContainerPC({
       _maxTop = Math.max(0, _gridArea[0] - 1) * gridUnit; // 最大可移动距离, 无需减去gridPadding
 
     oBlock.style.borderColor = " red"; // 设置边框颜色为红色
-    oBlock.style.zIndex = "999"; // 设置z-index为999
 
     let disY = e.clientY - 0, // 获取鼠标点击的位置
       oTop: string | number = 0; // 初始化oTop，用于存储微件的top值
@@ -567,7 +566,6 @@ export default function ContainerPC({
       _rMaxWidth = 0;
     console.log("_maxRight1", _maxRight);
     oBlock.style.borderColor = " red";
-    oBlock.style.zIndex = "999";
     // 修改微件实例宽度为100%，以便自适应变型的宽度
     if (oBlock.firstElementChild) {
       (oBlock.firstElementChild as HTMLElement).style.width = "100%";
@@ -699,7 +697,6 @@ export default function ContainerPC({
       _maxDown = (gridRow - _gridArea[2] + 1) * gridUnit; // 最大可移动距离, 无需减去gridPadding
 
     oBlock.style.borderColor = "red";
-    oBlock.style.zIndex = "999";
 
     // 修改微件实例高度为100%，以便自适应变型的高度
     if (oBlock.firstElementChild) {
@@ -836,7 +833,6 @@ export default function ContainerPC({
       oLeft: number | string = 0;
 
     oBlock.style.borderColor = "red";
-    oBlock.style.zIndex = "999";
 
     document.onmousemove = (e) => {
       e.preventDefault(); // 阻止默认事件
