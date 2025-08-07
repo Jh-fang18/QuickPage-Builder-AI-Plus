@@ -62,19 +62,22 @@
     border: 2px dashed #979797;
     background-color: #fff;
   }
+  
+  .shape.highlight {
+    border-color: red;
+  }
+  .shapez.normal {
+    border-color: #979797;
+  }
 
   .title {
     position: absolute;
-    top: 0;
     left: 0;
+    bottom: -25px;
     padding: 0 5px;
     width: 100%;
     color: #4285f4;
     font-size: 12px;
-    a {
-      background-color: white;
-      padding: 0 5px;
-    }
 
     .form a {
       padding-right: 5px;
@@ -230,4 +233,7 @@
 
 .block:hover .delete {
   display: block;
+}
+.block.zIndex999 {
+  z-index: 999;
 }

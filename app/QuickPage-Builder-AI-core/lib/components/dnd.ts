@@ -154,7 +154,7 @@ export const fetchComponentData = async (
         _components[index] = (dataList || []).map((item) => {
           return {
             title: item.itemName,
-            key: String(item.id),
+            key: "",
             url: item.url,
             minWidth: 0,
             minHeight: 0,
@@ -163,7 +163,7 @@ export const fetchComponentData = async (
             editTitle: false,
             positionX: 0,
             positionY: 0,
-            menuKey: "",
+            menuKey: String(item.id), // 生成menu data时使用，将以0-${item.menuKey}_${index}覆盖
             ccs: "",
             rowIndex: 0,
             selfServiceData: {} as SelfServiceDataItem,

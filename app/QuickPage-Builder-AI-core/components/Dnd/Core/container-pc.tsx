@@ -426,16 +426,22 @@ export default function ContainerPC({
    * 微件聚焦
    * @param key 微件的key值
    */
-  const focusComponent = (key: string) => {
-    activatedComponents.map((item, index) => {
-      if (item.key === key) {
-        blockRefs.current["block" + index].style.borderColor = " red";
-        blockRefs.current["block" + index].style.zIndex = "999";
+  const focusComponent = (index: number) => {
+    if (index < 0) return;
+    const block = blockRefs.current[`block${index}`];
+    if (block && block.firstElementChild) {
+      if (block.classList.contains("zIndex999"))
+        block.classList.remove("zIndex999");
+      else block.classList.add("zIndex999");
+
+      if (block.firstElementChild.classList.contains("highlight")) {
+        block.firstElementChild.classList.remove("highlight");
+        block.firstElementChild.classList.add("normal");
       } else {
-        blockRefs.current["block" + index].style.borderColor = " #979797";
-        blockRefs.current["block" + index].style.zIndex = "0";
+        block.firstElementChild.classList.remove("normal");
+        block.firstElementChild.classList.add("highlight");
       }
-    });
+    }
   };
 
   /**
@@ -812,7 +818,7 @@ export default function ContainerPC({
         };
 
       downMoveComponents(_componentCcs, index);
-      focusComponent(activatedComponents[index].key);
+      focusComponent(index);
 
       //清空事件
       document.onmousemove = null;
@@ -912,8 +918,7 @@ export default function ContainerPC({
       _activatedComponents[index].width = _gridArea[3] - _gridArea[1];
 
       setActivatedComponents([..._activatedComponents]);
-
-      focusComponent(activatedComponents[index].key);
+      focusComponent(index);
 
       //清空事件
       document.onmousemove = null;
@@ -1020,7 +1025,7 @@ export default function ContainerPC({
       ccs: oDiv.style.gridArea,
     };
 
-    console.log("area", oDiv.style.gridArea);
+    //console.log("area", oDiv.style.gridArea);
   };
 
   /**
@@ -1057,11 +1062,10 @@ export default function ContainerPC({
 
     // 获取点击元素的父级元素，移动端直接抓取tabs
     let gDiv = oDiv.parentElement;
+    //console.log("gDiv", gDiv);
 
     let disX = e.clientX - 0;
     let disY = e.clientY - 0;
-    oDiv.style.borderColor = " red";
-    oDiv.style.zIndex = "999";
 
     if (gDiv === null) return;
 
@@ -1114,6 +1118,7 @@ export default function ContainerPC({
       gDiv.offsetLeft -
       (_componentCcs[1] - 1) * (gridScale + gridPadding);
 
+    // 设置div位置数值
     const setDiv = () => {
       setDivTop(oDiv.offsetTop);
       setDivBottomTop(oDiv.offsetHeight + 10);
@@ -1123,7 +1128,10 @@ export default function ContainerPC({
       setDivLeft(oDiv.offsetLeft);
     };
 
+    // 是否显示div位置数值
     setShouldShow(index);
+    focusComponent(index);
+    //
     setDiv();
 
     document.onmousemove = (e) => {
@@ -1181,128 +1189,19 @@ export default function ContainerPC({
       //console.log(e.target);
       if (_positions && _positions.split("x")[1] != "NaN") {
         changeBlock(_positions, oDiv, component, index);
+        sortComponent();
         oDiv.style.left = "0px";
         oDiv.style.top = "0px";
-
-        //console.log(_component);
-        let _focusComponent = {};
-        let _lastComponents = [];
-        let _extraComponents = [];
-        // onsole.log("componentCcs", _componentCcs);
-
-        //现已左上角顶点落点为判断条件
-        // activatedComponents.map((item, i) => {
-        //   let _ccs = item.ccs.split("/").map((item) => Number(item));
-
-        //   if (
-        //     component.key !== item.key &&
-        //     _componentCcs[0] >= _ccs[0] &&
-        //     _componentCcs[0] < _ccs[2] &&
-        //     _componentCcs[1] >= _ccs[1] &&
-        //     _componentCcs[1] < _ccs[3]
-        //   ) {
-        //     //console.log('get', index);
-        //     let _ccs = item.ccs.split("/").map((item) => Number(item));
-        //     if (
-        //       Math.abs(_ccs[2] - _componentCcs[0]) /
-        //         Math.min(...[item.height, component.height]) >=
-        //         0.7 &&
-        //       Math.abs(_ccs[3] - _componentCcs[1]) /
-        //         Math.min(...[item.width, component.width]) >=
-        //         0.7
-        //     )
-        //       _focusComponent = { ...item, rowIndex: i };
-        //   }
-        // });
-
-        // //console.log('_focusComponent', _focusComponent);
-
-        // //定位
-        // if (Object.keys(_focusComponent).length > 0) {
-        //   let _focusComponentCcs = _focusComponent.ccs
-        //     .split("/")
-        //     .map((item) => Number(item));
-        //   //console.log('focusRowCcs', _focusComponentCcs);
-        //   //定位拖动元素
-        //   oDiv.style.gridArea =
-        //     _focusComponentCcs[0] +
-        //     "/" +
-        //     _focusComponentCcs[1] +
-        //     "/" +
-        //     (_focusComponentCcs[0] + _component.height) +
-        //     "/" +
-        //     (_focusComponentCcs[1] + _component.width);
-
-        //   _component.ccs = oDiv.style.gridArea;
-
-        //   //console.log('focus', _focusComponent);
-
-        //   activatedComponents.splice(_focusComponent.rowIndex, 0, _component);
-        //   activatedComponents.splice(
-        //     _componentIndex > _focusComponent.rowIndex
-        //       ? _componentIndex + 1
-        //       : _componentIndex,
-        //     1
-        //   );
-
-        //   oDiv = blockRefs.current["block" + _focusComponent.rowIndex];
-
-        //   //获取插入元素新的位置信息
-        //   _componentCcs = _component.ccs.split("/").map((item) => Number(item));
-        //   //console.log('_componentCcs', _componentCcs);
-
-        //   //行累计宽度
-        //   let _lastWidth = 0;
-        //   //获取插入后同行元素和不同行元素
-        //   for (
-        //     let i =
-        //       (_componentIndex > _focusComponent.rowIndex
-        //         ? _focusComponent.rowIndex
-        //         : _focusComponent.rowIndex - 1) + 1;
-        //     i < activatedComponents.length;
-        //     i++
-        //   ) {
-        //     let _lastCcs = activatedComponents[i].ccs
-        //       .split("/")
-        //       .map((item) => Number(item));
-        //     if (
-        //       _componentCcs[0] <= _lastCcs[0] &&
-        //       _lastCcs[0] <= _componentCcs[2]
-        //     ) {
-        //       if (
-        //         _componentCcs[3] + activatedComponents[i].width + _lastWidth <=
-        //         gridColumn + 1
-        //       )
-        //         _lastComponents.push({
-        //           ...activatedComponents[i],
-        //           rowIndex: i,
-        //         });
-        //       else
-        //         _extraComponents.push({
-        //           ...activatedComponents[i],
-        //           rowIndex: i,
-        //         });
-        //       _lastWidth = activatedComponents[i].width + _lastWidth;
-        //     } else {
-        //       _extraComponents.push({
-        //         ...activatedComponents[i],
-        //         rowIndex: i,
-        //       });
-        //     }
-        //   }
-        // }
-
-        sortComponent();
-        focusComponent(component.key);
       }
 
       // 副作用
-      focusComponent(component.key);
+      console.log("component.key", component.key);
+      focusComponent(index);
       setActivatedComponents([..._activatedComponents]);
       setShouldShow(-1);
       setDiv();
 
-      console.log("activatedComponents", activatedComponents);
+      //console.log("activatedComponents", activatedComponents);
 
       //清空事件
       document.onmousemove = null;
@@ -1360,9 +1259,7 @@ export default function ContainerPC({
               className="shape"
               onMouseDown={(e) => mousedown(e, item, index)}
             >
-              <div className="title">
-                <a href="javascript:void(0)">{item.title}</a>
-              </div>
+              <div className="title">{item.title}</div>
               <div className="delete">
                 <button type="button" onClick={() => showConfirm(index)}>
                   删除

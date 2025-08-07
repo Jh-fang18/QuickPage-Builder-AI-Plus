@@ -99,7 +99,7 @@ export default function Editor({
           icon: <DesktopOutlined />,
           children:
             (res.components[0] || []).map((item, index) => ({
-              key: `0-${item.key}_${index}`,
+              key: `0-${item.menuKey}_${index}`,
               label: item.title,
             })) || [],
         },
@@ -153,7 +153,7 @@ export default function Editor({
    */
   const addComponent = (component: ComponentItem) => {
     if (!component) return;
-    console.log("component", component);
+    // console.log("component", component);
     setActivatedComponents([...activatedComponents, component]);
   };
 
@@ -178,6 +178,8 @@ export default function Editor({
 
     const _component = {
       ...components[_classId][_index],
+      // 生成唯一key，格式: 组件key_时间戳_随机字符串
+      key: `${_key}_${Date.now().toString(36) + Math.random().toString(36).substring(2)}`,
       menuKey: _key,
     };
 
@@ -246,6 +248,7 @@ export default function Editor({
 
     //console.log(activatedComponents);
   };
+
   return (
     <Layout>
       <Spin tip="loading" spinning={loading}>
