@@ -1,7 +1,7 @@
 "use client";
 
 // 导入样式
-import "./style.css";
+import styles from "./styles.module.css";
 
 // 导入已有组件
 import { useMemo } from "react";
@@ -9,22 +9,22 @@ import Icon, { HomeOutlined } from "@ant-design/icons";
 
 // 导入类型
 import {
-  LaunchTicketBaseData,
+  LaunchTicketProps,
   LaunchTicketDataItem,
 } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const LaunchTicket = ({
   rowSpan,
   colSpan,
-  gridSize,
-  gridSpace,
+  gridScale,
+  gridPadding,
   title,
   data,
 }: {
   rowSpan?: number;
   colSpan?: number;
-  gridSize: number;
-  gridSpace: number;
+  gridScale: number;
+  gridPadding: number;
   title: string;
   data?: LaunchTicketDataItem[];
 }) => {
@@ -41,24 +41,28 @@ const LaunchTicket = ({
       minColSpan: minColSpan, // 最小高占格
       rowSpan: rowSpan || minRowSpan,
       colSpan: colSpan || minColSpan,
-      gridSize,
-      gridSpace,
+      gridScale,
+      gridPadding,
       data: data || [],
     };
-  }, [rowSpan, colSpan, gridSize, gridSpace, data]);
+  }, [rowSpan, colSpan, gridScale, gridPadding, data]);
 
   // ======================
   // 计算属性
   // ======================
 
   // 计算样式
-  const style = (baseData: LaunchTicketBaseData) => {
-    let { minRowSpan, minColSpan, rowSpan, colSpan, gridSize, gridSpace } =
+  const style = (baseData: LaunchTicketProps) => {
+    let { minRowSpan, minColSpan, rowSpan, colSpan, gridScale, gridPadding } =
       baseData;
+    //console.log(baseData)
     rowSpan = rowSpan > minRowSpan ? rowSpan : minRowSpan;
     colSpan = colSpan > minColSpan ? colSpan : minColSpan;
-    let width = rowSpan * gridSize + (rowSpan - 1) * gridSpace;
-    let height = colSpan * gridSize + (colSpan - 1) * gridSpace;
+    let width = rowSpan * gridScale + (rowSpan - 1) * gridPadding;
+    let height = colSpan * gridScale + (colSpan - 1) * gridPadding;
+
+    //console.log(width, height);
+
     return {
       width: `${Math.floor(width)}px`,
       height: `${Math.floor(height)}px`,
@@ -72,17 +76,17 @@ const LaunchTicket = ({
   // 图标组件获取, 依赖data
 
   return (
-    <div className="launch-ticket" style={style(baseData)}>
-      <div className="launch-ticket-header">
-        <span className="title">{title}</span>
+    <div className={`${styles["launch-ticket"]}`} style={style(baseData)}>
+      <div className={`${styles["launch-ticket-header"]}`}>
+        <span className={`${styles["title"]}`}>{title}</span>
       </div>
-      <div className="launch-ticket-content">
+      <div className={`${styles["launch-ticket-content"]}`}>
         {baseData.data?.length > 0
           ? baseData.data.map((item, index) => (
-              <div key={index} className="launch-ticket-item">
-                <div className="title">
+              <div key={index} className={`${styles["launch-ticket-item"]}`}>
+                <div className={`${styles["title"]}`}>
                   <div
-                    className="item-inner-icon"
+                    className={`${styles["item-inner-icon"]}`}
                     style={{ backgroundImage: item.color }}
                   >
                     <Icon
@@ -91,9 +95,11 @@ const LaunchTicket = ({
                       }
                     ></Icon>
                   </div>
-                  <div className="item-inner-name">{item.showName}</div>
+                  <div className={`${styles["item-inner-name"]}`}>
+                    {item.showName}
+                  </div>
                 </div>
-                <div className="content">{item.explain}</div>
+                <div className={`${styles["content"]}`}>{item.explain}</div>
               </div>
             ))
           : null}
@@ -106,6 +112,6 @@ const LaunchTicket = ({
 LaunchTicket.minShape = () => ({
   minRowSpan: 8, // 最小宽占格
   minColSpan: 6, // 最小高占格
-});;
+});
 
 export default LaunchTicket;

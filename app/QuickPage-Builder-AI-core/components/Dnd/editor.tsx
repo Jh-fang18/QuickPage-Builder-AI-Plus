@@ -1,7 +1,7 @@
 "use client";
 
 // 导入库
-import { useState, useEffect, useRef, Suspense, useContext } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { ContainerOutlined, DesktopOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Spin, Layout, Menu, message } from "antd";
@@ -9,7 +9,7 @@ const { Sider, Content } = Layout;
 type MenuItem = Required<MenuProps>["items"][number];
 
 // 导入样式
-import "./editor.css";
+import "./editor.module.css";
 
 // 导入自定义组件
 import * as MicroCards from "../../MicroParts/index";
@@ -17,8 +17,10 @@ import CoreComponent from "./Core/index";
 import EditContext from "./context";
 
 // 导入类型
-import type { ComponentItem } from "../types/dnd";
-import type { MicroCardsType } from "../../MicroParts/types/common";
+import type { ComponentItem } from "../../types/common";
+import type { MicroCardsType } from "../../types/common";
+
+// 导入数据
 import { fetchComponentData } from "../../lib/components/dnd";
 
 export default function Editor({
@@ -73,9 +75,12 @@ export default function Editor({
         gridColumn: _gridColumn,
         gridScale: _gridScale,
         gridPadding: _gridPadding,
+        MicroCards: _MicroCards,
       },
     },
   ];
+
+  //console.log(DynamicComponents[0].Props.MicroCards);
 
   // 页面挂在后, 获取微件数据
   useEffect(() => {
@@ -86,6 +91,8 @@ export default function Editor({
       Number(tempId),
       terminalType
     ).then((res) => {
+      //console.log("res", res);
+
       setActivatedComponents(res.activatedComponents);
       setGridRow(res.gridRow);
       setComponents(res.components);
@@ -107,7 +114,11 @@ export default function Editor({
           key: "2",
           label: "容器类",
           icon: <ContainerOutlined />,
-          children: [],
+          children:
+            (res.components[1] || []).map((item, index) => ({
+              key: `1-${item.menuKey}_${index}`,
+              label: item.title,
+            })) || [],
         },
       ]);
     });
@@ -179,15 +190,19 @@ export default function Editor({
     const _component = {
       ...components[_classId][_index],
       // 生成唯一key，格式: 组件key_时间戳_随机字符串
-      key: `${_key}_${Date.now().toString(36) + Math.random().toString(36).substring(2)}`,
+      key: `${_key}_${
+        Date.now().toString(36) + Math.random().toString(36).substring(2)
+      }`,
       menuKey: _key,
     };
+    _component.width = _component.props?.width || 12;
+    _component.height = _component.props?.height || 12;
 
     if (activatedComponents && activatedComponents.length > 0) {
       // 画布不为空
       // 获取最后一个组件的高度和ccs
       const { ccs } = activatedComponents[activatedComponents.length - 1];
-
+      
       // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
       const aCss = ccs.split("/").map(Number);
 
@@ -237,7 +252,7 @@ export default function Editor({
     // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
     _component.rowIndex = activatedComponents.length;
 
-    // console.log(_component);
+    //console.log(_component);
     addComponent(_component); // 添加组件到画布
     setWorkbenchData(
       tempId,
@@ -256,16 +271,18 @@ export default function Editor({
           <Sider>
             <div className="title">微件列表</div>
             <Menu
-              defaultOpenKeys={["1"]}
+              defaultOpenKeys={["1", "2"]}
               mode="inline"
               inlineCollapsed={collapsed}
               items={menuData}
               onClick={onMenuClick}
             />
           </Sider>
-          <Content style={{ padding: "20px 0" }}>
+          <Content>
             <Suspense fallback={<h2>Loading...</h2>}>
-              <EditContext.Provider value={{ activatedComponents, setActivatedComponents }}>
+              <EditContext.Provider
+                value={{ activatedComponents, setActivatedComponents }}
+              >
                 <CoreComponent {...(DynamicComponents[0].Props as any)} />
               </EditContext.Provider>
             </Suspense>

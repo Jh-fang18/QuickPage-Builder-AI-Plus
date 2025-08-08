@@ -3,10 +3,10 @@ import LaunchTicket from "./index";
 export default function Page() {
   return (
     <LaunchTicket
-      rowSpan={17}
+      rowSpan={16}
       colSpan={12}
-      gridSize={12}
-      gridSpace={12}
+      gridScale={36}
+      gridPadding={24}
       title="启动票"
       data={[
         {

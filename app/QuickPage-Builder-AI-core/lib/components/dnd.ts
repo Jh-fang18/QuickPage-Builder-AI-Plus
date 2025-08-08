@@ -8,11 +8,13 @@ import type {
   CardData,
   FormState,
   TempInfoData,
-} from "../../components/types/dnd";
-import type { MicroCardsType } from "../../MicroParts/types/common";
+} from "../../types/common";
+
+import type { MicroCardsType } from "../../types/common";
 
 // 导入数据 (临时获取数据来源)
 import selfServiceItemList from "../../lib/data/self-service-item-list";
+import selfServiceItemListContainer from "../../lib/data/self-service-item-list-container";
 import tempInfo from "../../lib/data/temp-Info";
 
 /* ====================== 核心方法 ====================== */
@@ -50,7 +52,10 @@ const getSelfServiceItemList = async (
   terminalType: number
 ) => {
   return handleApiRequest(async () => {
-    const res: SelfServiceData = await selfServiceItemList;
+    const res: SelfServiceData =
+      itemType === 0
+        ? await selfServiceItemList
+        : await selfServiceItemListContainer;
 
     if (!res?.dataList || res?.dataList.length === 0)
       message.error("数据加载失败");
@@ -120,7 +125,7 @@ const updateComponentItem = (
  * @param tempId 模板id
  * @param terminalType 终端类型
  * @returns components 所有组件, activatedComponents  激活组件, gridRow 画布高度,contentId: 内容ID, oldContent: 内容
- * 
+ *
  */
 export const fetchComponentData = async (
   MicroCards: MicroCardsType,
@@ -139,9 +144,10 @@ export const fetchComponentData = async (
   //   catchRouterData();
   // }
 
-  //获取组件列表, promise.all返回的是数组
+  // 获取组件列表, promise.all返回的是数组
   await Promise.all([
     getSelfServiceItemList(0, 0), //其他类
+    getSelfServiceItemList(1, 0), //容器类
   ])
     .then((res) => {
       if (!res) return;
@@ -150,7 +156,7 @@ export const fetchComponentData = async (
         let dataList: SelfServiceDataItem[] = item?.dataList || [];
         //console.log(dataList);
 
-        //获取组件基本信息
+        // 获取组件基本信息
         _components[index] = (dataList || []).map((item) => {
           return {
             title: item.itemName,
@@ -167,16 +173,17 @@ export const fetchComponentData = async (
             ccs: "",
             rowIndex: 0,
             selfServiceData: {} as SelfServiceDataItem,
+            props: item.props || {},
           };
         });
 
-        //console.log(state.components);
+        //console.log(_components);
         //console.log(1,MicroCards);
-        //console.log(2,state.microParts);
+        //console.log(2,microParts);
 
         // PC端
         if (terminalType === 0) {
-          //删除不存在的微件
+          // 删除不存在的微件
           _components[index] = _components[index].filter((item, index) => {
             const microCard = MicroCards[item?.url] ?? null;
             if (microCard) {

@@ -16,21 +16,12 @@ export interface BaseDataType {
   minColSpan: number;
   rowSpan: number;
   colSpan: number;
-  gridSize: number;
-  gridSpace: number;
+  gridScale: number;
+  gridPadding: number;
 }
 
 // 发布票务微件基础数据
-export interface LaunchTicketBaseData extends BaseDataType {
+export interface LaunchTicketProps extends BaseDataType {
   data: LaunchTicketDataItem[];
 }
 
-interface MicroCardComponent extends React.FC<any> {
-  minShape: () => {
-    minRowSpan: number;
-    minColSpan: number;
-  };
-}
-
-// 微件组件类型
-export type MicroCardsType = Record<string, MicroCardComponent>;

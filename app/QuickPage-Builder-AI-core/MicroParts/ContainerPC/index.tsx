@@ -1,36 +1,36 @@
 "use client";
 
-import { useMemo, useState, useRef, useContext } from "react";
+import { useMemo, useState, useRef, createElement, Suspense } from "react";
 import { Modal } from "antd";
 
 // 导入类型
-import type { ComponentItem } from "../../types/dnd";
+import type { MicroCardsType } from "../../types/common";
+import type { ComponentItem } from "../../types/common";
 
-// 导入上下文
-import EditContext from "../context";
+import styles from "./styles.module.css";
 
-import "./container-pc.css";
 
 export default function ContainerPC({
   gridRow,
   gridColumn,
   gridScale,
   gridPadding,
+  MicroCards,
+  activatedComponents,
+  setActivatedComponents,
 }: {
   gridRow: number;
   gridColumn: number;
   gridScale: number;
   gridPadding: number;
+  MicroCards: MicroCardsType;
+  activatedComponents: ComponentItem[];
+  setActivatedComponents: React.Dispatch<React.SetStateAction<ComponentItem[]>>;
 }) {
   // ======================
   // 响应式变量
   // ======================
-  const { activatedComponents, setActivatedComponents } = useContext<{
-    activatedComponents: ComponentItem[];
-    setActivatedComponents: React.Dispatch<
-      React.SetStateAction<ComponentItem[]>
-    >;
-  }>(EditContext);
+
   const [divTop, setDivTop] = useState(0);
   const [divBottom, setDivBottom] = useState(0);
   const [divBottomTop, setDivBottomTop] = useState(0);
@@ -51,6 +51,7 @@ export default function ContainerPC({
   const topMax = useRef(0);
   const downMax = useRef(0);
   const rightMax = useRef(0);
+
   let _activatedComponents = [...activatedComponents];
 
   // ======================
@@ -429,17 +430,17 @@ export default function ContainerPC({
   const focusComponent = (index: number) => {
     if (index < 0) return;
     const block = blockRefs.current[`block${index}`];
-    if (block && block.firstElementChild) {
+    if (block && block.lastElementChild) {
       if (block.classList.contains("zIndex999"))
         block.classList.remove("zIndex999");
       else block.classList.add("zIndex999");
 
-      if (block.firstElementChild.classList.contains("highlight")) {
-        block.firstElementChild.classList.remove("highlight");
-        block.firstElementChild.classList.add("normal");
+      if (block.lastElementChild.classList.contains("highlight")) {
+        block.lastElementChild.classList.remove("highlight");
+        block.lastElementChild.classList.add("normal");
       } else {
-        block.firstElementChild.classList.remove("normal");
-        block.firstElementChild.classList.add("highlight");
+        block.lastElementChild.classList.remove("normal");
+        block.lastElementChild.classList.add("highlight");
       }
     }
   };
@@ -815,7 +816,6 @@ export default function ContainerPC({
         };
 
       downMoveComponents(_componentCcs, index);
-      focusComponent(index);
 
       //清空事件
       document.onmousemove = null;
@@ -1191,7 +1191,7 @@ export default function ContainerPC({
       }
 
       // 副作用
-      console.log("component.key", component.key);
+      //console.log("component.key", component.key);
       focusComponent(index);
       setActivatedComponents([..._activatedComponents]);
       setShouldShow(-1);
@@ -1227,10 +1227,22 @@ export default function ContainerPC({
     ]);
   };
 
+  const Component = (index: number) => {
+    const _component = MicroCards[activatedComponents[index].url];
+    type _componentProps = React.ComponentProps<typeof _component>;
+    // 类型定义还需调整
+    return createElement(_component, {
+      ...(activatedComponents[index].props as _componentProps),
+      gridScale,
+      gridPadding,
+    });
+  };
+
   return (
     <>
       <div
-        className="container pc"
+        className={`${styles.container} ${styles.pc}`}
+
         style={{
           width: (gridScale + gridPadding) * gridColumn - 20 + "px",
           gridTemplateColumns: getGridTemplateColumns,
@@ -1241,7 +1253,7 @@ export default function ContainerPC({
         {activatedComponents.map((item, index) => (
           <div
             key={index}
-            className="block animated"
+            className={`${styles.block} ${styles.animated}`}
             style={{
               top: item.positionY,
               left: item.positionX,
@@ -1251,57 +1263,58 @@ export default function ContainerPC({
               if (el) blockRefs.current["block" + index] = el;
             }}
           >
+            <Suspense fallback={"loading..."}>{Component(index)}</Suspense>
             <div
-              className="shape"
+              className={`${styles.shape}`}
               onMouseDown={(e) => mousedown(e, item, index)}
             >
-              <div className="title">{item.title}</div>
-              <div className="delete">
+              <div className={`${styles.title}`}>{item.title}</div>
+              <div className={`${styles.delete}`}>
                 <button type="button" onClick={() => showConfirm(index)}>
                   删除
                 </button>
               </div>
-              <div className="morph">
-                <span className="up" onMouseDown={(e) => moveTop(e, index)}>
+              <div className={`${styles.morph}`}>
+                <span className={`${styles.up}`} onMouseDown={(e) => moveTop(e, index)}>
                   上
                 </span>
                 <span
-                  className="right"
+                  className={`${styles.right}`}
                   onMouseDown={(e) => moveRight(e, index)}
                 >
                   右
                 </span>
-                <span className="down" onMouseDown={(e) => moveDown(e, index)}>
+                <span className={`${styles.down}`} onMouseDown={(e) => moveDown(e, index)}>
                   下
                 </span>
-                <span className="left" onMouseDown={(e) => moveLeft(e, index)}>
+                <span className={`${styles.left}`} onMouseDown={(e) => moveLeft(e, index)}>
                   左
                 </span>
               </div>
               <div
-                className="morph"
+                className={`${styles.morph}`}
                 style={{ display: shouldShow === index ? "block" : "none" }}
               >
                 <span
-                  className="padding up"
+                  className={`${styles.padding} ${styles.up}`}
                   style={{ top: -divTop - 10, height: divTop }}
                 >
                   {divTop}
                 </span>
                 <span
-                  className="padding right"
+                  className={`${styles.padding} ${styles.right}`}
                   style={{ left: divRightLeft, width: divRight }}
                 >
                   {divRight}
                 </span>
                 <span
-                  className="padding down"
+                  className={`${styles.padding} ${styles.down}`}
                   style={{ top: divBottomTop, height: divBottom }}
                 >
                   {divBottom}
                 </span>
                 <span
-                  className="padding left"
+                  className={`${styles.padding} ${styles.left}`}
                   style={{ left: -divLeft - 10, width: divLeft }}
                 >
                   {divLeft}
@@ -1315,3 +1328,9 @@ export default function ContainerPC({
     </>
   );
 }
+
+// 静态方法
+ContainerPC.minShape = () => ({
+  minRowSpan: 18, // 最小宽占格
+  minColSpan: 12, // 最小高占格
+});
