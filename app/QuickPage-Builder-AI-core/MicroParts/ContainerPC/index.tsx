@@ -7,8 +7,7 @@ import { Modal } from "antd";
 import type { MicroCardsType } from "../../types/common";
 import type { ComponentItem } from "../../types/common";
 
-import styles from "./styles.module.css";
-
+import "./styles.css";
 
 export default function ContainerPC({
   gridRow,
@@ -464,6 +463,12 @@ export default function ContainerPC({
     let disY = e.clientY - 0, // 获取鼠标点击的位置
       oTop: string | number = 0; // 初始化oTop，用于存储微件的top值
 
+    // 修改微件实例高度为100%，以便自适应变型的高度
+    if (oBlock.firstElementChild) {
+      if (oBlock.firstElementChild) {
+        (oBlock.firstElementChild as HTMLElement).style.height = "100%";
+      }
+    }
     // 控制微件高度
     document.onmousemove = (e) => {
       e.preventDefault(); // 阻止默认事件
@@ -1241,8 +1246,7 @@ export default function ContainerPC({
   return (
     <>
       <div
-        className={`${styles.container} ${styles.pc}`}
-
+        className={`container pc`}
         style={{
           width: (gridScale + gridPadding) * gridColumn - 20 + "px",
           gridTemplateColumns: getGridTemplateColumns,
@@ -1253,7 +1257,7 @@ export default function ContainerPC({
         {activatedComponents.map((item, index) => (
           <div
             key={index}
-            className={`${styles.block} ${styles.animated}`}
+            className={`block`}
             style={{
               top: item.positionY,
               left: item.positionX,
@@ -1265,56 +1269,62 @@ export default function ContainerPC({
           >
             <Suspense fallback={"loading..."}>{Component(index)}</Suspense>
             <div
-              className={`${styles.shape}`}
+              className={`shape`}
               onMouseDown={(e) => mousedown(e, item, index)}
             >
-              <div className={`${styles.title}`}>{item.title}</div>
-              <div className={`${styles.delete}`}>
+              <div className={`title`}>{item.title}</div>
+              <div className={`delete`}>
                 <button type="button" onClick={() => showConfirm(index)}>
                   删除
                 </button>
               </div>
-              <div className={`${styles.morph}`}>
-                <span className={`${styles.up}`} onMouseDown={(e) => moveTop(e, index)}>
+              <div className={`morph`}>
+                <span className={`up`} onMouseDown={(e) => moveTop(e, index)}>
                   上
                 </span>
                 <span
-                  className={`${styles.right}`}
+                  className={`right`}
                   onMouseDown={(e) => moveRight(e, index)}
                 >
                   右
                 </span>
-                <span className={`${styles.down}`} onMouseDown={(e) => moveDown(e, index)}>
+                <span
+                  className={`down`}
+                  onMouseDown={(e) => moveDown(e, index)}
+                >
                   下
                 </span>
-                <span className={`${styles.left}`} onMouseDown={(e) => moveLeft(e, index)}>
+                <span
+                  className={`left`}
+                  onMouseDown={(e) => moveLeft(e, index)}
+                >
                   左
                 </span>
               </div>
               <div
-                className={`${styles.morph}`}
+                className={`morph`}
                 style={{ display: shouldShow === index ? "block" : "none" }}
               >
                 <span
-                  className={`${styles.padding} ${styles.up}`}
+                  className={`padding up`}
                   style={{ top: -divTop - 10, height: divTop }}
                 >
                   {divTop}
                 </span>
                 <span
-                  className={`${styles.padding} ${styles.right}`}
+                  className={`padding right`}
                   style={{ left: divRightLeft, width: divRight }}
                 >
                   {divRight}
                 </span>
                 <span
-                  className={`${styles.padding} ${styles.down}`}
+                  className={`padding down`}
                   style={{ top: divBottomTop, height: divBottom }}
                 >
                   {divBottom}
                 </span>
                 <span
-                  className={`${styles.padding} ${styles.left}`}
+                  className={`padding left`}
                   style={{ left: -divLeft - 10, width: divLeft }}
                 >
                   {divLeft}

@@ -110,8 +110,8 @@ const updateComponentItem = (
   ...item,
   minWidth: minRowSpan,
   minHeight: minColSpan,
-  width: minRowSpan,
-  height: minColSpan,
+  width: 0,
+  height: 0,
   editTitle: false,
   positionX: 0,
   positionY: 0,
@@ -183,7 +183,8 @@ export const fetchComponentData = async (
 
         // PC端
         if (terminalType === 0) {
-          // 删除不存在的微件
+          // 删除不存在的微件，避免报错
+          // 赋值最小高宽
           _components[index] = _components[index].filter((item, index) => {
             const microCard = MicroCards[item?.url] ?? null;
             if (microCard) {

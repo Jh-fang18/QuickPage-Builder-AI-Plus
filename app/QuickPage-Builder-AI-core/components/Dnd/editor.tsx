@@ -159,7 +159,7 @@ export default function Editor({
 
   /**
    * 添加组件到画布
-   * 注意: 直接修改外部变量state.activatedComponents
+   * 注意: 直接修改外部变量activatedComponents
    * @param component 要添加的组件
    */
   const addComponent = (component: ComponentItem) => {
@@ -168,7 +168,11 @@ export default function Editor({
     setActivatedComponents([...activatedComponents, component]);
   };
 
-  // 点击添加微件进入画布
+  /**
+   * 点击添加微件进入画布
+   * 微件高宽将在这里赋值
+   * @param key 组件的Key
+   */
   const onMenuClick: MenuProps["onClick"] = ({ key }) => {
     // console.log("key", key);
 
@@ -195,8 +199,11 @@ export default function Editor({
       }`,
       menuKey: _key,
     };
-    _component.width = _component.props?.width || 12;
-    _component.height = _component.props?.height || 12;
+
+    _component.width = _component.props?.gridColumn || _component.minWidth;
+    _component.height = _component.props?.gridRow || _component.minHeight;
+
+    console.log("_component", _component);
 
     if (activatedComponents && activatedComponents.length > 0) {
       // 画布不为空
