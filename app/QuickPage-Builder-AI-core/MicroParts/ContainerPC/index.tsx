@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, createElement, Suspense } from "react";
+import { useDrop } from "react-dnd";
 import { Modal } from "antd";
 
 // 导入类型
@@ -1243,15 +1244,34 @@ export default function ContainerPC({
     });
   };
 
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
+    accept: "MENU_ITEM",
+    drop: () => ({ name: "Dustbin" }),
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
+  const isActive = canDrop && isOver;
+  let backgroundColor = "#222";
+  if (isActive) {
+    backgroundColor = "darkgreen";
+  } else if (canDrop) {
+    backgroundColor = "red";
+  }
+
   return (
     <>
       <div
+        ref={drop as any}
         className={`container pc`}
         style={{
           width: (gridScale + gridPadding) * gridColumn - 20 + "px",
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
           gridTemplateAreas: getGridTemplateAreas,
+          backgroundColor
         }}
       >
         {activatedComponents.map((item, index) => (

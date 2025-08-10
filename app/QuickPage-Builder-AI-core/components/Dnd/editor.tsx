@@ -2,11 +2,12 @@
 
 // 导入库
 import { useState, useEffect, useRef, Suspense } from "react";
+import { DndProvider, useDrag } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { ContainerOutlined, DesktopOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Spin, Layout, Menu, message } from "antd";
 const { Sider, Content } = Layout;
-type MenuItem = Required<MenuProps>["items"][number];
 
 // 导入样式
 import "./editor.module.css";
@@ -19,6 +20,7 @@ import EditContext from "./context";
 // 导入类型
 import type { ComponentItem } from "../../types/common";
 import type { MicroCardsType } from "../../types/common";
+type MenuItem = Required<MenuProps>["items"][number];
 
 // 导入数据
 import { fetchComponentData } from "../../lib/components/dnd";
@@ -82,6 +84,27 @@ export default function Editor({
 
   //console.log(DynamicComponents[0].Props.MicroCards);
 
+  //
+  /**
+   * 可拖动菜单项
+   * @param item 微件数据
+   */
+  const DraggableMenuItem: React.FC<{ item: ComponentItem }> = ({ item }) => {
+    const [{ isDragging }, drag] = useDrag(() => ({
+      type: "MENU_ITEM",
+      item: { ...item },
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging(),
+      }),
+    }));
+
+    return (
+      <div ref={drag as any} style={{ opacity: isDragging ? 0.5 : 1 }}>
+        <span>{item.title}</span>
+      </div>
+    );
+  };
+
   // 页面挂在后, 获取微件数据
   useEffect(() => {
     // 根据微件数量设置菜单，并控制编辑区域高度
@@ -107,7 +130,7 @@ export default function Editor({
           children:
             (res.components[0] || []).map((item, index) => ({
               key: `0-${item.menuKey}_${index}`,
-              label: item.title,
+              label: <DraggableMenuItem item={item} />,
             })) || [],
         },
         {
@@ -117,7 +140,7 @@ export default function Editor({
           children:
             (res.components[1] || []).map((item, index) => ({
               key: `1-${item.menuKey}_${index}`,
-              label: item.title,
+              label: <DraggableMenuItem item={item} />,
             })) || [],
         },
       ]);
@@ -203,13 +226,11 @@ export default function Editor({
     _component.width = _component.props?.gridColumn || _component.minWidth;
     _component.height = _component.props?.gridRow || _component.minHeight;
 
-    console.log("_component", _component);
-
     if (activatedComponents && activatedComponents.length > 0) {
       // 画布不为空
       // 获取最后一个组件的高度和ccs
       const { ccs } = activatedComponents[activatedComponents.length - 1];
-      
+
       // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
       const aCss = ccs.split("/").map(Number);
 
@@ -272,30 +293,32 @@ export default function Editor({
   };
 
   return (
-    <Layout>
-      <Spin tip="loading" spinning={loading}>
-        <Layout style={{ background: "#fff" }}>
-          <Sider>
-            <div className="title">微件列表</div>
-            <Menu
-              defaultOpenKeys={["1", "2"]}
-              mode="inline"
-              inlineCollapsed={collapsed}
-              items={menuData}
-              onClick={onMenuClick}
-            />
-          </Sider>
-          <Content>
-            <Suspense fallback={<h2>Loading...</h2>}>
-              <EditContext.Provider
-                value={{ activatedComponents, setActivatedComponents }}
-              >
-                <CoreComponent {...(DynamicComponents[0].Props as any)} />
-              </EditContext.Provider>
-            </Suspense>
-          </Content>
-        </Layout>
-      </Spin>
-    </Layout>
+    <DndProvider backend={HTML5Backend}>
+      <Layout>
+        <Spin tip="loading" spinning={loading}>
+          <Layout style={{ background: "#fff" }}>
+            <Sider>
+              <div className="title">微件列表</div>
+              <Menu
+                defaultOpenKeys={["1", "2"]}
+                mode="inline"
+                inlineCollapsed={collapsed}
+                onClick={onMenuClick}
+                items={menuData}
+              />
+            </Sider>
+            <Content>
+              <Suspense fallback={<h2>Loading...</h2>}>
+                <EditContext.Provider
+                  value={{ activatedComponents, setActivatedComponents }}
+                >
+                  <CoreComponent {...(DynamicComponents[0].Props as any)} />
+                </EditContext.Provider>
+              </Suspense>
+            </Content>
+          </Layout>
+        </Spin>
+      </Layout>
+    </DndProvider>
   );
 }
