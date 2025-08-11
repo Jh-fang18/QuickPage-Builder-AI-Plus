@@ -23,7 +23,7 @@ import type { MicroCardsType } from "../../types/common";
 type MenuItem = Required<MenuProps>["items"][number];
 
 // 导入数据
-import { fetchComponentData } from "../../lib/components/dnd";
+import { fetchComponentData } from "../../lib/data/components/dnd";
 
 export default function Editor({
   gridRow,
@@ -55,6 +55,9 @@ export default function Editor({
     ComponentItem[]
   >([]);
   const [menuData, setMenuData] = useState<MenuItem[]>([]);
+  // 拖动时的z-index需设置为1，提高目标元素cotainer的层级
+  // 不然无法触发目标元素的drop事件
+  const [zIndex, setZIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState(false);
   const [tempId, setTempId] = useState<string>("");
@@ -78,13 +81,13 @@ export default function Editor({
         gridScale: _gridScale,
         gridPadding: _gridPadding,
         MicroCards: _MicroCards,
+        zIndex: zIndex,
       },
     },
   ];
 
   //console.log(DynamicComponents[0].Props.MicroCards);
 
-  //
   /**
    * 可拖动菜单项
    * @param item 微件数据
@@ -92,60 +95,25 @@ export default function Editor({
   const DraggableMenuItem: React.FC<{ item: ComponentItem }> = ({ item }) => {
     const [{ isDragging }, drag] = useDrag(() => ({
       type: "MENU_ITEM",
-      item: { ...item },
-      collect: (monitor) => ({
-        isDragging: !!monitor.isDragging(),
-      }),
+      collect: (monitor) => {
+        return {
+          isDragging: !!monitor.isDragging(),
+        };
+      },
     }));
+
+    // 副作用处理，修改父组件的state
+    useEffect(() => {
+      if (isDragging) setZIndex(1);
+      else setZIndex(0);
+    }, [isDragging]);
 
     return (
       <div ref={drag as any} style={{ opacity: isDragging ? 0.5 : 1 }}>
-        <span>{item.title}</span>
+        <span className="pl-2">{item.title}</span>
       </div>
     );
   };
-
-  // 页面挂在后, 获取微件数据
-  useEffect(() => {
-    // 根据微件数量设置菜单，并控制编辑区域高度
-    fetchComponentData(
-      _MicroCards,
-      _gridRow,
-      Number(tempId),
-      terminalType
-    ).then((res) => {
-      //console.log("res", res);
-
-      setActivatedComponents(res.activatedComponents);
-      setGridRow(res.gridRow);
-      setComponents(res.components);
-      contentIdRef.current = res.contentId;
-      oldContentRef.current = res.oldContent;
-
-      setMenuData([
-        {
-          key: "1",
-          label: "其他类",
-          icon: <DesktopOutlined />,
-          children:
-            (res.components[0] || []).map((item, index) => ({
-              key: `0-${item.menuKey}_${index}`,
-              label: <DraggableMenuItem item={item} />,
-            })) || [],
-        },
-        {
-          key: "2",
-          label: "容器类",
-          icon: <ContainerOutlined />,
-          children:
-            (res.components[1] || []).map((item, index) => ({
-              key: `1-${item.menuKey}_${index}`,
-              label: <DraggableMenuItem item={item} />,
-            })) || [],
-        },
-      ]);
-    });
-  }, []);
 
   /**
    * 设置已激活模板信息存入sessionStorage
@@ -292,6 +260,47 @@ export default function Editor({
     //console.log(activatedComponents);
   };
 
+  // 页面挂在后, 获取微件数据
+  useEffect(() => {
+    // 根据微件数量设置菜单，并控制编辑区域高度
+    fetchComponentData(
+      _MicroCards,
+      _gridRow,
+      Number(tempId),
+      terminalType
+    ).then((res) => {
+      //console.log("res", res);
+      setActivatedComponents(res.activatedComponents);
+      setGridRow(res.gridRow);
+      setComponents(res.components);
+      contentIdRef.current = res.contentId;
+      oldContentRef.current = res.oldContent;
+
+      setMenuData([
+        {
+          key: "1",
+          label: "其他类",
+          icon: <DesktopOutlined />,
+          children:
+            (res.components[0] || []).map((item, index) => ({
+              key: `0-${item.menuKey}_${index}`,
+              label: <DraggableMenuItem item={item} />,
+            })) || [],
+        },
+        {
+          key: "2",
+          label: "容器类",
+          icon: <ContainerOutlined />,
+          children:
+            (res.components[1] || []).map((item, index) => ({
+              key: `1-${item.menuKey}_${index}`,
+              label: <DraggableMenuItem item={item} />,
+            })) || [],
+        },
+      ]);
+    });
+  }, []);
+
   return (
     <DndProvider backend={HTML5Backend}>
       <Layout>
@@ -312,7 +321,7 @@ export default function Editor({
                 <EditContext.Provider
                   value={{ activatedComponents, setActivatedComponents }}
                 >
-                  <CoreComponent {...(DynamicComponents[0].Props as any)} />
+                  <CoreComponent {...DynamicComponents[0].Props} />
                 </EditContext.Provider>
               </Suspense>
             </Content>

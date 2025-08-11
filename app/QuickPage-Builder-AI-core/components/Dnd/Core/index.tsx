@@ -14,6 +14,8 @@ export default function Core({
   gridScale,
   gridPadding,
   MicroCards,
+  zIndex,
+
 }: {
   terminalType: number;
   gridRow: number;
@@ -21,6 +23,7 @@ export default function Core({
   gridScale: number;
   gridPadding: number;
   MicroCards: MicroCardsType;
+  zIndex: number;
 }) {
   const { activatedComponents, setActivatedComponents } = useContext<{
     activatedComponents: ComponentItem[];
@@ -36,6 +39,7 @@ export default function Core({
       gridScale={gridScale}
       gridPadding={gridPadding}
       MicroCards={MicroCards}
+      zIndex={zIndex}
       activatedComponents={activatedComponents}
       setActivatedComponents={setActivatedComponents}
     />

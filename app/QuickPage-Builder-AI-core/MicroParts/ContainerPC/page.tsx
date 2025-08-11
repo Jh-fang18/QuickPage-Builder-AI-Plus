@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 import CoreComponent from "./core";
 
@@ -45,22 +47,20 @@ export default function Page() {
           id: 4,
           itemName: "LaunchTicket",
           url: "LaunchTicket",
-          props: {
-            
-          },
-
+          props: {},
         },
-        props: {
-        },
+        props: {},
       },
     ]);
   }, []);
 
   return (
-    <EditContext.Provider
-      value={{ activatedComponents, setActivatedComponents }}
-    >
-      <CoreComponent {...(DynamicComponents[0].Props as any)} />
-    </EditContext.Provider>
+    <DndProvider backend={HTML5Backend}>
+      <EditContext.Provider
+        value={{ activatedComponents, setActivatedComponents }}
+      >
+        <CoreComponent {...(DynamicComponents[0].Props as any)} />
+      </EditContext.Provider>
+    </DndProvider>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, useRef, createElement, Suspense } from "react";
+import { useMemo, useState, useRef, createElement, Suspense, CSSProperties } from "react";
+
 import { useDrop } from "react-dnd";
 import { Modal } from "antd";
 
@@ -16,6 +17,7 @@ export default function ContainerPC({
   gridScale,
   gridPadding,
   MicroCards,
+  zIndex = 0,
   activatedComponents,
   setActivatedComponents,
 }: {
@@ -23,6 +25,7 @@ export default function ContainerPC({
   gridColumn: number;
   gridScale: number;
   gridPadding: number;
+  zIndex?: number;
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
   setActivatedComponents: React.Dispatch<React.SetStateAction<ComponentItem[]>>;
@@ -37,12 +40,12 @@ export default function ContainerPC({
   const [divRight, setDivRight] = useState(0);
   const [divRightLeft, setDivRightLeft] = useState(0);
   const [divLeft, setDivLeft] = useState(0);
-
   const [shouldShow, setShouldShow] = useState<number>(-1);
 
   // ======================
   // 非响应式变量
   // ======================
+
   const columnDifferences = useRef(0);
   const rowDifferences = useRef(0);
   const columnDeviationValue = useRef(0);
@@ -1241,25 +1244,31 @@ export default function ContainerPC({
       ...(activatedComponents[index].props as _componentProps),
       gridScale,
       gridPadding,
+      zIndex,
     });
   };
 
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
+  const style: CSSProperties = {
+    border: "1px dashed gray",
+    padding: "0.5rem",
+    margin: "0.5rem",
+  };
+
+  const [{ isOverCurrent }, drop] = useDrop(() => ({
     accept: "MENU_ITEM",
-    drop: () => ({ name: "Dustbin" }),
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
+    drop(item, monitor) {
+      console.log(monitor.getItem());
+    },
+    collect: (monitor) => {
+      return {
+        isOverCurrent: monitor.isOver({ shallow: true }),
+      };
+    },
   }));
 
-  const isActive = canDrop && isOver;
-  let backgroundColor = "#222";
-  if (isActive) {
-    backgroundColor = "darkgreen";
-  } else if (canDrop) {
-    backgroundColor = "red";
-  }
+  const borderStyle = {
+    backgroundColor: "pink",
+  };
 
   return (
     <>
@@ -1271,7 +1280,8 @@ export default function ContainerPC({
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
           gridTemplateAreas: getGridTemplateAreas,
-          backgroundColor
+          zIndex,
+          ...(isOverCurrent ? borderStyle : {}),
         }}
       >
         {activatedComponents.map((item, index) => (

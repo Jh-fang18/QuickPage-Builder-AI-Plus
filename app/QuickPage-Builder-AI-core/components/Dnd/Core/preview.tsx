@@ -1,4 +1,4 @@
-import type { ComponentItem } from "../../types/dnd";
+import type { ComponentItem } from "../../../types/common";
 
 export default function Core({
   terminalType,

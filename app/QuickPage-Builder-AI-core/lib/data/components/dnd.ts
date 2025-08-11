@@ -8,14 +8,14 @@ import type {
   CardData,
   FormState,
   TempInfoData,
-} from "../../types/common";
+} from "../../../types/common";
 
-import type { MicroCardsType } from "../../types/common";
+import type { MicroCardsType } from "../../../types/common";
 
 // 导入数据 (临时获取数据来源)
-import selfServiceItemList from "../../lib/data/self-service-item-list";
-import selfServiceItemListContainer from "../../lib/data/self-service-item-list-container";
-import tempInfo from "../../lib/data/temp-Info";
+import selfServiceItemList from "../mock/self-service-item-list";
+import selfServiceItemListContainer from "../mock/self-service-item-list-container";
+import tempInfo from "../mock/temp-Info";
 
 /* ====================== 核心方法 ====================== */
 
