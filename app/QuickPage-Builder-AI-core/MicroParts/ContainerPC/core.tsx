@@ -25,9 +25,8 @@ export default function Page() {
         gridScale={30}
         gridPadding={20}
         MicroCards={MicroCards}
-
         activatedComponents={activatedComponents}
-        setActivatedComponents={setActivatedComponents}
+        onActivatedComponents={setActivatedComponents}
       />
   );
 }

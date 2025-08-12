@@ -32,6 +32,12 @@ export default function Core({
     >;
   }>(EditContext);
 
+  const handleSetActivatedComponents = (components: ComponentItem[]) => {
+    //setActivatedComponents([...components]);
+  };
+
+  //console.log("core", activatedComponents);
+
   return (
     <ContainerPC
       gridRow={gridRow}
@@ -41,7 +47,7 @@ export default function Core({
       MicroCards={MicroCards}
       zIndex={zIndex}
       activatedComponents={activatedComponents}
-      setActivatedComponents={setActivatedComponents}
+      onActivatedComponents={handleSetActivatedComponents}
     />
   );
 }

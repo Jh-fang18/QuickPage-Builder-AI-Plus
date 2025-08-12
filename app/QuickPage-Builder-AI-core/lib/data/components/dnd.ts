@@ -103,13 +103,13 @@ const getTempInfo = (data: {
  */
 const updateComponentItem = (
   item: ComponentItem,
-  minRowSpan: number,
   minColSpan: number,
+  minRowSpan: number,
   selfServiceData: SelfServiceDataItem
 ): ComponentItem => ({
   ...item,
-  minWidth: minRowSpan,
-  minHeight: minColSpan,
+  minWidth: minColSpan,
+  minHeight: minRowSpan,
   width: 0,
   height: 0,
   editTitle: false,
@@ -124,7 +124,7 @@ const updateComponentItem = (
  * @param gridRow 网格行数
  * @param tempId 模板id
  * @param terminalType 终端类型
- * @returns components 所有组件, activatedComponents  激活组件, gridRow 画布高度,contentId: 内容ID, oldContent: 内容
+ * @returns components 所有组件, activatedComponents 激活组件, gridRow 画布高度,contentId: 内容ID, oldContent: 内容
  *
  */
 export const fetchComponentData = async (
@@ -189,12 +189,13 @@ export const fetchComponentData = async (
             const microCard = MicroCards[item?.url] ?? null;
             if (microCard) {
               const { minRowSpan, minColSpan } = microCard.minShape();
+
               Object.assign(
                 item,
                 updateComponentItem(
                   item,
-                  minRowSpan,
                   minColSpan,
+                  minRowSpan,
                   dataList[index]
                 )
               );

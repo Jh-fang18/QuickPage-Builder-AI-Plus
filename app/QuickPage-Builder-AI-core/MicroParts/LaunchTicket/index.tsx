@@ -14,15 +14,15 @@ import {
 } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const LaunchTicket = ({
-  rowSpan,
-  colSpan,
+  gridColumn,
+  gridRow,
   gridScale,
   gridPadding,
   title,
   data,
 }: {
-  rowSpan?: number;
-  colSpan?: number;
+  gridColumn?: number;
+  gridRow?: number;
   gridScale: number;
   gridPadding: number;
   title: string;
@@ -37,15 +37,15 @@ const LaunchTicket = ({
     const { minRowSpan, minColSpan } = LaunchTicket.minShape();
 
     return {
-      minRowSpan: minColSpan, // 最小宽占格
-      minColSpan: minColSpan, // 最小高占格
-      rowSpan: rowSpan || minRowSpan,
-      colSpan: colSpan || minColSpan,
+      minRowSpan: minRowSpan, // 最小高占格
+      minColSpan: minColSpan, // 最小宽占格
+      gridRow: gridRow || minRowSpan,
+      gridColumn: gridColumn || minColSpan,
       gridScale,
       gridPadding,
       data: data || [],
     };
-  }, [rowSpan, colSpan, gridScale, gridPadding, data]);
+  }, [gridRow, gridColumn, gridScale, gridPadding, data]);
 
   // ======================
   // 计算属性
@@ -53,13 +53,19 @@ const LaunchTicket = ({
 
   // 计算样式
   const style = (baseData: LaunchTicketProps) => {
-    let { minRowSpan, minColSpan, rowSpan, colSpan, gridScale, gridPadding } =
-      baseData;
+    let {
+      minRowSpan,
+      minColSpan,
+      gridRow,
+      gridColumn,
+      gridScale,
+      gridPadding,
+    } = baseData;
     //console.log(baseData)
-    rowSpan = rowSpan > minRowSpan ? rowSpan : minRowSpan;
-    colSpan = colSpan > minColSpan ? colSpan : minColSpan;
-    let width = rowSpan * gridScale + (rowSpan - 1) * gridPadding;
-    let height = colSpan * gridScale + (colSpan - 1) * gridPadding;
+    gridRow = gridRow > minRowSpan ? gridRow : minRowSpan;
+    gridColumn = gridColumn > minColSpan ? gridColumn : minColSpan;
+    let width = gridColumn * gridScale + (gridColumn - 1) * gridPadding;
+    let height = gridRow * gridScale + (gridRow - 1) * gridPadding;
 
     //console.log(width, height);
 
@@ -110,8 +116,8 @@ const LaunchTicket = ({
 
 // 静态方法
 LaunchTicket.minShape = () => ({
-  minRowSpan: 8, // 最小宽占格
-  minColSpan: 6, // 最小高占格
+  minColSpan: 8, // 最小高占格
+  minRowSpan: 6, // 最小宽占格
 });
 
 export default LaunchTicket;

@@ -14,8 +14,8 @@ export interface LaunchTicketDataItem {
 export interface BaseDataType {
   minRowSpan: number;
   minColSpan: number;
-  rowSpan: number;
-  colSpan: number;
+  gridRow: number;
+  gridColumn: number;
   gridScale: number;
   gridPadding: number;
 }

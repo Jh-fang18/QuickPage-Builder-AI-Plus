@@ -10,7 +10,7 @@ import { Spin, Layout, Menu, message } from "antd";
 const { Sider, Content } = Layout;
 
 // 导入样式
-import "./editor.module.css";
+import styles from "./editor.module.css";
 
 // 导入自定义组件
 import * as MicroCards from "../../MicroParts/index";
@@ -86,7 +86,16 @@ export default function Editor({
     },
   ];
 
-  //console.log(DynamicComponents[0].Props.MicroCards);
+  const siderStyle: React.CSSProperties = {
+    overflow: "auto",
+    height: "100vh",
+    position: "sticky",
+    insetInlineStart: 0,
+    top: 0,
+    bottom: 0,
+    scrollbarWidth: "thin",
+    scrollbarGutter: "stable",
+  };
 
   /**
    * 可拖动菜单项
@@ -95,6 +104,7 @@ export default function Editor({
   const DraggableMenuItem: React.FC<{ item: ComponentItem }> = ({ item }) => {
     const [{ isDragging }, drag] = useDrag(() => ({
       type: "MENU_ITEM",
+      item,
       collect: (monitor) => {
         return {
           isDragging: !!monitor.isDragging(),
@@ -155,7 +165,7 @@ export default function Editor({
    */
   const addComponent = (component: ComponentItem) => {
     if (!component) return;
-    // console.log("component", component);
+    //console.log("component", component);
     setActivatedComponents([...activatedComponents, component]);
   };
 
@@ -191,8 +201,14 @@ export default function Editor({
       menuKey: _key,
     };
 
-    _component.width = _component.props?.gridColumn || _component.minWidth;
-    _component.height = _component.props?.gridRow || _component.minHeight;
+    _component.width =
+      (_component.minWidth >= _component.props?.gridColumn
+        ? _component.minWidth
+        : _component.props?.gridColumn) || 0;
+    _component.height =
+      (_component.minHeight >= _component.props?.gridRow
+        ? _component.minHeight
+        : _component.props?.gridRow) || 0;
 
     if (activatedComponents && activatedComponents.length > 0) {
       // 画布不为空
@@ -306,8 +322,8 @@ export default function Editor({
       <Layout>
         <Spin tip="loading" spinning={loading}>
           <Layout style={{ background: "#fff" }}>
-            <Sider>
-              <div className="title">微件列表</div>
+            <Sider style={siderStyle}>
+              <div className={styles.title}>微件列表</div>
               <Menu
                 defaultOpenKeys={["1", "2"]}
                 mode="inline"
@@ -316,7 +332,7 @@ export default function Editor({
                 items={menuData}
               />
             </Sider>
-            <Content>
+            <Content style={{ overflow: "initial" }}>
               <Suspense fallback={<h2>Loading...</h2>}>
                 <EditContext.Provider
                   value={{ activatedComponents, setActivatedComponents }}

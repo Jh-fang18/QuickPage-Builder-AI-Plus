@@ -1,34 +1,44 @@
 "use client";
 
-import { useMemo, useState, useRef, createElement, Suspense, CSSProperties } from "react";
+import {
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+  createElement,
+  Suspense,
+} from "react";
 
 import { useDrop } from "react-dnd";
-import { Modal } from "antd";
+import { Modal, message } from "antd";
 
 // 导入类型
 import type { MicroCardsType } from "../../types/common";
 import type { ComponentItem } from "../../types/common";
 
 import "./styles.css";
+import { $brand } from "zod/v4";
 
 export default function ContainerPC({
+  containerIndex = -1,
+  zIndex = 0,
   gridRow,
   gridColumn,
   gridScale,
   gridPadding,
   MicroCards,
-  zIndex = 0,
   activatedComponents,
-  setActivatedComponents,
+  onActivatedComponents,
 }: {
+  containerIndex?: number;
+  zIndex?: number;
   gridRow: number;
   gridColumn: number;
   gridScale: number;
   gridPadding: number;
-  zIndex?: number;
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
-  setActivatedComponents: React.Dispatch<React.SetStateAction<ComponentItem[]>>;
+  onActivatedComponents: (components: ComponentItem[]) => void;
 }) {
   // ======================
   // 响应式变量
@@ -41,21 +51,26 @@ export default function ContainerPC({
   const [divRightLeft, setDivRightLeft] = useState(0);
   const [divLeft, setDivLeft] = useState(0);
   const [shouldShow, setShouldShow] = useState<number>(-1);
+  const [_activatedComponents, _setActivatedComponents] = useState<
+    ComponentItem[]
+  >([]);
+
+  useEffect(() => {
+    _setActivatedComponents([...activatedComponents]);
+  }, [activatedComponents]);
 
   // ======================
   // 非响应式变量
   // ======================
 
-  const columnDifferences = useRef(0);
-  const rowDifferences = useRef(0);
-  const columnDeviationValue = useRef(0);
-  const rowDeviationValue = useRef(0);
-  const leftMax = useRef(0);
-  const topMax = useRef(0);
-  const downMax = useRef(0);
-  const rightMax = useRef(0);
-
-  let _activatedComponents = [...activatedComponents];
+  let columnDifferences = 0;
+  let rowDifferences = 0;
+  let columnDeviationValue = 0;
+  let rowDeviationValue = 0;
+  let leftMax = 0;
+  let topMax = 0;
+  let downMax = 0;
+  let rightMax = 0;
 
   // ======================
   // 计算属性
@@ -97,7 +112,7 @@ export default function ContainerPC({
    * 根据已激活模块的数组顺序，更新rowIndex
    */
   const updateRowIndex = () => {
-    activatedComponents.map((item, index) => {
+    _activatedComponents.map((item, index) => {
       item.rowIndex = index;
     });
   };
@@ -106,7 +121,7 @@ export default function ContainerPC({
    * 微件排序
    */
   const sortComponent = () => {
-    activatedComponents.sort((x, y) => {
+    _activatedComponents.sort((x, y) => {
       let _xCcs = x.ccs.split("/").map((item) => Number(item));
       let _yCcs = y.ccs.split("/").map((item) => Number(item));
 
@@ -144,10 +159,10 @@ export default function ContainerPC({
     console.log("折行元素", currentComponent);
 
     for (let i = currentComponent.rowIndex - 1; i >= 0; i--) {
-      const _ccs = getComponentCcs(activatedComponents[i].ccs), // 当前元素位置
+      const _ccs = getComponentCcs(_activatedComponents[i].ccs), // 当前元素位置
         _prevCcs =
           i > 0
-            ? getComponentCcs(activatedComponents[i - 1].ccs)
+            ? getComponentCcs(_activatedComponents[i - 1].ccs)
             : [0, 0, 0, 0]; // 上一个元素
 
       // 当前元素结束行小于最大元素起始行
@@ -158,7 +173,7 @@ export default function ContainerPC({
         _rowCcs = _ccs;
       }
 
-      console.log("行内最大元素", activatedComponents[i]);
+      console.log("行内最大元素", _activatedComponents[i]);
     }
 
     console.log("行内最大元素", _rowCcs);
@@ -192,11 +207,11 @@ export default function ContainerPC({
       _downMaxWidth = 0;
 
     // 变型元素后的元素查找，并执行左移操作
-    for (let i = index + 1; i < activatedComponents.length; i++) {
-      let _lastCcs = getComponentCcs(activatedComponents[i].ccs);
+    for (let i = index + 1; i < _activatedComponents.length; i++) {
+      let _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
 
-      const _width = activatedComponents[i].width,
-        _rwidth = i - 1 === index ? 0 : activatedComponents[i - 1].width;
+      const _width = _activatedComponents[i].width,
+        _rwidth = i - 1 === index ? 0 : _activatedComponents[i - 1].width;
 
       if (
         _ccs[3] > _lastCcs[1] &&
@@ -204,10 +219,10 @@ export default function ContainerPC({
         _ccs[0] < _lastCcs[2] &&
         _ccs[2] > _lastCcs[0]
       ) {
-        activatedComponents[i].ccs = `${_lastCcs[0]}
+        _activatedComponents[i].ccs = `${_lastCcs[0]}
         /${_ccs[3]}
         /${_lastCcs[2]}
-        /${_ccs[3] + activatedComponents[i].width}`;
+        /${_ccs[3] + _activatedComponents[i].width}`;
 
         if (_width > _rwidth) _downMaxWidth = _width;
         else _downMaxWidth = _rwidth;
@@ -215,7 +230,7 @@ export default function ContainerPC({
         _downMaxWidth = Math.max(
           _downMaxWidth,
           rightMoveComponents(
-            getComponentCcs(activatedComponents[i].ccs),
+            getComponentCcs(_activatedComponents[i].ccs),
             _lastCcs,
             i
           )
@@ -228,10 +243,10 @@ export default function ContainerPC({
 
     // 变型元素前的元素查找，并执行左移操作
     for (let i = index - 1; i >= 0; i--) {
-      let _lastCcs = getComponentCcs(activatedComponents[i].ccs);
+      let _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
 
-      const _width = activatedComponents[i].width,
-        _rwidth = i + 1 === index ? 0 : activatedComponents[i + 1].width;
+      const _width = _activatedComponents[i].width,
+        _rwidth = i + 1 === index ? 0 : _activatedComponents[i + 1].width;
 
       if (
         _ccs[3] > _lastCcs[1] &&
@@ -239,12 +254,12 @@ export default function ContainerPC({
         _ccs[0] < _lastCcs[2] &&
         _ccs[2] > _lastCcs[0]
       ) {
-        activatedComponents[i].ccs = `${_lastCcs[0]}
+        _activatedComponents[i].ccs = `${_lastCcs[0]}
         /${_ccs[3] - (_oCcs[3] - _lastCcs[1] <= 0 ? 0 : _oCcs[3] - _lastCcs[1])}
         /${_lastCcs[2]}
         /${
           _ccs[3] +
-          activatedComponents[i].width -
+          _activatedComponents[i].width -
           (_oCcs[3] - _lastCcs[1] <= 0 ? 0 : _oCcs[3] - _lastCcs[1])
         }`;
 
@@ -254,7 +269,7 @@ export default function ContainerPC({
         _upMaxWidth = Math.max(
           _upMaxWidth,
           rightMoveComponents(
-            getComponentCcs(activatedComponents[i].ccs),
+            getComponentCcs(_activatedComponents[i].ccs),
             _lastCcs,
             i
           )
@@ -302,7 +317,7 @@ export default function ContainerPC({
 
       _lastComponents.map((item) => {
         const _componentCcs = getComponentCcs(
-          activatedComponents[item.rowIndex].ccs
+          _activatedComponents[item.rowIndex].ccs
         );
 
         _rowStart = _componentCcs[0];
@@ -311,7 +326,7 @@ export default function ContainerPC({
         _columnStart = _componentCcs[1] + _transDistance;
 
         // 平移元素
-        activatedComponents[item.rowIndex].ccs =
+        _activatedComponents[item.rowIndex].ccs =
           _rowStart +
           "/" +
           _columnStart +
@@ -337,12 +352,12 @@ export default function ContainerPC({
       if (_fristCcs[1] === 1) return;
 
       // 获取对应第一元素的上一个元素
-      const _prevComponent = activatedComponents[_endComponent.rowIndex - 1],
+      const _prevComponent = _activatedComponents[_endComponent.rowIndex - 1],
         _prevCcs = getComponentCcs(_prevComponent.ccs);
 
       // 若第一个元素已超出Grid高度则直接删除, 并返回
       if (_prevCcs[2] + _endComponent.height > gridRow + 1) {
-        activatedComponents.splice(
+        _activatedComponents.splice(
           _endComponent.rowIndex,
           _extraComponents.length
         );
@@ -360,7 +375,7 @@ export default function ContainerPC({
       console.log("_endComponent.rowIndex", _endComponent.rowIndex);
 
       // 设置第一个元素位置
-      activatedComponents[_endComponent.rowIndex].ccs =
+      _activatedComponents[_endComponent.rowIndex].ccs =
         _rowStart +
         "/" +
         _columnStart +
@@ -374,17 +389,17 @@ export default function ContainerPC({
       // 循环下移元素, 折行视作整行折行，故不考虑下方元素的位置
       for (
         let i = _endComponent.rowIndex + 1;
-        i < activatedComponents.length;
+        i < _activatedComponents.length;
         i++
       ) {
-        const _componentCcs = getComponentCcs(activatedComponents[i].ccs);
+        const _componentCcs = getComponentCcs(_activatedComponents[i].ccs);
 
         // 同行元素不下移
         if (_rowBestCcs[2] > _componentCcs[0]) continue;
 
-        console.log("下移元素", activatedComponents[i]);
+        console.log("下移元素", _activatedComponents[i]);
 
-        activatedComponents[i].ccs =
+        _activatedComponents[i].ccs =
           _componentCcs[0] +
           _endComponent.height +
           "/" +
@@ -401,18 +416,18 @@ export default function ContainerPC({
 
     console.log("---------end----------");
 
-    // 按activatedComponents内索引更新rowIndex，效率有待提升
+    // 按_activatedComponents内索引更新rowIndex，效率有待提升
     sortComponent();
     updateRowIndex();
 
-    // console.log(activatedComponents);
+    // console.log(_activatedComponents);
 
     // 判断是否还有需平移和下移元素
     if (_lastComponents.length === 0 && _extraComponents.length === 0) return;
     else {
       // 因位置改变，_extraComponents中元素的rowindex需要重新计算
-      for (let i = 0; i < activatedComponents.length; i++) {
-        const item = activatedComponents[i];
+      for (let i = 0; i < _activatedComponents.length; i++) {
+        const item = _activatedComponents[i];
 
         if (item.key === _extraComponents[0].key) {
           _extraComponents[0].rowIndex = item.rowIndex;
@@ -461,18 +476,17 @@ export default function ContainerPC({
       gridUnit = gridScale + gridPadding,
       _gridArea = getComponentCcs(oBlock.style.gridArea), // 获取当前微件的gridArea值
       _maxTop = Math.max(0, _gridArea[0] - 1) * gridUnit; // 最大可移动距离, 无需减去gridPadding
-
     oBlock.style.borderColor = " red"; // 设置边框颜色为红色
 
     let disY = e.clientY - 0, // 获取鼠标点击的位置
       oTop: string | number = 0; // 初始化oTop，用于存储微件的top值
 
     // 修改微件实例高度为100%，以便自适应变型的高度
+
     if (oBlock.firstElementChild) {
-      if (oBlock.firstElementChild) {
-        (oBlock.firstElementChild as HTMLElement).style.height = "100%";
-      }
+      (oBlock.firstElementChild as HTMLElement).style.height = "100%";
     }
+
     // 控制微件高度
     document.onmousemove = (e) => {
       e.preventDefault(); // 阻止默认事件
@@ -480,7 +494,7 @@ export default function ContainerPC({
       let top: string | number = e.clientY - disY,
         // 计算最小高度
         minHeight =
-          activatedComponents[index].minHeight * gridUnit - gridPadding;
+          _activatedComponents[index].minHeight * gridUnit - gridPadding;
 
       // $ 表示已到画布边缘
       // # 表示已到元素最小值
@@ -545,10 +559,13 @@ export default function ContainerPC({
       oBlock.style.top = "0"; // 必须设为0，不然无法恢复正确位置
 
       // 更新元素状态
-      _activatedComponents[index].ccs = _gridArea.join("/"); // 更新元素大小
-      _activatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
+      const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
+      newActivatedComponents[index].ccs = _gridArea.join("/"); // 更新元素大小
+      newActivatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
 
-      setActivatedComponents([..._activatedComponents]);
+      _setActivatedComponents([...newActivatedComponents]);
+      onActivatedComponents([..._activatedComponents]);
+
       //清空事件
       document.onmousemove = null;
       document.onmousedown = null;
@@ -566,7 +583,7 @@ export default function ContainerPC({
     e.preventDefault(); // 阻止默认事件
 
     const oBlock = blockRefs.current["block" + index], //获取当前点击微件
-      oCcs = getComponentCcs(activatedComponents[index].ccs), //获取当前点击微件的ccs
+      oCcs = getComponentCcs(_activatedComponents[index].ccs), //获取当前点击微件的ccs
       gridUnit = gridScale + gridPadding,
       _gridArea = getComponentCcs(oBlock.style.gridArea); // 获取当前微件的gridArea值
 
@@ -587,7 +604,7 @@ export default function ContainerPC({
 
       let right: string | number = e.clientX - disX,
         _rminWidth =
-          activatedComponents[index].minWidth * gridUnit - gridPadding;
+          _activatedComponents[index].minWidth * gridUnit - gridPadding;
 
       // $ 表示已到画布边缘
       // # 表示已到元素最小值
@@ -637,7 +654,7 @@ export default function ContainerPC({
       if (0.05 > _modulo && _modulo >= 0.1) return;
 
       let // 变形元素，值还未变，与oCcs不关联
-        _componentCcs = getComponentCcs(activatedComponents[index].ccs);
+        _componentCcs = getComponentCcs(_activatedComponents[index].ccs);
 
       // 实时更新已变形元素的宽度
       _componentCcs[3] =
@@ -680,10 +697,13 @@ export default function ContainerPC({
       oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法起效
 
       // 更新元素状态
-      _activatedComponents[index].ccs = _gridArea.join("/");
-      _activatedComponents[index].width = _gridArea[3] - _gridArea[1];
+      const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
+      newActivatedComponents[index].ccs = _gridArea.join("/");
+      newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
 
-      setActivatedComponents([..._activatedComponents]);
+      _setActivatedComponents([...newActivatedComponents]);
+
+      onActivatedComponents([..._activatedComponents]);
 
       // 清空事件
       document.onmousemove = null;
@@ -723,7 +743,7 @@ export default function ContainerPC({
 
       let down: string | number = e.clientY - disY, // 移动距离
         minHeight =
-          activatedComponents[index].minHeight * gridUnit - gridPadding;
+          _activatedComponents[index].minHeight * gridUnit - gridPadding;
 
       // $ 表示已到画布边缘
       // # 表示已到元素最小值
@@ -781,15 +801,18 @@ export default function ContainerPC({
       // 浏览器补丁 必须设回百分比，不然grid-area无法生效
       oBlock.style.height = "100%";
 
-      _activatedComponents[index].ccs = _gridArea.join("/");
-      _activatedComponents[index].height = _height;
+      const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
+      newActivatedComponents[index].ccs = _gridArea.join("/");
+      newActivatedComponents[index].height = _height;
 
-      setActivatedComponents([..._activatedComponents]);
+      _setActivatedComponents([...newActivatedComponents]);
+
+      onActivatedComponents([..._activatedComponents]);
 
       //======== 处理当前元素后的元素 ========//
 
       const // 当前变形元素
-        _componentCcs = getComponentCcs(activatedComponents[index].ccs);
+        _componentCcs = getComponentCcs(_activatedComponents[index].ccs);
 
       const // 下移变形元素后的元素，执行递归操作，直到没有相邻的元素
         downMoveComponents = (componentCcs: number[], index: number) => {
@@ -797,28 +820,42 @@ export default function ContainerPC({
             _ccs = componentCcs;
 
           // 下移元素后的元素查找，并执行下移操作
-          for (let i = index + 1; i < activatedComponents.length; i++) {
-            let _lastCcs = getComponentCcs(activatedComponents[i].ccs);
+          for (let i = index + 1; i < _activatedComponents.length; i++) {
+            let _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
 
             if (
               _ccs[2] > _lastCcs[0] &&
               _ccs[1] < _lastCcs[3] &&
               _ccs[3] > _lastCcs[1]
             ) {
-              console.log("activatedComponents[i]", activatedComponents[i]);
+              console.log("_activatedComponents[i]", _activatedComponents[i]);
 
               _activatedComponents[i].ccs =
                 _ccs[2] +
                 "/" +
                 _lastCcs[1] +
                 "/" +
-                (_ccs[2] + activatedComponents[i].height) +
+                (_ccs[2] + _activatedComponents[i].height) +
                 "/" +
                 _lastCcs[3];
 
-              setActivatedComponents([..._activatedComponents]);
+              const newActivatedComponents: ComponentItem[] = [
+                ..._activatedComponents,
+              ];
+              newActivatedComponents[i].ccs =
+                _ccs[2] +
+                "/" +
+                _lastCcs[1] +
+                "/" +
+                (_ccs[2] + _activatedComponents[i].height) +
+                "/" +
+                _lastCcs[3];
 
-              _lastCcs = getComponentCcs(activatedComponents[i].ccs);
+              _setActivatedComponents([...newActivatedComponents]);
+
+              onActivatedComponents([...newActivatedComponents]);
+
+              _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
               downMoveComponents(_lastCcs, i);
             }
           }
@@ -855,7 +892,7 @@ export default function ContainerPC({
       ) {
         //减去一个gridPadding才是微件的大小
         let _rminWidth =
-          activatedComponents[index].minWidth * (gridScale + gridPadding) -
+          _activatedComponents[index].minWidth * (gridScale + gridPadding) -
           gridPadding;
         let _cWidth = oBlock.offsetWidth + (oLeft - left);
         if (_cWidth >= _rminWidth) {
@@ -893,7 +930,7 @@ export default function ContainerPC({
         .map((item) => Number(item));
       let _prevCcs =
         index - 1 >= 0
-          ? activatedComponents[index - 1].ccs
+          ? _activatedComponents[index - 1].ccs
               .split("/")
               .map((item) => Number(item))
           : [_gridArea[0], _gridArea[1], 1, 1];
@@ -909,7 +946,7 @@ export default function ContainerPC({
       } else {
         _gridArea[0] = _prevCcs[2];
         _gridArea[1] = _left;
-        _gridArea[2] = _prevCcs[2] + activatedComponents[index].height;
+        _gridArea[2] = _prevCcs[2] + _activatedComponents[index].height;
         _gridArea[3] =
           _left + _width < gridColumn + 1 ? _left + _width : gridColumn + 1;
       }
@@ -919,10 +956,14 @@ export default function ContainerPC({
       oBlock.style.gridArea = _gridArea.join("/");
       oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法见效
       oBlock.style.left = "0"; //必须设为0，不然无法恢复正确位置
-      _activatedComponents[index].ccs = oBlock.style.gridArea;
-      _activatedComponents[index].width = _gridArea[3] - _gridArea[1];
 
-      setActivatedComponents([..._activatedComponents]);
+      const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
+      newActivatedComponents[index].ccs = oBlock.style.gridArea;
+      newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
+
+      _setActivatedComponents([...newActivatedComponents]);
+
+      onActivatedComponents([..._activatedComponents]);
       focusComponent(index);
 
       //清空事件
@@ -944,25 +985,32 @@ export default function ContainerPC({
     e.preventDefault(); // 阻止默认事件
 
     let _positions = "";
-    let _y = e.clientY - gDiv.offsetTop - rowDeviationValue.current;
-    let _x = e.clientX - gDiv.offsetLeft - columnDeviationValue.current;
+    let _y = e.clientY - gDiv.getBoundingClientRect().top - rowDeviationValue;
+    let _x = e.clientX - gDiv.getBoundingClientRect().left - columnDeviationValue;
+
+    // console.log("1", _y);
+    // console.log("1", _x);
+    // console.log("rowDeviationValue", rowDeviationValue);
+    // console.log("columnDeviationValue", columnDeviationValue);
 
     //设置边界值
-    if (topMax.current && e.clientY - gDiv.offsetTop <= topMax.current)
-      _y = topMax.current;
-    if (rightMax.current && e.clientX - gDiv.offsetLeft >= rightMax.current)
-      _x = rightMax.current - columnDeviationValue.current;
-    if (downMax.current && e.clientY - gDiv.offsetTop >= downMax.current)
-      _y = downMax.current - rowDeviationValue.current;
-    if (leftMax.current && e.clientX - gDiv.offsetLeft <= leftMax.current)
-      _x = leftMax.current;
+    if (topMax && e.clientY - gDiv.getBoundingClientRect().top <= topMax)
+      _y = topMax;
+    if (rightMax && e.clientX - gDiv.getBoundingClientRect().left >= rightMax)
+      _x = rightMax - columnDeviationValue;
+    if (downMax && e.clientY - gDiv.getBoundingClientRect().top >= downMax)
+      _y = downMax - rowDeviationValue;
+    if (leftMax && e.clientX - gDiv.getBoundingClientRect().left <= leftMax)
+      _x = leftMax;
 
-    // console.log(_y);
-    // console.log(_x);
+    // console.log("2", _y);
+    // console.log("2", _x);
     // console.log(e.clientX);
-    // console.log(gDiv.offsetLeft);
-    // console.log('rowDeviationValue', rowDeviationValue.value);
-    // console.log('_yy', e.clientY - gDiv.offsetTop);
+    // console.log(gDiv.getBoundingClientRect().left);
+    // console.log('_yy', e.clientY - gDiv.getBoundingClientRect().top);
+    // console.log("gridScale + gridPadding", gridScale + gridPadding);
+    // console.log("gridRow", gridRow);
+    // console.log("gridColumn", gridColumn);
 
     //找出当前点击格子, 出现未知值时固定为1
     for (let i = 0; i < gridRow; i++) {
@@ -977,21 +1025,23 @@ export default function ContainerPC({
           ) {
             _positions =
               "g" +
-              (i + 1 - rowDifferences.current > 0
-                ? i + 1 - rowDifferences.current
+              (i + 1 - rowDifferences > 0
+                ? i + 1 - rowDifferences
                 : 1) +
               "x" +
-              (j + 1 - columnDifferences.current > 0
-                ? j + 1 - columnDifferences.current
+              (j + 1 - columnDifferences > 0
+                ? j + 1 - columnDifferences
                 : 1);
+            console.log("_positions1", _positions);
             break;
           }
+          console.log("_positions2", _positions);
         }
+        console.log("_positions3", _positions);
         break;
       }
     }
 
-    // console.log('_positions', _positions);
     return _positions;
   };
 
@@ -1005,8 +1055,9 @@ export default function ContainerPC({
     blockName: string,
     oDiv: HTMLElement,
     component: ComponentItem,
-    index: number
-  ) => {
+    index: number,
+    newActivatedComponents: ComponentItem[]
+  ): ComponentItem[] => {
     //console.log(blockName);
     let _cs = blockName
       .replace("g", "")
@@ -1025,10 +1076,14 @@ export default function ContainerPC({
       "/" +
       (_column < gridColumn + 1 ? _column : gridColumn + 1);
 
-    _activatedComponents[index] = {
+    //console.log(oDiv.style.gridArea)
+    const _newActivatedComponents = [...newActivatedComponents];
+    _newActivatedComponents[index] = {
       ...component,
       ccs: oDiv.style.gridArea,
     };
+
+    return _newActivatedComponents;
 
     //console.log("area", oDiv.style.gridArea);
   };
@@ -1075,14 +1130,14 @@ export default function ContainerPC({
     if (gDiv === null) return;
 
     //因每次点击位置不同，故初始化差值
-    columnDifferences.current = 0;
-    rowDifferences.current = 0;
-    columnDeviationValue.current = 0;
-    rowDeviationValue.current = 0;
-    leftMax.current = 0;
-    topMax.current = 0;
-    downMax.current = 0;
-    rightMax.current = 0;
+    columnDifferences = 0;
+    rowDifferences = 0;
+    columnDeviationValue = 0;
+    rowDeviationValue = 0;
+    leftMax = 0;
+    topMax = 0;
+    downMax = 0;
+    rightMax = 0;
 
     let _positions = getPosition(e, gDiv)
       .replace("g", "")
@@ -1090,37 +1145,46 @@ export default function ContainerPC({
       .map((item) => Number(item));
     //console.log("first", _positions);
 
-    rowDifferences.current = _positions[0] - _componentCcs[0];
-    //console.log("rowDifferences", rowDifferences.current);
-    rowDeviationValue.current =
-      e.clientY -
-      gDiv.offsetTop -
-      (_positions[0] - 1) * (gridScale + gridPadding);
-    //console.log("rowDeviationValue", rowDeviationValue.current);
-    columnDifferences.current = _positions[1] - _componentCcs[1];
-    //console.log("columnDifferences", columnDifferences.current);
-    columnDeviationValue.current =
-      e.clientX -
-      gDiv.offsetLeft -
-      (_positions[1] - 1) * (gridScale + gridPadding);
-    //console.log('columnDeviationValue', columnDeviationValue.value);
+    rowDifferences = _positions[0] - _componentCcs[0];
+    //console.log("rowDifferences", rowDifferences);
 
-    topMax.current =
+    columnDifferences = _positions[1] - _componentCcs[1];
+    //console.log("columnDifferences", columnDifferences);
+    // if (_positions.length > 1) {
+    rowDeviationValue =
       e.clientY -
-      gDiv.offsetTop -
-      (_componentCcs[0] - 1) * (gridScale + gridPadding);
-    rightMax.current =
+      gDiv.getBoundingClientRect().top -
+      (_positions[0] - 1) * (gridScale + gridPadding);
+    // console.log("e.clientY", e.clientY);
+    // console.log("gDiv", gDiv)
+    // console.log("gDiv.getBoundingClientRect().top", gDiv.getBoundingClientRect().top);
+    // console.log("rowDeviationValue", rowDeviationValue);
+    columnDeviationValue =
       e.clientX -
-      gDiv.offsetLeft +
-      (gridColumn + 1 - _componentCcs[3]) * (gridScale + gridPadding);
-    downMax.current =
+      gDiv.getBoundingClientRect().left -
+      (_positions[1] - 1) * (gridScale + gridPadding);
+    // console.log("e.clientX", e.clientX);
+    // console.log("gDiv.getBoundingClientRect().left", gDiv.getBoundingClientRect().left);
+    // console.log("_positions[1]", _positions[1]);
+    // console.log("columnDeviationValue", columnDeviationValue);
+    // }
+
+    topMax =
       e.clientY -
-      gDiv.offsetTop +
+      gDiv.getBoundingClientRect().top -
+      (_componentCcs[0] - 1) * (gridScale + gridPadding);
+    rightMax =
+      e.clientX -
+      gDiv.getBoundingClientRect().left +
+      (gridColumn + 1 - _componentCcs[3]) * (gridScale + gridPadding);
+    downMax =
+      e.clientY -
+      gDiv.getBoundingClientRect().top +
       (gridRow + 1 - _componentCcs[2]) * (gridScale + gridPadding);
     //console.log('downMax', rightMax.value);
-    leftMax.current =
+    leftMax =
       e.clientX -
-      gDiv.offsetLeft -
+      gDiv.getBoundingClientRect().left -
       (_componentCcs[1] - 1) * (gridScale + gridPadding);
 
     // 设置div位置数值
@@ -1138,6 +1202,8 @@ export default function ContainerPC({
     focusComponent(index);
     //
     setDiv();
+
+    let newActivatedComponents: ComponentItem[] = [..._activatedComponents];
 
     document.onmousemove = (e) => {
       e.preventDefault();
@@ -1177,7 +1243,7 @@ export default function ContainerPC({
       oDiv.style.left = left + "px";
       oDiv.style.top = top + "px";
 
-      _activatedComponents[index] = {
+      newActivatedComponents[index] = {
         ...component,
         positionX: left,
         positionY: top,
@@ -1190,23 +1256,32 @@ export default function ContainerPC({
       if (gDiv === null || oDiv === null) return;
 
       let _positions = getPosition(e, gDiv);
-      //console.log("second", _positions);
+      console.log("second", _positions);
       //console.log(e.target);
       if (_positions && _positions.split("x")[1] != "NaN") {
-        changeBlock(_positions, oDiv, component, index);
+        newActivatedComponents = [
+          ...changeBlock(
+            _positions,
+            oDiv,
+            component,
+            index,
+            newActivatedComponents
+          ),
+        ];
+
         sortComponent();
         oDiv.style.left = "0px";
         oDiv.style.top = "0px";
       }
 
       // 副作用
-      //console.log("component.key", component.key);
       focusComponent(index);
-      setActivatedComponents([..._activatedComponents]);
+      _setActivatedComponents([...newActivatedComponents]);
+      onActivatedComponents([..._activatedComponents]);
       setShouldShow(-1);
       setDiv();
 
-      //console.log("activatedComponents", activatedComponents);
+      //console.log("_activatedComponents", _activatedComponents);
 
       //清空事件
       document.onmousemove = null;
@@ -1231,33 +1306,120 @@ export default function ContainerPC({
   // 删除微件
   const removeComponent = (index: number) => {
     // 更新激活组件
-    setActivatedComponents([
+    const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
+    newActivatedComponents.splice(index, 1);
+    _setActivatedComponents([...newActivatedComponents]);
+
+    onActivatedComponents([
       ..._activatedComponents.filter((_, i) => i !== index),
     ]);
   };
 
-  const Component = (index: number) => {
-    const _component = MicroCards[activatedComponents[index].url];
-    type _componentProps = React.ComponentProps<typeof _component>;
-    // 类型定义还需调整
-    return createElement(_component, {
-      ...(activatedComponents[index].props as _componentProps),
-      gridScale,
-      gridPadding,
-      zIndex,
-    });
+  const handleSetActivatedComponents = (components: ComponentItem[]) => {
+    //setActivatedComponents([...components]);
   };
 
-  const style: CSSProperties = {
-    border: "1px dashed gray",
-    padding: "0.5rem",
-    margin: "0.5rem",
+  const Component = (index: number) => {
+    const componentName = _activatedComponents[index].url;
+    const _component = MicroCards[componentName];
+    const props = _activatedComponents[index].props;
+
+    if (!_component) return null;
+
+    // 还需添加传入props的类型验证
+    return createElement(_component, {
+      ...props,
+      containerIndex: index,
+      zIndex,
+      gridScale,
+      gridPadding,
+      MicroCards,
+      onActivatedComponents: handleSetActivatedComponents,
+    });
   };
 
   const [{ isOverCurrent }, drop] = useDrop(() => ({
     accept: "MENU_ITEM",
-    drop(item, monitor) {
-      console.log(monitor.getItem());
+    drop(item: ComponentItem, monitor) {
+      // activatedComponents[containerIndex].props.activatedComponents.push(item)
+      // onActivatedComponents([..._activatedComponents])
+      // console.log("开始")
+      if (monitor.isOver()) {
+        console.log("drop", item);
+
+        const _component: ComponentItem = {
+          ...item,
+          // 生成唯一key，格式: 组件key_时间戳_随机字符串
+          key: `${123}_${
+            Date.now().toString(36) + Math.random().toString(36).substring(2)
+          }`,
+          menuKey: "123",
+        };
+
+        _component.width =
+          (_component.minWidth >= _component.props?.gridColumn
+            ? _component.minWidth
+            : _component.props?.gridColumn) || 0;
+        _component.height =
+          (_component.minHeight >= _component.props?.gridRow
+            ? _component.minHeight
+            : _component.props?.gridRow) || 0;
+
+        if (_activatedComponents && _activatedComponents.length > 0) {
+          // 画布不为空
+          // 获取最后一个组件的高度和ccs
+          const { ccs } = _activatedComponents[_activatedComponents.length - 1];
+
+          // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
+          const aCss = ccs.split("/").map(Number);
+
+          if (
+            // 判断在最后一个微件的同一行里是否有位置可以插入新微件
+            aCss[0] + _component.height <= gridRow + 1 && // 高度和小于画布
+            aCss[3] + _component.width <= gridColumn + 1 // 宽度和小于画布
+          ) {
+            _component.ccs =
+              aCss[0] +
+              "/" +
+              aCss[3] +
+              "/" +
+              (aCss[0] + _component.height) +
+              "/" +
+              (aCss[3] + _component.width);
+          } else if (
+            // 判断在最后一个微件的同一行后是否有位置可以插入新微件
+            aCss[0] + _component.height <= gridRow + 1 &&
+            aCss[3] + _component.width > gridColumn + 1
+          ) {
+            // 找到最后行中组件的最大高度
+            const maxHeight = activatedComponents.reduce(
+              (prev: number, curr: ComponentItem) => {
+                if (!curr.ccs) return prev;
+                return Math.max(prev, Number(curr.ccs.split("/")[2]));
+              },
+              0
+            );
+
+            _component.ccs =
+              maxHeight +
+              "/1" +
+              "/" +
+              (maxHeight + _component.height) +
+              "/" +
+              (_component.width + 1);
+          } else {
+            message.warning("已没有位置可以插入新组件！");
+            return;
+          }
+        } // 画布为空，直接插入第一个组件
+        else
+          _component.ccs =
+            "1/1/" + (_component.height + 1) + "/" + (_component.width + 1);
+
+        // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
+        _component.rowIndex = activatedComponents.length;
+        _setActivatedComponents([..._activatedComponents, _component]);
+      }
     },
     collect: (monitor) => {
       return {
@@ -1276,7 +1438,7 @@ export default function ContainerPC({
         ref={drop as any}
         className={`container pc`}
         style={{
-          width: (gridScale + gridPadding) * gridColumn - 20 + "px",
+          width: (gridScale + gridPadding) * gridColumn + "px",
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
           gridTemplateAreas: getGridTemplateAreas,
@@ -1284,7 +1446,7 @@ export default function ContainerPC({
           ...(isOverCurrent ? borderStyle : {}),
         }}
       >
-        {activatedComponents.map((item, index) => (
+        {_activatedComponents.map((item, index) => (
           <div
             key={index}
             className={`block`}
@@ -1299,67 +1461,64 @@ export default function ContainerPC({
           >
             <Suspense fallback={"loading..."}>{Component(index)}</Suspense>
             <div
-              className={`shape`}
+              className={`shape ${
+                item.url === "ContainerPC" ? "brand" : "normal"
+              }`}
               onMouseDown={(e) => mousedown(e, item, index)}
             >
-              <div className={`title`}>{item.title}</div>
-              <div className={`delete`}>
-                <button type="button" onClick={() => showConfirm(index)}>
-                  删除
-                </button>
-              </div>
-              <div className={`morph`}>
-                <span className={`up`} onMouseDown={(e) => moveTop(e, index)}>
-                  上
-                </span>
-                <span
-                  className={`right`}
-                  onMouseDown={(e) => moveRight(e, index)}
-                >
-                  右
-                </span>
-                <span
-                  className={`down`}
-                  onMouseDown={(e) => moveDown(e, index)}
-                >
-                  下
-                </span>
-                <span
-                  className={`left`}
-                  onMouseDown={(e) => moveLeft(e, index)}
-                >
-                  左
-                </span>
-              </div>
-              <div
-                className={`morph`}
-                style={{ display: shouldShow === index ? "block" : "none" }}
+              遮罩层
+            </div>
+            <div className={`title`}>{item.title}</div>
+            <div className={`delete`}>
+              <button type="button" onClick={() => showConfirm(index)}>
+                删除
+              </button>
+            </div>
+            <div className={`morph`}>
+              <span className={`up`} onMouseDown={(e) => moveTop(e, index)}>
+                上
+              </span>
+              <span
+                className={`right`}
+                onMouseDown={(e) => moveRight(e, index)}
               >
-                <span
-                  className={`padding up`}
-                  style={{ top: -divTop - 10, height: divTop }}
-                >
-                  {divTop}
-                </span>
-                <span
-                  className={`padding right`}
-                  style={{ left: divRightLeft, width: divRight }}
-                >
-                  {divRight}
-                </span>
-                <span
-                  className={`padding down`}
-                  style={{ top: divBottomTop, height: divBottom }}
-                >
-                  {divBottom}
-                </span>
-                <span
-                  className={`padding left`}
-                  style={{ left: -divLeft - 10, width: divLeft }}
-                >
-                  {divLeft}
-                </span>
-              </div>
+                右
+              </span>
+              <span className={`down`} onMouseDown={(e) => moveDown(e, index)}>
+                下
+              </span>
+              <span className={`left`} onMouseDown={(e) => moveLeft(e, index)}>
+                左
+              </span>
+            </div>
+            <div
+              className={`morph`}
+              style={{ display: shouldShow === index ? "block" : "none" }}
+            >
+              <span
+                className={`padding up`}
+                style={{ top: -divTop - 10, height: divTop }}
+              >
+                {divTop}
+              </span>
+              <span
+                className={`padding right`}
+                style={{ left: divRightLeft, width: divRight }}
+              >
+                {divRight}
+              </span>
+              <span
+                className={`padding down`}
+                style={{ top: divBottomTop, height: divBottom }}
+              >
+                {divBottom}
+              </span>
+              <span
+                className={`padding left`}
+                style={{ left: -divLeft - 10, width: divLeft }}
+              >
+                {divLeft}
+              </span>
             </div>
           </div>
         ))}
@@ -1371,6 +1530,6 @@ export default function ContainerPC({
 
 // 静态方法
 ContainerPC.minShape = () => ({
-  minRowSpan: 18, // 最小宽占格
-  minColSpan: 12, // 最小高占格
+  minColSpan: 16, // 最小宽占格
+  minRowSpan: 12, // 最小高占格
 });

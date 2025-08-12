@@ -5,8 +5,8 @@ const selfServiceItemListContainer = {
       itemName: "Container",
       url: "ContainerPC",
       props: {
-        gridRow: 10,
         gridColumn: 16,
+        gridRow: 12,
         activatedComponents: [],
       },
     },

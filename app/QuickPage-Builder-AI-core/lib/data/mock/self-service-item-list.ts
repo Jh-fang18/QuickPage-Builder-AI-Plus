@@ -5,8 +5,6 @@ const selfServiceItemList = {
       itemName: "Bottomfiling",
       url: "Bottomfiling",
       props: {
-        rowSpan: 1,
-        colSpan: 1,
       },
     },
     {
@@ -14,8 +12,6 @@ const selfServiceItemList = {
       itemName: "SmallBoard",
       url: "SmallBoard",
       props: {
-        rowSpan: 1,
-        colSpan: 1,
       },
     },
     {
@@ -23,8 +19,7 @@ const selfServiceItemList = {
       itemName: "CommonFunctions",
       url: "CommonFunctions",
       props: {
-        rowSpan: 1,
-        colSpan: 1,
+
       },
     },
     {
@@ -33,8 +28,8 @@ const selfServiceItemList = {
       url: "LaunchTicket",
       props: {
         title: "启动票",
-        rowSpan: 8,
-        colSpan: 6,
+        gridColumn: 8,
+        gridRow: 6,
         data: [
           {
             id: 1,
@@ -48,8 +43,6 @@ const selfServiceItemList = {
       itemName: "ProcessingWorkOrders",
       url: "ProcessingWorkOrders",
       props: {
-        rowSpan: 1,
-        colSpan: 1,
       },
     },
   ],
