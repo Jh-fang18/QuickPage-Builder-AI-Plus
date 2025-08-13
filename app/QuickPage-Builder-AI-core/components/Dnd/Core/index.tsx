@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 
 import ContainerPC from "../../../MicroParts/ContainerPC/index";
 
@@ -13,8 +13,8 @@ export default function Core({
   gridColumn,
   gridScale,
   gridPadding,
-  MicroCards,
   zIndex,
+  MicroCards,
 
 }: {
   terminalType: number;
@@ -33,10 +33,13 @@ export default function Core({
   }>(EditContext);
 
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    //setActivatedComponents([...components]);
+    console.log(components)
+    setActivatedComponents([...components]);
   };
 
-  //console.log("core", activatedComponents);
+  useEffect(() => {
+    console.log("core", activatedComponents);
+  },[activatedComponents])
 
   return (
     <ContainerPC

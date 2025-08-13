@@ -17,7 +17,6 @@ import type { MicroCardsType } from "../../types/common";
 import type { ComponentItem } from "../../types/common";
 
 import "./styles.css";
-import { $brand } from "zod/v4";
 
 export default function ContainerPC({
   containerIndex = -1,
@@ -38,7 +37,7 @@ export default function ContainerPC({
   gridPadding: number;
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
-  onActivatedComponents: (components: ComponentItem[]) => void;
+  onActivatedComponents: (components: ComponentItem[], index?: number) => void;
 }) {
   // ======================
   // 响应式变量
@@ -53,11 +52,7 @@ export default function ContainerPC({
   const [shouldShow, setShouldShow] = useState<number>(-1);
   const [_activatedComponents, _setActivatedComponents] = useState<
     ComponentItem[]
-  >([]);
-
-  useEffect(() => {
-    _setActivatedComponents([...activatedComponents]);
-  }, [activatedComponents]);
+  >([...activatedComponents]);
 
   // ======================
   // 非响应式变量
@@ -986,7 +981,8 @@ export default function ContainerPC({
 
     let _positions = "";
     let _y = e.clientY - gDiv.getBoundingClientRect().top - rowDeviationValue;
-    let _x = e.clientX - gDiv.getBoundingClientRect().left - columnDeviationValue;
+    let _x =
+      e.clientX - gDiv.getBoundingClientRect().left - columnDeviationValue;
 
     // console.log("1", _y);
     // console.log("1", _x);
@@ -1025,19 +1021,15 @@ export default function ContainerPC({
           ) {
             _positions =
               "g" +
-              (i + 1 - rowDifferences > 0
-                ? i + 1 - rowDifferences
-                : 1) +
+              (i + 1 - rowDifferences > 0 ? i + 1 - rowDifferences : 1) +
               "x" +
-              (j + 1 - columnDifferences > 0
-                ? j + 1 - columnDifferences
-                : 1);
-            console.log("_positions1", _positions);
+              (j + 1 - columnDifferences > 0 ? j + 1 - columnDifferences : 1);
+            //console.log("_positions1", _positions);
             break;
           }
-          console.log("_positions2", _positions);
+          //console.log("_positions2", _positions);
         }
-        console.log("_positions3", _positions);
+        //onsole.log("_positions3", _positions);
         break;
       }
     }
@@ -1198,9 +1190,8 @@ export default function ContainerPC({
     };
 
     // 是否显示div位置数值
-    setShouldShow(index);
     focusComponent(index);
-    //
+    setShouldShow(index);
     setDiv();
 
     let newActivatedComponents: ComponentItem[] = [..._activatedComponents];
@@ -1256,7 +1247,7 @@ export default function ContainerPC({
       if (gDiv === null || oDiv === null) return;
 
       let _positions = getPosition(e, gDiv);
-      console.log("second", _positions);
+      //console.log("second", _positions);
       //console.log(e.target);
       if (_positions && _positions.split("x")[1] != "NaN") {
         newActivatedComponents = [
@@ -1277,11 +1268,11 @@ export default function ContainerPC({
       // 副作用
       focusComponent(index);
       _setActivatedComponents([...newActivatedComponents]);
-      onActivatedComponents([..._activatedComponents]);
+      //console.log("newActivatedComponents-changed", newActivatedComponents);
+      //console.log("_activatedComponents-changed", _activatedComponents);
+
       setShouldShow(-1);
       setDiv();
-
-      //console.log("_activatedComponents", _activatedComponents);
 
       //清空事件
       document.onmousemove = null;
@@ -1315,8 +1306,24 @@ export default function ContainerPC({
     ]);
   };
 
-  const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    //setActivatedComponents([...components]);
+  const handleSetActivatedComponents = (
+    components: ComponentItem[],
+    index: number
+  ) => {
+    if(index === undefined) return
+    console.log("father currentIndex", containerIndex);
+    console.log(
+      "_activatedComponents for father childrens",
+      _activatedComponents
+    );
+    console.log("_activatedComponents for son-index", index);
+    console.log("_activatedComponents for son childrens", components);
+    const newActivatedComponents = [..._activatedComponents];
+
+    newActivatedComponents[index].props.activatedComponents = [...components];
+    console.log("newActivatedComponents", newActivatedComponents);
+
+    _setActivatedComponents([...newActivatedComponents]);
   };
 
   const Component = (index: number) => {
@@ -1341,12 +1348,8 @@ export default function ContainerPC({
   const [{ isOverCurrent }, drop] = useDrop(() => ({
     accept: "MENU_ITEM",
     drop(item: ComponentItem, monitor) {
-      // activatedComponents[containerIndex].props.activatedComponents.push(item)
-      // onActivatedComponents([..._activatedComponents])
       // console.log("开始")
       if (monitor.isOver()) {
-        console.log("drop", item);
-
         const _component: ComponentItem = {
           ...item,
           // 生成唯一key，格式: 组件key_时间戳_随机字符串
@@ -1418,6 +1421,8 @@ export default function ContainerPC({
 
         // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
         _component.rowIndex = activatedComponents.length;
+        console.log("currentIndex", containerIndex);
+        console.log("current_activatedComponents", _activatedComponents);
         _setActivatedComponents([..._activatedComponents, _component]);
       }
     },
@@ -1431,6 +1436,19 @@ export default function ContainerPC({
   const borderStyle = {
     backgroundColor: "pink",
   };
+
+  useEffect(() => {
+    //_setActivatedComponents([...activatedComponents]);
+    console.log("!!!!currentIndex", containerIndex)
+    console.log("!!!!_activatedComponents", _activatedComponents);
+  }, [activatedComponents]);
+
+  useEffect(() => {
+    console.log("update containerIndex", containerIndex);
+    console.log("update _activatedComponents", _activatedComponents);
+
+    onActivatedComponents([..._activatedComponents], containerIndex);
+  }, [_activatedComponents]);
 
   return (
     <>

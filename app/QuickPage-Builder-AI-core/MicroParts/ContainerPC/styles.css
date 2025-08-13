@@ -1,10 +1,10 @@
 .container {
   position: relative;
+  top: 1px;
   display: grid;
   background-color: #f3f3f3;
   margin: 20px auto;
   overflow: hidden;
-  z-index: 0;
 
   .block {
     position: absolute;
@@ -33,6 +33,7 @@
       overflow: hidden;
     }
     .shape.brand {
+      top: 1px;
       left: auto;
       right: -20px;
       width: 20px;

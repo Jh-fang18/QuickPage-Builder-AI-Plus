@@ -75,13 +75,13 @@ export default function Editor({
     {
       Name: "index",
       Props: {
+        zIndex,
         terminalType,
         gridRow: _gridRow,
         gridColumn: _gridColumn,
         gridScale: _gridScale,
         gridPadding: _gridPadding,
         MicroCards: _MicroCards,
-        zIndex: zIndex,
       },
     },
   ];
@@ -316,6 +316,10 @@ export default function Editor({
       ]);
     });
   }, []);
+
+  useEffect(() => {
+    console.log("edit", activatedComponents)
+  }, [activatedComponents])
 
   return (
     <DndProvider backend={HTML5Backend}>
