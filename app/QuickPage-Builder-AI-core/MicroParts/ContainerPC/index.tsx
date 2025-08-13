@@ -1310,18 +1310,18 @@ export default function ContainerPC({
     components: ComponentItem[],
     index: number
   ) => {
-    if(index === undefined) return
-    console.log("father currentIndex", containerIndex);
-    console.log(
-      "_activatedComponents for father childrens",
-      _activatedComponents
-    );
-    console.log("_activatedComponents for son-index", index);
-    console.log("_activatedComponents for son childrens", components);
+    if (index === undefined) return;
+    // console.log("father currentIndex", containerIndex);
+    // console.log(
+    //   "_activatedComponents for father childrens",
+    //   _activatedComponents
+    // );
+    // console.log("_activatedComponents for son-index", index);
+    // console.log("_activatedComponents for son childrens", components);
     const newActivatedComponents = [..._activatedComponents];
 
     newActivatedComponents[index].props.activatedComponents = [...components];
-    console.log("newActivatedComponents", newActivatedComponents);
+    //console.log("newActivatedComponents", newActivatedComponents);
 
     _setActivatedComponents([...newActivatedComponents]);
   };
@@ -1341,111 +1341,112 @@ export default function ContainerPC({
       gridScale,
       gridPadding,
       MicroCards,
+      activatedComponents,
       onActivatedComponents: handleSetActivatedComponents,
     });
   };
 
-  const [{ isOverCurrent }, drop] = useDrop(() => ({
-    accept: "MENU_ITEM",
-    drop(item: ComponentItem, monitor) {
-      // console.log("开始")
-      if (monitor.isOver()) {
-        const _component: ComponentItem = {
-          ...item,
-          // 生成唯一key，格式: 组件key_时间戳_随机字符串
-          key: `${123}_${
-            Date.now().toString(36) + Math.random().toString(36).substring(2)
-          }`,
-          menuKey: "123",
+  const [{ isOverCurrent }, drop] = useDrop(
+    () => ({
+      accept: "MENU_ITEM",
+      drop(item: ComponentItem, monitor) {
+        console.log("开始");
+        if (monitor.didDrop()) return;
+        if (monitor.isOver()) {
+          const _component: ComponentItem = {
+            ...item,
+            // 生成唯一key，格式: 组件key_时间戳_随机字符串
+            key: `${123}_${
+              Date.now().toString(36) + Math.random().toString(36).substring(2)
+            }`,
+            menuKey: "123",
+          };
+
+          _component.width =
+            (_component.minWidth >= _component.props?.gridColumn
+              ? _component.minWidth
+              : _component.props?.gridColumn) || 0;
+          _component.height =
+            (_component.minHeight >= _component.props?.gridRow
+              ? _component.minHeight
+              : _component.props?.gridRow) || 0;
+
+          if (_activatedComponents && _activatedComponents.length > 0) {
+            // 画布不为空
+            // 获取最后一个组件的高度和ccs
+            const { ccs } =
+              _activatedComponents[_activatedComponents.length - 1];
+
+            // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
+            const aCss = ccs.split("/").map(Number);
+
+            if (
+              // 判断在最后一个微件的同一行里是否有位置可以插入新微件
+              aCss[0] + _component.height <= gridRow + 1 && // 高度和小于画布
+              aCss[3] + _component.width <= gridColumn + 1 // 宽度和小于画布
+            ) {
+              _component.ccs =
+                aCss[0] +
+                "/" +
+                aCss[3] +
+                "/" +
+                (aCss[0] + _component.height) +
+                "/" +
+                (aCss[3] + _component.width);
+            } else if (
+              // 判断在最后一个微件的同一行后是否有位置可以插入新微件
+              aCss[0] + _component.height <= gridRow + 1 &&
+              aCss[3] + _component.width > gridColumn + 1
+            ) {
+              // 找到最后行中组件的最大高度
+              const maxHeight = activatedComponents.reduce(
+                (prev: number, curr: ComponentItem) => {
+                  if (!curr.ccs) return prev;
+                  return Math.max(prev, Number(curr.ccs.split("/")[2]));
+                },
+                0
+              );
+
+              _component.ccs =
+                maxHeight +
+                "/1" +
+                "/" +
+                (maxHeight + _component.height) +
+                "/" +
+                (_component.width + 1);
+            } else {
+              message.warning("已没有位置可以插入新组件！");
+              return;
+            }
+          } // 画布为空，直接插入第一个组件
+          else
+            _component.ccs =
+              "1/1/" + (_component.height + 1) + "/" + (_component.width + 1);
+
+          // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
+          _component.rowIndex = activatedComponents.length;
+          console.log("currentIndex", containerIndex);
+          console.log("current_activatedComponents", _activatedComponents);
+          _setActivatedComponents([..._activatedComponents, _component]);
+          console.log("结束");
+        }
+      },
+      collect: (monitor) => {
+        return {
+          isOverCurrent: monitor.isOver({ shallow: true }),
         };
-
-        _component.width =
-          (_component.minWidth >= _component.props?.gridColumn
-            ? _component.minWidth
-            : _component.props?.gridColumn) || 0;
-        _component.height =
-          (_component.minHeight >= _component.props?.gridRow
-            ? _component.minHeight
-            : _component.props?.gridRow) || 0;
-
-        if (_activatedComponents && _activatedComponents.length > 0) {
-          // 画布不为空
-          // 获取最后一个组件的高度和ccs
-          const { ccs } = _activatedComponents[_activatedComponents.length - 1];
-
-          // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
-          const aCss = ccs.split("/").map(Number);
-
-          if (
-            // 判断在最后一个微件的同一行里是否有位置可以插入新微件
-            aCss[0] + _component.height <= gridRow + 1 && // 高度和小于画布
-            aCss[3] + _component.width <= gridColumn + 1 // 宽度和小于画布
-          ) {
-            _component.ccs =
-              aCss[0] +
-              "/" +
-              aCss[3] +
-              "/" +
-              (aCss[0] + _component.height) +
-              "/" +
-              (aCss[3] + _component.width);
-          } else if (
-            // 判断在最后一个微件的同一行后是否有位置可以插入新微件
-            aCss[0] + _component.height <= gridRow + 1 &&
-            aCss[3] + _component.width > gridColumn + 1
-          ) {
-            // 找到最后行中组件的最大高度
-            const maxHeight = activatedComponents.reduce(
-              (prev: number, curr: ComponentItem) => {
-                if (!curr.ccs) return prev;
-                return Math.max(prev, Number(curr.ccs.split("/")[2]));
-              },
-              0
-            );
-
-            _component.ccs =
-              maxHeight +
-              "/1" +
-              "/" +
-              (maxHeight + _component.height) +
-              "/" +
-              (_component.width + 1);
-          } else {
-            message.warning("已没有位置可以插入新组件！");
-            return;
-          }
-        } // 画布为空，直接插入第一个组件
-        else
-          _component.ccs =
-            "1/1/" + (_component.height + 1) + "/" + (_component.width + 1);
-
-        // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
-        _component.rowIndex = activatedComponents.length;
-        console.log("currentIndex", containerIndex);
-        console.log("current_activatedComponents", _activatedComponents);
-        _setActivatedComponents([..._activatedComponents, _component]);
-      }
-    },
-    collect: (monitor) => {
-      return {
-        isOverCurrent: monitor.isOver({ shallow: true }),
-      };
-    },
-  }));
+      },
+    }),
+    [activatedComponents]
+  );
 
   const borderStyle = {
     backgroundColor: "pink",
   };
 
   useEffect(() => {
-    //_setActivatedComponents([...activatedComponents]);
-    console.log("!!!!currentIndex", containerIndex)
-    console.log("!!!!_activatedComponents", _activatedComponents);
-  }, [activatedComponents]);
-
-  useEffect(() => {
-    console.log("update containerIndex", containerIndex);
-    console.log("update _activatedComponents", _activatedComponents);
+    // console.log("update containerIndex", containerIndex);
+    // console.log("update _activatedComponents", _activatedComponents);
 
     onActivatedComponents([..._activatedComponents], containerIndex);
   }, [_activatedComponents]);

@@ -317,10 +317,6 @@ export default function Editor({
     });
   }, []);
 
-  useEffect(() => {
-    console.log("edit", activatedComponents)
-  }, [activatedComponents])
-
   return (
     <DndProvider backend={HTML5Backend}>
       <Layout>

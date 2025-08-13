@@ -33,13 +33,9 @@ export default function Core({
   }>(EditContext);
 
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    console.log(components)
+    //console.log(components)
     setActivatedComponents([...components]);
   };
-
-  useEffect(() => {
-    console.log("core", activatedComponents);
-  },[activatedComponents])
 
   return (
     <ContainerPC
