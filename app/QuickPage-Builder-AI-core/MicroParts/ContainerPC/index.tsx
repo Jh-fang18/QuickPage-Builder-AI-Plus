@@ -3,8 +3,8 @@
 import {
   useMemo,
   useState,
-  useRef,
   useEffect,
+  useRef,
   createElement,
   Suspense,
 } from "react";
@@ -57,7 +57,7 @@ export default function ContainerPC({
   // ======================
   // 计算属性
   // ======================
-  
+
   // 计算网格列数
   const getGridTemplateColumns = useMemo(() => {
     return Array(gridColumn).fill(`${gridScale}px`).join(" ");
@@ -79,9 +79,6 @@ export default function ContainerPC({
         ).join(" ")}'`
     ).join(" ");
   }, [gridRow, gridColumn]);
-  const getActivatedComponents = useMemo(() => {
-    return _activatedComponents;
-  }, [_activatedComponents]);
 
   // ======================
   // 非响应式变量
@@ -561,7 +558,6 @@ export default function ContainerPC({
       newActivatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
 
       _setActivatedComponents([...newActivatedComponents]);
-      onActivatedComponents([..._activatedComponents]);
 
       //清空事件
       document.onmousemove = null;
@@ -697,10 +693,13 @@ export default function ContainerPC({
       const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
       newActivatedComponents[index].ccs = _gridArea.join("/");
       newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
+      newActivatedComponents[index].props.gridRow = _gridArea[2] - _gridArea[0];
+      newActivatedComponents[index].props.gridColumn =
+        _gridArea[3] - _gridArea[1];
+
+      console.log("newActivatedComponents", newActivatedComponents);
 
       _setActivatedComponents([...newActivatedComponents]);
-
-      onActivatedComponents([..._activatedComponents]);
 
       // 清空事件
       document.onmousemove = null;
@@ -804,8 +803,6 @@ export default function ContainerPC({
 
       _setActivatedComponents([...newActivatedComponents]);
 
-      onActivatedComponents([..._activatedComponents]);
-
       //======== 处理当前元素后的元素 ========//
 
       const // 当前变形元素
@@ -849,8 +846,6 @@ export default function ContainerPC({
                 _lastCcs[3];
 
               _setActivatedComponents([...newActivatedComponents]);
-
-              onActivatedComponents([...newActivatedComponents]);
 
               _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
               downMoveComponents(_lastCcs, i);
@@ -959,8 +954,6 @@ export default function ContainerPC({
       newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
 
       _setActivatedComponents([...newActivatedComponents]);
-
-      onActivatedComponents([..._activatedComponents]);
       focusComponent(index);
 
       //清空事件
@@ -1334,10 +1327,10 @@ export default function ContainerPC({
     const newActivatedComponents = [..._activatedComponents];
 
     newActivatedComponents[index].props.activatedComponents = [...components];
-    console.log("newActivatedComponents for father Index", containerIndex);
-    console.log("newActivatedComponents for father", newActivatedComponents);
+    // console.log("newActivatedComponents for father Index", containerIndex);
+    // console.log("newActivatedComponents for father", newActivatedComponents);
 
-    _setActivatedComponents([...newActivatedComponents]);
+    //_setActivatedComponents([...newActivatedComponents]);
   };
 
   const Component = (index: number) => {
@@ -1355,6 +1348,7 @@ export default function ContainerPC({
       gridScale,
       gridPadding,
       MicroCards,
+      activatedComponents: props.activatedComponents || [],
       onActivatedComponents: handleSetActivatedComponents,
     });
   };
@@ -1455,12 +1449,12 @@ export default function ContainerPC({
     backgroundColor: "pink",
   };
 
-  // useEffect(() => {
-  //   console.log("update containerIndex", containerIndex);
-  //   console.log("update _activatedComponents", _activatedComponents);
+  useEffect(() => {
+    // console.log("update containerIndex", containerIndex);
+    // console.log("update _activatedComponents", _activatedComponents);
 
-  //   onActivatedComponents([..._activatedComponents], containerIndex);
-  // }, []);
+    onActivatedComponents([..._activatedComponents], containerIndex);
+  }, [_activatedComponents]);
 
   return (
     <>

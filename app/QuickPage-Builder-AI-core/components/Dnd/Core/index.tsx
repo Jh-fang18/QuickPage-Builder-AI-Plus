@@ -34,7 +34,7 @@ export default function Core({
 
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
     console.log("TOP", components);
-    setActivatedComponents([...components]);
+    //setActivatedComponents([...components]);
   };
 
   return (

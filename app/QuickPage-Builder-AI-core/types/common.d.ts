@@ -78,17 +78,6 @@ export interface FormState {
   gridColumn: number;
 }
 
-/** 微件卡片数据规范（用于动态加载组件） */
-export interface CardData {
-  /** 获取组件布局约束的方法 */
-  minShape: () => {
-    /** 最小行跨度 */
-    minRowSpan: number;
-    /** 最小列跨度 */
-    minColSpan: number;
-  };
-}
-
 /** 组件数据规范（用于动态加载组件） */
 export interface TempInfoData {
   /** 模板ID */
