@@ -55,22 +55,9 @@ export default function ContainerPC({
   >([...activatedComponents]);
 
   // ======================
-  // 非响应式变量
-  // ======================
-
-  let columnDifferences = 0;
-  let rowDifferences = 0;
-  let columnDeviationValue = 0;
-  let rowDeviationValue = 0;
-  let leftMax = 0;
-  let topMax = 0;
-  let downMax = 0;
-  let rightMax = 0;
-
-  // ======================
   // 计算属性
   // ======================
-
+  
   // 计算网格列数
   const getGridTemplateColumns = useMemo(() => {
     return Array(gridColumn).fill(`${gridScale}px`).join(" ");
@@ -92,9 +79,24 @@ export default function ContainerPC({
         ).join(" ")}'`
     ).join(" ");
   }, [gridRow, gridColumn]);
+  const getActivatedComponents = useMemo(() => {
+    return _activatedComponents;
+  }, [_activatedComponents]);
+
+  // ======================
+  // 非响应式变量
+  // ======================
+
+  let columnDifferences = 0;
+  let rowDifferences = 0;
+  let columnDeviationValue = 0;
+  let rowDeviationValue = 0;
+  let leftMax = 0;
+  let topMax = 0;
+  let downMax = 0;
+  let rightMax = 0;
 
   const blockRefs = useRef<Record<string, HTMLDivElement>>({});
-
   const [modal, contextHolder] = Modal.useModal();
 
   /* ====================== 核心方法 ====================== */
@@ -1295,17 +1297,27 @@ export default function ContainerPC({
   };
 
   // 删除微件
+  // 如是容器组件需清空子组件
   const removeComponent = (index: number) => {
     // 更新激活组件
     const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
+    let __activatedComponents =
+      newActivatedComponents[index].props.activatedComponents;
+
+    if (__activatedComponents && __activatedComponents.length > 0) {
+      newActivatedComponents[index].props.activatedComponents = [];
+    }
+
     newActivatedComponents.splice(index, 1);
     _setActivatedComponents([...newActivatedComponents]);
-
-    onActivatedComponents([
-      ..._activatedComponents.filter((_, i) => i !== index),
-    ]);
   };
 
+  /**
+   * 子组件传递激活微件列表给父组件，父组件再传递给上一级组件，直到根组件
+   * 并更新当前组件的激活微件列表
+   * @param component 微件信息
+   * @param index 微件索引
+   */
   const handleSetActivatedComponents = (
     components: ComponentItem[],
     index: number
@@ -1318,10 +1330,12 @@ export default function ContainerPC({
     // );
     // console.log("_activatedComponents for son-index", index);
     // console.log("_activatedComponents for son childrens", components);
+
     const newActivatedComponents = [..._activatedComponents];
 
     newActivatedComponents[index].props.activatedComponents = [...components];
-    //console.log("newActivatedComponents", newActivatedComponents);
+    console.log("newActivatedComponents for father Index", containerIndex);
+    console.log("newActivatedComponents for father", newActivatedComponents);
 
     _setActivatedComponents([...newActivatedComponents]);
   };
@@ -1341,7 +1355,6 @@ export default function ContainerPC({
       gridScale,
       gridPadding,
       MicroCards,
-      activatedComponents,
       onActivatedComponents: handleSetActivatedComponents,
     });
   };
@@ -1350,9 +1363,10 @@ export default function ContainerPC({
     () => ({
       accept: "MENU_ITEM",
       drop(item: ComponentItem, monitor) {
-        console.log("开始");
         if (monitor.didDrop()) return;
+
         if (monitor.isOver()) {
+          //console.log("monitor", monitor)
           const _component: ComponentItem = {
             ...item,
             // 生成唯一key，格式: 组件key_时间戳_随机字符串
@@ -1399,7 +1413,7 @@ export default function ContainerPC({
               aCss[3] + _component.width > gridColumn + 1
             ) {
               // 找到最后行中组件的最大高度
-              const maxHeight = activatedComponents.reduce(
+              const maxHeight = _activatedComponents.reduce(
                 (prev: number, curr: ComponentItem) => {
                   if (!curr.ccs) return prev;
                   return Math.max(prev, Number(curr.ccs.split("/")[2]));
@@ -1424,11 +1438,8 @@ export default function ContainerPC({
               "1/1/" + (_component.height + 1) + "/" + (_component.width + 1);
 
           // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
-          _component.rowIndex = activatedComponents.length;
-          console.log("currentIndex", containerIndex);
-          console.log("current_activatedComponents", _activatedComponents);
+          _component.rowIndex = _activatedComponents.length;
           _setActivatedComponents([..._activatedComponents, _component]);
-          console.log("结束");
         }
       },
       collect: (monitor) => {
@@ -1437,19 +1448,19 @@ export default function ContainerPC({
         };
       },
     }),
-    [activatedComponents]
+    [_activatedComponents]
   );
 
   const borderStyle = {
     backgroundColor: "pink",
   };
 
-  useEffect(() => {
-    // console.log("update containerIndex", containerIndex);
-    // console.log("update _activatedComponents", _activatedComponents);
+  // useEffect(() => {
+  //   console.log("update containerIndex", containerIndex);
+  //   console.log("update _activatedComponents", _activatedComponents);
 
-    onActivatedComponents([..._activatedComponents], containerIndex);
-  }, [_activatedComponents]);
+  //   onActivatedComponents([..._activatedComponents], containerIndex);
+  // }, []);
 
   return (
     <>

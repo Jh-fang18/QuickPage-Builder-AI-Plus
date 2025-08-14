@@ -33,7 +33,7 @@ export default function Core({
   }>(EditContext);
 
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    //console.log(components)
+    console.log("TOP", components);
     setActivatedComponents([...components]);
   };
 

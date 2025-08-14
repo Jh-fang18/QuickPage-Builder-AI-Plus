@@ -2,6 +2,7 @@ import Editor from "./components/Dnd/editor";
 import "./ui/global.css";
 
 export default function Page() {
+
   return (
     <main>
       <Editor
