@@ -1312,7 +1312,7 @@ export default function ContainerPC({
     components: ComponentItem[],
     index: string
   ) => {
-    //console.log(index)
+    console.log("index", index)
     if (index === undefined) return;
     // console.log("father currentIndex", containerIndex);
     // console.log(
@@ -1322,17 +1322,24 @@ export default function ContainerPC({
     // console.log("components", [...components])
 
     // console.log("_activatedComponents for son-index", index);
+    const safeIndex = index ?? '';
+    if (!safeIndex) return;
 
-    const newActivatedComponents = [..._activatedComponents];
-    //console.log("newActivatedComponents for father start", newActivatedComponents);
-    newActivatedComponents[Number(index.split('-').pop()) || 0] = {
-      ...newActivatedComponents[Number(index.split('-').pop()) || 0],
-      props: {
-        ...newActivatedComponents[Number(index.split('-').pop()) || 0].props,
-        activatedComponents: [...components],
-      }
+    const indexParts = safeIndex.split('-');
+    const _index = Number(indexParts[indexParts.length - 1]);
+    if (isNaN(_index)) return;
 
-    }
+    const newActivatedComponents = _activatedComponents.map((item, i) => 
+      i === _index 
+        ? {
+            ...item,
+            props: {
+              ...item.props,
+              activatedComponents: [...components]
+            }
+          }
+        : item
+    );
     //console.log("newActivatedComponents for father end", newActivatedComponents);
 
     onActivatedComponents([...newActivatedComponents], containerIndex);
@@ -1434,8 +1441,8 @@ export default function ContainerPC({
           // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
           _component.rowIndex = _activatedComponents.length;
           //console.log("monitor",monitor)
-          console.log("_component", _component.url);
-          console.log("_activatedComponents", _activatedComponents);
+          // console.log("_component", _component.url);
+          // console.log("_activatedComponents", _activatedComponents);
 
           _setActivatedComponents([..._activatedComponents, _component]);
         }
