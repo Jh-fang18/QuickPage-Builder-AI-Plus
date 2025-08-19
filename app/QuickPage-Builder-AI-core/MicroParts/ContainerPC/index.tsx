@@ -19,7 +19,7 @@ import type { ComponentItem } from "../../types/common";
 import "./styles.css";
 
 export default function ContainerPC({
-  containerIndex = -1,
+  containerIndex = "-1",
   zIndex = 0,
   gridRow,
   gridColumn,
@@ -29,7 +29,7 @@ export default function ContainerPC({
   activatedComponents,
   onActivatedComponents,
 }: {
-  containerIndex?: number;
+  containerIndex?: string;
   zIndex?: number;
   gridRow: number;
   gridColumn: number;
@@ -37,7 +37,7 @@ export default function ContainerPC({
   gridPadding: number;
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
-  onActivatedComponents: (components: ComponentItem[], index?: number) => void;
+  onActivatedComponents: (components: ComponentItem[], index?: string) => void;
 }) {
   // ======================
   // 响应式变量
@@ -697,8 +697,6 @@ export default function ContainerPC({
       newActivatedComponents[index].props.gridColumn =
         _gridArea[3] - _gridArea[1];
 
-      console.log("newActivatedComponents", newActivatedComponents);
-
       _setActivatedComponents([...newActivatedComponents]);
 
       // 清空事件
@@ -726,9 +724,7 @@ export default function ContainerPC({
 
     // 修改微件实例高度为100%，以便自适应变型的高度
     if (oBlock.firstElementChild) {
-      if (oBlock.firstElementChild) {
-        (oBlock.firstElementChild as HTMLElement).style.height = "100%";
-      }
+      (oBlock.firstElementChild as HTMLElement).style.height = "100%";
     }
 
     let disY = e.clientY - 0, // 鼠标点击位置
@@ -1302,35 +1298,44 @@ export default function ContainerPC({
     }
 
     newActivatedComponents.splice(index, 1);
+
     _setActivatedComponents([...newActivatedComponents]);
   };
 
   /**
    * 子组件传递激活微件列表给父组件，父组件再传递给上一级组件，直到根组件
    * 并更新当前组件的激活微件列表
-   * @param component 微件信息
-   * @param index 微件索引
+   * @param components 子组件中激活的微件列表
+   * @param index 微件在父组件中的索引
    */
   const handleSetActivatedComponents = (
     components: ComponentItem[],
-    index: number
+    index: string
   ) => {
+    //console.log(index)
     if (index === undefined) return;
     // console.log("father currentIndex", containerIndex);
     // console.log(
     //   "_activatedComponents for father childrens",
     //   _activatedComponents
     // );
+    // console.log("components", [...components])
+
     // console.log("_activatedComponents for son-index", index);
-    // console.log("_activatedComponents for son childrens", components);
 
     const newActivatedComponents = [..._activatedComponents];
+    //console.log("newActivatedComponents for father start", newActivatedComponents);
+    newActivatedComponents[Number(index.split('-').pop()) || 0] = {
+      ...newActivatedComponents[Number(index.split('-').pop()) || 0],
+      props: {
+        ...newActivatedComponents[Number(index.split('-').pop()) || 0].props,
+        activatedComponents: [...components],
+      }
 
-    newActivatedComponents[index].props.activatedComponents = [...components];
-    // console.log("newActivatedComponents for father Index", containerIndex);
-    // console.log("newActivatedComponents for father", newActivatedComponents);
+    }
+    //console.log("newActivatedComponents for father end", newActivatedComponents);
 
-    //_setActivatedComponents([...newActivatedComponents]);
+    onActivatedComponents([...newActivatedComponents], containerIndex);
   };
 
   const Component = (index: number) => {
@@ -1343,12 +1348,12 @@ export default function ContainerPC({
     // 还需添加传入props的类型验证
     return createElement(_component, {
       ...props,
-      containerIndex: index,
+      containerIndex: `${containerIndex}-${index}`,
       zIndex,
       gridScale,
       gridPadding,
       MicroCards,
-      activatedComponents: props.activatedComponents || [],
+      activatedComponents: [],
       onActivatedComponents: handleSetActivatedComponents,
     });
   };
@@ -1371,13 +1376,8 @@ export default function ContainerPC({
           };
 
           _component.width =
-            (_component.minWidth >= _component.props?.gridColumn
-              ? _component.minWidth
-              : _component.props?.gridColumn) || 0;
-          _component.height =
-            (_component.minHeight >= _component.props?.gridRow
-              ? _component.minHeight
-              : _component.props?.gridRow) || 0;
+            _component.minWidth || _component.props?.gridColumn;
+          _component.height = _component.minHeight || _component.props?.gridRow;
 
           if (_activatedComponents && _activatedComponents.length > 0) {
             // 画布不为空
@@ -1433,6 +1433,10 @@ export default function ContainerPC({
 
           // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
           _component.rowIndex = _activatedComponents.length;
+          //console.log("monitor",monitor)
+          console.log("_component", _component.url);
+          console.log("_activatedComponents", _activatedComponents);
+
           _setActivatedComponents([..._activatedComponents, _component]);
         }
       },
@@ -1450,9 +1454,10 @@ export default function ContainerPC({
   };
 
   useEffect(() => {
-    // console.log("update containerIndex", containerIndex);
-    // console.log("update _activatedComponents", _activatedComponents);
+    console.log("update containerIndex", containerIndex);
+    console.log("update _activatedComponents", _activatedComponents);
 
+    // 因为回传才变成了无线循环
     onActivatedComponents([..._activatedComponents], containerIndex);
   }, [_activatedComponents]);
 

@@ -5,7 +5,6 @@ import type {
   ComponentItem,
   SelfServiceData,
   SelfServiceDataItem,
-  CardData,
   FormState,
   TempInfoData,
 } from "../../../types/common";
@@ -57,10 +56,12 @@ const getSelfServiceItemList = async (
         ? await selfServiceItemList
         : await selfServiceItemListContainer;
 
-    if (!res?.dataList || res?.dataList.length === 0)
+    const _format = JSON.parse(JSON.stringify(res));
+
+    if (!_format?.dataList || _format?.dataList.length === 0)
       message.error("数据加载失败");
 
-    return res;
+    return _format;
   }, "获取微件数据失败");
 };
 
@@ -154,7 +155,6 @@ export const fetchComponentData = async (
 
       (res || []).map((item, index) => {
         let dataList: SelfServiceDataItem[] = item?.dataList || [];
-        //console.log(dataList);
 
         // 获取组件基本信息
         _components[index] = (dataList || []).map((item) => {

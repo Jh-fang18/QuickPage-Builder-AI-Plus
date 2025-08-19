@@ -15,7 +15,6 @@ export default function Core({
   gridPadding,
   zIndex,
   MicroCards,
-
 }: {
   terminalType: number;
   gridRow: number;

@@ -328,7 +328,6 @@ export default function Editor({
                 defaultOpenKeys={["1", "2"]}
                 mode="inline"
                 inlineCollapsed={collapsed}
-                onClick={onMenuClick}
                 items={menuData}
               />
             </Sider>
