@@ -53,6 +53,96 @@ export default function ContainerPC({
   const [_activatedComponents, _setActivatedComponents] = useState<
     ComponentItem[]
   >([...activatedComponents]);
+  const [{ isOverCurrent }, drop] = useDrop(
+    () => ({
+      accept: "MENU_ITEM",
+      drop(item: ComponentItem, monitor) {
+        if (monitor.didDrop()) return;
+
+        if (monitor.isOver()) {
+          //console.log("monitor", monitor)
+          const _component: ComponentItem = {
+            ...item,
+            // 生成唯一key，格式: 组件key_时间戳_随机字符串
+            key: `${item.key}_${
+              Date.now().toString(36) + Math.random().toString(36).substring(2)
+            }`,
+            menuKey: item.menuKey,
+          };
+
+          _component.width =
+            _component.minWidth || _component.props?.gridColumn;
+          _component.height = _component.minHeight || _component.props?.gridRow;
+
+          if (_activatedComponents && _activatedComponents.length > 0) {
+            // 画布不为空
+            // 获取最后一个组件的高度和ccs
+            const { ccs } =
+              _activatedComponents[_activatedComponents.length - 1];
+
+            // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
+            const aCss = ccs.split("/").map(Number);
+
+            if (
+              // 判断在最后一个微件的同一行里是否有位置可以插入新微件
+              aCss[0] + _component.height <= gridRow + 1 && // 高度和小于画布
+              aCss[3] + _component.width <= gridColumn + 1 // 宽度和小于画布
+            ) {
+              _component.ccs =
+                aCss[0] +
+                "/" +
+                aCss[3] +
+                "/" +
+                (aCss[0] + _component.height) +
+                "/" +
+                (aCss[3] + _component.width);
+            } else if (
+              // 判断在最后一个微件的同一行后是否有位置可以插入新微件
+              aCss[0] + _component.height <= gridRow + 1 &&
+              aCss[3] + _component.width > gridColumn + 1
+            ) {
+              // 找到最后行中组件的最大高度
+              const maxHeight = _activatedComponents.reduce(
+                (prev: number, curr: ComponentItem) => {
+                  if (!curr.ccs) return prev;
+                  return Math.max(prev, Number(curr.ccs.split("/")[2]));
+                },
+                0
+              );
+
+              _component.ccs =
+                maxHeight +
+                "/1" +
+                "/" +
+                (maxHeight + _component.height) +
+                "/" +
+                (_component.width + 1);
+            } else {
+              message.warning("已没有位置可以插入新组件！");
+              return;
+            }
+          } // 画布为空，直接插入第一个组件
+          else
+            _component.ccs =
+              "1/1/" + (_component.height + 1) + "/" + (_component.width + 1);
+
+          // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
+          _component.rowIndex = _activatedComponents.length;
+          //console.log("monitor",monitor)
+          // console.log("_component", _component.url);
+          // console.log("_activatedComponents", _activatedComponents);
+
+          _setActivatedComponents([..._activatedComponents, { ..._component }]);
+        }
+      },
+      collect: (monitor) => {
+        return {
+          isOverCurrent: monitor.isOver({ shallow: true }),
+        };
+      },
+    }),
+    [_activatedComponents]
+  );
 
   // ======================
   // 计算属性
@@ -586,10 +676,10 @@ export default function ContainerPC({
       _rMaxWidth = 0;
     console.log("_maxRight1", _maxRight);
     oBlock.style.borderColor = " red";
+
     // 修改微件实例宽度为100%，以便自适应变型的宽度
-    if (oBlock.firstElementChild) {
+    if (oBlock.firstElementChild)
       (oBlock.firstElementChild as HTMLElement).style.width = "100%";
-    }
 
     // 控制微件宽度
     document.onmousemove = (e) => {
@@ -693,7 +783,6 @@ export default function ContainerPC({
       const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
       newActivatedComponents[index].ccs = _gridArea.join("/");
       newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
-      newActivatedComponents[index].props.gridRow = _gridArea[2] - _gridArea[0];
       newActivatedComponents[index].props.gridColumn =
         _gridArea[3] - _gridArea[1];
 
@@ -723,9 +812,8 @@ export default function ContainerPC({
     oBlock.style.borderColor = "red";
 
     // 修改微件实例高度为100%，以便自适应变型的高度
-    if (oBlock.firstElementChild) {
+    if (oBlock.firstElementChild)
       (oBlock.firstElementChild as HTMLElement).style.height = "100%";
-    }
 
     let disY = e.clientY - 0, // 鼠标点击位置
       oDown: string | number = 0; // 初始化oDown，用于存储微件的down值
@@ -796,6 +884,7 @@ export default function ContainerPC({
       const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
       newActivatedComponents[index].ccs = _gridArea.join("/");
       newActivatedComponents[index].height = _height;
+      newActivatedComponents[index].props.gridRow = _gridArea[2] - _gridArea[0];
 
       _setActivatedComponents([...newActivatedComponents]);
 
@@ -818,17 +907,6 @@ export default function ContainerPC({
               _ccs[1] < _lastCcs[3] &&
               _ccs[3] > _lastCcs[1]
             ) {
-              console.log("_activatedComponents[i]", _activatedComponents[i]);
-
-              _activatedComponents[i].ccs =
-                _ccs[2] +
-                "/" +
-                _lastCcs[1] +
-                "/" +
-                (_ccs[2] + _activatedComponents[i].height) +
-                "/" +
-                _lastCcs[3];
-
               const newActivatedComponents: ComponentItem[] = [
                 ..._activatedComponents,
               ];
@@ -1312,7 +1390,7 @@ export default function ContainerPC({
     components: ComponentItem[],
     index: string
   ) => {
-    console.log("index", index)
+    //console.log("index", index)
     if (index === undefined) return;
     // console.log("father currentIndex", containerIndex);
     // console.log(
@@ -1322,21 +1400,21 @@ export default function ContainerPC({
     // console.log("components", [...components])
 
     // console.log("_activatedComponents for son-index", index);
-    const safeIndex = index ?? '';
+    const safeIndex = index ?? "";
     if (!safeIndex) return;
 
-    const indexParts = safeIndex.split('-');
+    const indexParts = safeIndex.split("-");
     const _index = Number(indexParts[indexParts.length - 1]);
     if (isNaN(_index)) return;
 
-    const newActivatedComponents = _activatedComponents.map((item, i) => 
-      i === _index 
+    const newActivatedComponents = _activatedComponents.map((item, i) =>
+      i === _index
         ? {
             ...item,
             props: {
               ...item.props,
-              activatedComponents: [...components]
-            }
+              activatedComponents: [...components],
+            },
           }
         : item
     );
@@ -1348,113 +1426,28 @@ export default function ContainerPC({
   const Component = (index: number) => {
     const componentName = _activatedComponents[index].url;
     const _component = MicroCards[componentName];
-    const props = _activatedComponents[index].props;
-
+    const newActivatedComponent = {
+      ..._activatedComponents[index],
+      props: {
+        ...(_activatedComponents[index]?.props || {}),
+      },
+    };
     if (!_component) return null;
+    const { minColSpan, minRowSpan } = _component.minShape();
 
     // 还需添加传入props的类型验证
     return createElement(_component, {
-      ...props,
+      ...(newActivatedComponent?.props || {}),
       containerIndex: `${containerIndex}-${index}`,
       zIndex,
+      gridColumn: newActivatedComponent?.props.gridColumn || minColSpan,
+      gridRow: newActivatedComponent?.props.gridRow || minRowSpan,
       gridScale,
       gridPadding,
       MicroCards,
-      activatedComponents: [],
       onActivatedComponents: handleSetActivatedComponents,
     });
   };
-
-  const [{ isOverCurrent }, drop] = useDrop(
-    () => ({
-      accept: "MENU_ITEM",
-      drop(item: ComponentItem, monitor) {
-        if (monitor.didDrop()) return;
-
-        if (monitor.isOver()) {
-          //console.log("monitor", monitor)
-          const _component: ComponentItem = {
-            ...item,
-            // 生成唯一key，格式: 组件key_时间戳_随机字符串
-            key: `${123}_${
-              Date.now().toString(36) + Math.random().toString(36).substring(2)
-            }`,
-            menuKey: "123",
-          };
-
-          _component.width =
-            _component.minWidth || _component.props?.gridColumn;
-          _component.height = _component.minHeight || _component.props?.gridRow;
-
-          if (_activatedComponents && _activatedComponents.length > 0) {
-            // 画布不为空
-            // 获取最后一个组件的高度和ccs
-            const { ccs } =
-              _activatedComponents[_activatedComponents.length - 1];
-
-            // 分割ccs字符串并转换为数字数组, 格式: [x, y, height, width], 相对grid-area: [grid-row-start / grid-column-start / grid-row-end / grid-column-end]
-            const aCss = ccs.split("/").map(Number);
-
-            if (
-              // 判断在最后一个微件的同一行里是否有位置可以插入新微件
-              aCss[0] + _component.height <= gridRow + 1 && // 高度和小于画布
-              aCss[3] + _component.width <= gridColumn + 1 // 宽度和小于画布
-            ) {
-              _component.ccs =
-                aCss[0] +
-                "/" +
-                aCss[3] +
-                "/" +
-                (aCss[0] + _component.height) +
-                "/" +
-                (aCss[3] + _component.width);
-            } else if (
-              // 判断在最后一个微件的同一行后是否有位置可以插入新微件
-              aCss[0] + _component.height <= gridRow + 1 &&
-              aCss[3] + _component.width > gridColumn + 1
-            ) {
-              // 找到最后行中组件的最大高度
-              const maxHeight = _activatedComponents.reduce(
-                (prev: number, curr: ComponentItem) => {
-                  if (!curr.ccs) return prev;
-                  return Math.max(prev, Number(curr.ccs.split("/")[2]));
-                },
-                0
-              );
-
-              _component.ccs =
-                maxHeight +
-                "/1" +
-                "/" +
-                (maxHeight + _component.height) +
-                "/" +
-                (_component.width + 1);
-            } else {
-              message.warning("已没有位置可以插入新组件！");
-              return;
-            }
-          } // 画布为空，直接插入第一个组件
-          else
-            _component.ccs =
-              "1/1/" + (_component.height + 1) + "/" + (_component.width + 1);
-
-          // 计算组件的rowIndex，实际为插入元素个数-1，故与已激活组件为添加自身前数组长度相同
-          _component.rowIndex = _activatedComponents.length;
-          //console.log("monitor",monitor)
-          // console.log("_component", _component.url);
-          // console.log("_activatedComponents", _activatedComponents);
-
-          _setActivatedComponents([..._activatedComponents, _component]);
-        }
-      },
-      collect: (monitor) => {
-        return {
-          isOverCurrent: monitor.isOver({ shallow: true }),
-        };
-      },
-    }),
-    [_activatedComponents]
-  );
 
   const borderStyle = {
     backgroundColor: "pink",

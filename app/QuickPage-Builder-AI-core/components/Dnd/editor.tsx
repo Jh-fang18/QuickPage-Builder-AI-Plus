@@ -170,7 +170,7 @@ export default function Editor({
   };
 
   /**
-   * 点击添加微件进入画布
+   * 点击添加微件进入画布，临时舍弃
    * 微件高宽将在这里赋值
    * @param key 组件的Key
    */
@@ -198,7 +198,7 @@ export default function Editor({
       key: `${_key}_${
         Date.now().toString(36) + Math.random().toString(36).substring(2)
       }`,
-      menuKey: _key,
+      menuKey: key,
     };
 
     _component.width =
@@ -298,20 +298,26 @@ export default function Editor({
           label: "其他类",
           icon: <DesktopOutlined />,
           children:
-            (res.components[0] || []).map((item, index) => ({
-              key: `0-${item.menuKey}_${index}`,
-              label: <DraggableMenuItem item={item} />,
-            })) || [],
+            (res.components[0] || []).map((item, index) => {
+              item.menuKey = `0-${item.key}_${index}`
+              return {
+                key: item.menuKey,
+                label: <DraggableMenuItem item={item} />,
+              }
+            }) || [],
         },
         {
           key: "2",
           label: "容器类",
           icon: <ContainerOutlined />,
           children:
-            (res.components[1] || []).map((item, index) => ({
-              key: `1-${item.menuKey}_${index}`,
-              label: <DraggableMenuItem item={item} />,
-            })) || [],
+            (res.components[1] || []).map((item, index) => {
+              item.menuKey = `1-${item.key}_${index}`
+              return {
+                key: item.menuKey,
+                label: <DraggableMenuItem item={item} />,
+              }
+            }) || [],
         },
       ]);
     });
