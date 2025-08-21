@@ -104,7 +104,12 @@ export default function Editor({
   const DraggableMenuItem: React.FC<{ item: ComponentItem }> = ({ item }) => {
     const [{ isDragging }, drag] = useDrag(() => ({
       type: "MENU_ITEM",
-      item,
+      item: {
+        ...item,
+        props: {
+          ...item.props,
+        },
+      },
       collect: (monitor) => {
         return {
           isDragging: !!monitor.isDragging(),

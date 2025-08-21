@@ -60,7 +60,6 @@ export default function ContainerPC({
         if (monitor.didDrop()) return;
 
         if (monitor.isOver()) {
-          //console.log("monitor", monitor)
           const _component: ComponentItem = {
             ...item,
             // 生成唯一key，格式: 组件key_时间戳_随机字符串
@@ -132,12 +131,15 @@ export default function ContainerPC({
           // console.log("_component", _component.url);
           // console.log("_activatedComponents", _activatedComponents);
 
-          _setActivatedComponents([..._activatedComponents, { ..._component }]);
+          _setActivatedComponents([
+            ..._activatedComponents,
+            { ..._component, props: { ..._component.props } },
+          ]);
         }
       },
       collect: (monitor) => {
         return {
-          isOverCurrent: monitor.isOver({ shallow: true }),
+          isOverCurrent: !!monitor.isOver({ shallow: true }),
         };
       },
     }),
@@ -1426,22 +1428,26 @@ export default function ContainerPC({
   const Component = (index: number) => {
     const componentName = _activatedComponents[index].url;
     const _component = MicroCards[componentName];
-    const newActivatedComponent = {
-      ..._activatedComponents[index],
-      props: {
-        ...(_activatedComponents[index]?.props || {}),
-      },
-    };
+    const newActivatedComponents = _activatedComponents.map((item, i) =>
+      i === index
+        ? {
+            ...item,
+            props: {
+              ...(item?.props || {}),
+            },
+          }
+        : item
+    );
     if (!_component) return null;
     const { minColSpan, minRowSpan } = _component.minShape();
 
     // 还需添加传入props的类型验证
     return createElement(_component, {
-      ...(newActivatedComponent?.props || {}),
+      ...(newActivatedComponents[index]?.props || {}),
       containerIndex: `${containerIndex}-${index}`,
       zIndex,
-      gridColumn: newActivatedComponent?.props.gridColumn || minColSpan,
-      gridRow: newActivatedComponent?.props.gridRow || minRowSpan,
+      gridColumn: newActivatedComponents[index]?.props.gridColumn || minColSpan,
+      gridRow: newActivatedComponents[index]?.props.gridRow || minRowSpan,
       gridScale,
       gridPadding,
       MicroCards,
@@ -1454,10 +1460,8 @@ export default function ContainerPC({
   };
 
   useEffect(() => {
-    console.log("update containerIndex", containerIndex);
-    console.log("update _activatedComponents", _activatedComponents);
-
-    // 因为回传才变成了无线循环
+    // console.log("update containerIndex", containerIndex);
+    // console.log("update _activatedComponents", _activatedComponents);
     onActivatedComponents([..._activatedComponents], containerIndex);
   }, [_activatedComponents]);
 
