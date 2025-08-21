@@ -8,9 +8,7 @@ import { useMemo } from "react";
 import Icon, { HomeOutlined } from "@ant-design/icons";
 
 // 导入类型
-import { BaseDataType } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 import { LaunchTicketProps } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
-import { LaunchTicketDataItem } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const LaunchTicket = ({
   gridColumn,
@@ -26,7 +24,7 @@ const LaunchTicket = ({
 
   // 基础静态数据获取和定义
   type BaseDataType = typeof baseData;
-  
+
   const baseData = useMemo(() => {
     const { minRowSpan, minColSpan } = LaunchTicket.minShape();
 

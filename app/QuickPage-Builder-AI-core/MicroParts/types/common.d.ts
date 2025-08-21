@@ -26,8 +26,6 @@ export interface InputDataItem {
 
 // 微件基础数据
 export interface BaseDataType<T> {
-  minRowSpan: number;
-  minColSpan: number;
   gridRow: number;
   gridColumn: number;
   gridScale: number;
