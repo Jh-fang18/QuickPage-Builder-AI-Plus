@@ -13,6 +13,7 @@ import type { MicroCardsType } from "../../../types/common";
 
 // 导入数据 (临时获取数据来源)
 import selfServiceItemList from "../mock/self-service-item-list";
+import selfServiceItemListForm from "../mock/self-service-item-list-form";
 import selfServiceItemListContainer from "../mock/self-service-item-list-container";
 import tempInfo from "../mock/temp-Info";
 
@@ -51,10 +52,18 @@ const getSelfServiceItemList = async (
   terminalType: number
 ) => {
   return handleApiRequest(async () => {
-    const res: SelfServiceData =
-      itemType === 0
-        ? await selfServiceItemList
-        : await selfServiceItemListContainer;
+    const res: SelfServiceData = await (() => {
+      switch (itemType) {
+        case 0:
+          return selfServiceItemList;
+        case 1:
+          return selfServiceItemListContainer;
+        case 2:
+          return selfServiceItemListForm;
+        default:
+          throw new Error(`Unknown itemType: ${itemType}`);
+      }
+    })();
 
     const _format = JSON.parse(JSON.stringify(res));
 
@@ -78,13 +87,15 @@ const getTempInfo = (data: {
   return handleApiRequest(async () => {
     const res: TempInfoData = await tempInfo;
 
+    const _format = JSON.parse(JSON.stringify(res));
+
     // res内容判断，如果没有数据或者提示错误，直接返回
-    if (!res?.tempId && !res?.dataList) {
+    if (!_format?.tempId && !_format?.dataList) {
       message.error("没有TempId数据加载失败");
       return null;
     }
 
-    const { content: _content, id: _contentId } = res!.dataList || {};
+    const { content: _content, id: _contentId } = _format!.dataList || {};
 
     return {
       contentId: _contentId || 0,

@@ -8,10 +8,9 @@ import { useMemo } from "react";
 import Icon, { HomeOutlined } from "@ant-design/icons";
 
 // 导入类型
-import {
-  LaunchTicketProps,
-  LaunchTicketDataItem,
-} from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+import { BaseDataType } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+import { LaunchTicketProps } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+import { LaunchTicketDataItem } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const LaunchTicket = ({
   gridColumn,
@@ -20,19 +19,14 @@ const LaunchTicket = ({
   gridPadding,
   title,
   data,
-}: {
-  gridColumn?: number;
-  gridRow?: number;
-  gridScale: number;
-  gridPadding: number;
-  title: string;
-  data?: LaunchTicketDataItem[];
-}) => {
+}: LaunchTicketProps) => {
   // ======================
   // 私有响应状态
   // ======================
 
   // 基础静态数据获取和定义
+  type BaseDataType = typeof baseData;
+  
   const baseData = useMemo(() => {
     const { minRowSpan, minColSpan } = LaunchTicket.minShape();
 
@@ -43,7 +37,7 @@ const LaunchTicket = ({
       gridColumn: gridColumn || minColSpan,
       gridScale,
       gridPadding,
-      data: data || [],
+      data: [...(data || [])],
     };
   }, [gridRow, gridColumn, gridScale, gridPadding, data]);
 
@@ -52,7 +46,7 @@ const LaunchTicket = ({
   // ======================
 
   // 计算样式
-  const style = (baseData: LaunchTicketProps) => {
+  const style = (baseData: BaseDataType) => {
     let {
       minRowSpan,
       minColSpan,
@@ -62,6 +56,7 @@ const LaunchTicket = ({
       gridPadding,
     } = baseData;
     //console.log(baseData)
+
     gridRow = gridRow > minRowSpan ? gridRow : minRowSpan;
     gridColumn = gridColumn > minColSpan ? gridColumn : minColSpan;
     let width = gridColumn * gridScale + (gridColumn - 1) * gridPadding;
@@ -78,8 +73,6 @@ const LaunchTicket = ({
   // ======================
   // 副作用
   // ======================
-
-  // 图标组件获取, 依赖data
 
   return (
     <div className={`${styles["launch-ticket"]}`} style={style(baseData)}>
