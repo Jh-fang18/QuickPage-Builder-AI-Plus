@@ -1495,7 +1495,9 @@ export default function ContainerPC({
             <Suspense fallback={"loading..."}>{Component(index)}</Suspense>
             <div
               className={`shape ${
-                item.url === "ContainerPC" ? "brand" : "normal"
+                item.url === "ContainerPC" || item.url === "FormMP"
+                  ? "brand"
+                  : "normal"
               }`}
               onMouseDown={(e) => mousedown(e, item, index)}
             >

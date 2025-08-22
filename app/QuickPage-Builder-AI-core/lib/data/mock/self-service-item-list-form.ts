@@ -3,7 +3,7 @@ const selfServiceItemListForm = {
     {
       id: 1,
       itemName: "Input",
-      url: "Form/Input",
+      url: "InputMP",
       props: {
         gridColumn: 6,
         gridRow: 2,

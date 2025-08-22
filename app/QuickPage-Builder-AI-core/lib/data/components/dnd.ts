@@ -168,7 +168,7 @@ export const fetchComponentData = async (
       
       (res || []).map((item, index) => {
         let dataList: SelfServiceDataItem[] = item?.dataList || [];
-        console.log("dataList", dataList);
+        //console.log("dataList", dataList);
         // 获取组件基本信息
         _components[index] = (dataList || []).map((item) => {
           return {
@@ -191,7 +191,7 @@ export const fetchComponentData = async (
         });
 
         //console.log(_components);
-        //console.log(1,MicroCards);
+        console.log(1,MicroCards);
         //console.log(2,microParts);
 
         // PC端

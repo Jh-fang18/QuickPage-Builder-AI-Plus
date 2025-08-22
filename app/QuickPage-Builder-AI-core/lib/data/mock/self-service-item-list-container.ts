@@ -10,6 +10,16 @@ const selfServiceItemListContainer = {
         activatedComponents: [],
       },
     },
+    {
+      id: 1,
+      itemName: "Form",
+      url: "FormMP",
+      props: {
+        gridColumn: 16,
+        gridRow: 12,
+        activatedComponents: [],
+      },
+    },
   ],
 };
 export default selfServiceItemListContainer;
