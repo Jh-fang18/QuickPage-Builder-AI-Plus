@@ -1,14 +1,24 @@
-import Input from "./index";
+import InputMP from "./index";
 
 export default function Page() {
   return (
-    <Input
-      gridRow={16}
-      gridColumn={12}
+    <InputMP
+      gridColumn={6}
+      gridRow={2}
       gridScale={36}
       gridPadding={24}
-      label="标题"
-      data={[]}
+      moduleProps={{
+        label: "标题",
+      }}
+      data={[
+        {
+          id: 1,
+          inputType: "text",
+          value: "",
+          placeholder: "请输入",
+          validateRules: [{ required: true, message: "请输入" }],
+        },
+      ]}
     />
   );
 }

@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { ContainerOutlined, DesktopOutlined } from "@ant-design/icons";
+import { ContainerOutlined, DesktopOutlined, FormOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Spin, Layout, Menu, message } from "antd";
 const { Sider, Content } = Layout;
@@ -324,6 +324,19 @@ export default function Editor({
               }
             }) || [],
         },
+        {
+          key: "3",
+          label: "表单类",
+          icon: <FormOutlined />,
+          children:
+            (res.components[2] || []).map((item, index) => {
+              item.menuKey = `0-${item.key}_${index}`
+              return {
+                key: item.menuKey,
+                label: <DraggableMenuItem item={item} />,
+              }
+            }) || [],
+        },
       ]);
     });
   }, []);
@@ -336,7 +349,7 @@ export default function Editor({
             <Sider style={siderStyle}>
               <div className={styles.title}>微件列表</div>
               <Menu
-                defaultOpenKeys={["1", "2"]}
+                defaultOpenKeys={["1", "2", "3"]}
                 mode="inline"
                 inlineCollapsed={collapsed}
                 items={menuData}

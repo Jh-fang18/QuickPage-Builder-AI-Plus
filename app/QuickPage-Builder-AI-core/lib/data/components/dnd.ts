@@ -160,13 +160,15 @@ export const fetchComponentData = async (
   await Promise.all([
     getSelfServiceItemList(0, 0), //其他类
     getSelfServiceItemList(1, 0), //容器类
+    getSelfServiceItemList(2, 0), //表单类
   ])
     .then((res) => {
+      // console.log("res", res);
       if (!res) return;
-
+      
       (res || []).map((item, index) => {
         let dataList: SelfServiceDataItem[] = item?.dataList || [];
-
+        console.log("dataList", dataList);
         // 获取组件基本信息
         _components[index] = (dataList || []).map((item) => {
           return {

@@ -7,7 +7,9 @@ export default function Page() {
       gridColumn={12}
       gridScale={36}
       gridPadding={24}
-      title="启动票"
+      moduleProps={{
+        title: "启动票",
+      }}
       data={[
         {
           id: 1,

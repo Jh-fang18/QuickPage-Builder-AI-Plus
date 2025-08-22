@@ -4,88 +4,75 @@
 import styles from "./styles.module.css";
 
 // 导入已有组件
-import { useMemo } from "react";
+import { Form, Input } from "antd";
+
+// 导入自有组件
+import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
+import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
 // 导入类型
-import { InputProps } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+import {
+  InputMPProps,
+  InputDataItem,
+} from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
-const Input = ({
+const InputMP = ({
   gridColumn,
   gridRow,
   gridScale,
   gridPadding,
-  label,
   data,
-}: InputProps) => {
+  moduleProps,
+}: InputMPProps) => {
   // ======================
   // 私有响应状态
   // ======================
 
   // 基础静态数据获取和定义
-  type BaseDataType = typeof baseData;
-
-  const baseData = useMemo(() => {
-    const { minRowSpan, minColSpan } = Input.minShape();
-
-    return {
-      minRowSpan: minRowSpan, // 最小高占格
-      minColSpan: minColSpan, // 最小宽占格
-      gridRow: gridRow || minRowSpan,
-      gridColumn: gridColumn || minColSpan,
-      gridScale,
-      gridPadding,
-      label,
-      data: data || [],
-    };
-  }, [gridRow, gridColumn, gridScale, gridPadding, label, data]);
-
+  const baseData = useBaseData<InputDataItem, InputMPProps['moduleProps']>({
+    gridColumn,
+    gridRow,
+    gridScale,
+    gridPadding,
+    data,
+    moduleProps,
+    minShape: InputMP.minShape,
+  });
 
   // ======================
   // 计算属性
   // ======================
 
   // 计算样式
-  const style = (baseData: BaseDataType) => {
-
-    let {
-      minRowSpan,
-      minColSpan,
-      gridRow,
-      gridColumn,
-      gridScale,
-      gridPadding,
-    } = baseData;
-    //console.log(baseData)
-    gridRow = gridRow > minRowSpan ? gridRow : minRowSpan;
-    gridColumn = gridColumn > minColSpan ? gridColumn : minColSpan;
-    let width = gridColumn * gridScale + (gridColumn - 1) * gridPadding;
-    let height = gridRow * gridScale + (gridRow - 1) * gridPadding;
-
-    //console.log(width, height);
-
-    return {
-      width: `${Math.floor(width)}px`,
-      height: `${Math.floor(height)}px`,
-    };
-  };
+  const { width, height } = useStyleCalculator(baseData);
 
   // ======================
   // 副作用
   // ======================
 
-  // 图标组件获取, 依赖data
+  // 根据data中传入的类型定义FieldType
+  const inputType = baseData.data[0].inputType;
+  type FieldType = {
+    [inputType]: InputDataItem["value"];
+  };
 
   return (
-    <div className={`${styles["input"]}`} style={style(baseData)}>
-
-    </div>
+    <Form.Item<FieldType>
+      label={baseData.moduleProps?.label}
+      name={baseData.data[0].inputType}
+      rules={[{ required: true, message: "Please input your username!" }]}
+      className={`${styles["inputMP"]}`}
+      style={{ width, height }}
+    >
+      <Input />
+    </Form.Item>
   );
 };
 
 // 静态方法
-Input.minShape = () => ({
-  minColSpan: 8, // 最小高占格
-  minRowSpan: 6, // 最小宽占格
+InputMP.minShape = () => ({
+  minColSpan: 6, // 最小高占格
+  minRowSpan: 2, // 最小宽占格
 });
 
-export default Input;
+export default InputMP;
