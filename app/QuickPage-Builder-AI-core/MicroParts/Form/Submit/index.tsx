@@ -1,8 +1,5 @@
-// 导入样式
-import styles from "./styles.module.css";
-
 // 导入已有组件
-import { Form, Input } from "antd";
+import { Form, Button } from "antd";
 
 // 导入自有组件
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
@@ -10,11 +7,11 @@ import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/us
 
 // 导入类型
 import {
-  InputMPProps,
-  InputDataItem,
+  SubmitMPProps,
+  SubmitDataItem,
 } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
-const InputMP = ({
+const SubmitMP = ({
   currentIndex,
   gridColumn,
   gridRow,
@@ -22,20 +19,20 @@ const InputMP = ({
   gridPadding,
   data,
   moduleProps,
-}: InputMPProps) => {
+}: SubmitMPProps) => {
   // ======================
   // 私有响应状态
   // ======================
 
   // 基础静态数据获取和定义
-  const baseData = useBaseData<InputDataItem, InputMPProps['moduleProps']>({
+  const baseData = useBaseData<SubmitDataItem, SubmitMPProps["moduleProps"]>({
     gridColumn,
     gridRow,
     gridScale,
     gridPadding,
     data,
     moduleProps,
-    minShape: InputMP.minShape,
+    minShape: SubmitMP.minShape,
   });
 
   // ======================
@@ -49,29 +46,19 @@ const InputMP = ({
   // 副作用
   // ======================
 
-  // 根据data中传入的类型定义FieldType
-  const inputType = `${baseData.data[0].inputType}_${currentIndex}`;
-  type FieldType = {
-    [inputType]: InputDataItem["value"];
-  };
-
   return (
-    <Form.Item<FieldType>
-      labelCol={{ span: 8 }}
-      label={baseData.moduleProps?.label}
-      name={inputType}
-      rules={[...baseData.data[0].validateRules]}
-      style={{ width, height, margin: 0 }}
-    >
-      <Input />
+    <Form.Item label={null} style={{ width, height, margin: 0 }}>
+      <Button type="primary" htmlType="submit" block={true}>
+        提交
+      </Button>
     </Form.Item>
   );
 };
 
 // 静态方法
-InputMP.minShape = () => ({
-  minColSpan: 6, // 最小高占格
+SubmitMP.minShape = () => ({
+  minColSpan: 2, // 最小高占格
   minRowSpan: 1, // 最小宽占格
 });
 
-export default InputMP;
+export default SubmitMP;

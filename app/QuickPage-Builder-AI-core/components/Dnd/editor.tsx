@@ -26,10 +26,10 @@ type MenuItem = Required<MenuProps>["items"][number];
 import { fetchComponentData } from "../../lib/data/components/dnd";
 
 export default function Editor({
-  gridRow,
-  gridColumn,
-  gridScale,
-  gridPadding,
+  gridRow = 36,
+  gridColumn = 24,
+  gridScale = 34,
+  gridPadding = 20,
   microParts,
 }: {
   gridRow?: number;
@@ -48,8 +48,8 @@ export default function Editor({
   // 响应式变量
   // ======================
 
-  const [_gridRow, setGridRow] = useState<number>(gridRow || 36);
-  const [_gridColumn, setGridColumn] = useState<number>(gridColumn || 24);
+  const [_gridRow, setGridRow] = useState<number>(gridRow);
+  const [_gridColumn, setGridColumn] = useState<number>(gridColumn);
   const [components, setComponents] = useState<ComponentItem[][]>([]);
   const [activatedComponents, setActivatedComponents] = useState<
     ComponentItem[]
@@ -66,8 +66,8 @@ export default function Editor({
   // ======================
   // 非响应式变量
   // ======================
-  const _gridScale = gridScale || 30;
-  const _gridPadding = gridPadding || 20;
+  const _gridScale = gridScale;
+  const _gridPadding = gridPadding;
   const contentIdRef = useRef<number>(0);
   const oldContentRef = useRef<string>("");
 
@@ -355,7 +355,7 @@ export default function Editor({
                 items={menuData}
               />
             </Sider>
-            <Content style={{ overflow: "initial" }}>
+            <Content style={{ padding: "20px 0",overflow: "initial" }}>
               <Suspense fallback={<h2>Loading...</h2>}>
                 <EditContext.Provider
                   value={{ activatedComponents, setActivatedComponents }}

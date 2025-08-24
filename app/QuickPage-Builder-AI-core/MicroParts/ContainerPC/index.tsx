@@ -19,7 +19,7 @@ import type { ComponentItem } from "../../types/common";
 import "./styles.css";
 
 export default function ContainerPC({
-  containerIndex = "-1",
+  currentIndex = "-1",
   zIndex = 0,
   gridRow,
   gridColumn,
@@ -29,7 +29,7 @@ export default function ContainerPC({
   activatedComponents,
   onActivatedComponents,
 }: {
-  containerIndex?: string;
+  currentIndex?: string;
   zIndex?: number;
   gridRow: number;
   gridColumn: number;
@@ -648,6 +648,7 @@ export default function ContainerPC({
       const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
       newActivatedComponents[index].ccs = _gridArea.join("/"); // 更新元素大小
       newActivatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
+      newActivatedComponents[index].props.gridRow = _gridArea[2] - _gridArea[0];
 
       _setActivatedComponents([...newActivatedComponents]);
 
@@ -1028,6 +1029,8 @@ export default function ContainerPC({
       const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
       newActivatedComponents[index].ccs = oBlock.style.gridArea;
       newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
+      newActivatedComponents[index].props.gridColumn =
+        _gridArea[3] - _gridArea[1];
 
       _setActivatedComponents([...newActivatedComponents]);
       focusComponent(index);
@@ -1394,7 +1397,7 @@ export default function ContainerPC({
   ) => {
     //console.log("index", index)
     if (index === undefined) return;
-    // console.log("father currentIndex", containerIndex);
+    // console.log("father currentIndex", currentIndex);
     // console.log(
     //   "_activatedComponents for father childrens",
     //   _activatedComponents
@@ -1422,7 +1425,7 @@ export default function ContainerPC({
     );
     //console.log("newActivatedComponents for father end", newActivatedComponents);
 
-    onActivatedComponents([...newActivatedComponents], containerIndex);
+    onActivatedComponents([...newActivatedComponents], currentIndex);
   };
 
   const Component = (index: number) => {
@@ -1444,7 +1447,7 @@ export default function ContainerPC({
     // 还需添加传入props的类型验证
     return createElement(_component, {
       ...(newActivatedComponents[index]?.props || {}),
-      containerIndex: `${containerIndex}-${index}`,
+      currentIndex: `${currentIndex}-${index}`,
       zIndex,
       gridColumn: newActivatedComponents[index]?.props.gridColumn || minColSpan,
       gridRow: newActivatedComponents[index]?.props.gridRow || minRowSpan,
@@ -1460,9 +1463,9 @@ export default function ContainerPC({
   };
 
   useEffect(() => {
-    // console.log("update containerIndex", containerIndex);
+    // console.log("update currentIndex", currentIndex);
     // console.log("update _activatedComponents", _activatedComponents);
-    onActivatedComponents([..._activatedComponents], containerIndex);
+    onActivatedComponents([..._activatedComponents], currentIndex);
   }, [_activatedComponents]);
 
   return (
@@ -1475,8 +1478,12 @@ export default function ContainerPC({
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
           gridTemplateAreas: getGridTemplateAreas,
+          backgroundSize: `${gridScale + gridPadding}px ${
+            gridScale + gridPadding
+          }px`,
           zIndex,
-          ...(isOverCurrent ? borderStyle : {}),
+          ...(isOverCurrent ? borderStyle : {}), // dropover样式
+          ...({ "--grid-gap": `${gridPadding}px` } as React.CSSProperties), //断言自定义属性为CSSProperties合法属性
         }}
       >
         {_activatedComponents.map((item, index) => (

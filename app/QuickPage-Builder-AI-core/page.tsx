@@ -8,8 +8,8 @@ export default function Page() {
       <Editor
         gridRow={36}
         gridColumn={24}
-        gridScale={30}
-        gridPadding={20}
+        gridScale={34}
+        gridPadding={15}
       />
       <div className="mobile-tips">
         <p>请使用PC访问，以获得更好的使用效果</p>

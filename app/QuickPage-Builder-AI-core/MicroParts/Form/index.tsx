@@ -9,7 +9,7 @@ import { ComponentItem } from "../../types/common";
 import type { MicroCardsType } from "../../types/common";
 
 export default function FormMP({
-  containerIndex = "-1",
+  currentIndex,
   zIndex = 0,
   gridRow,
   gridColumn,
@@ -19,7 +19,7 @@ export default function FormMP({
   activatedComponents,
   onActivatedComponents,
 }: {
-  containerIndex?: string;
+  currentIndex: string;
   zIndex?: number;
   gridRow: number;
   gridColumn: number;
@@ -30,12 +30,18 @@ export default function FormMP({
   onActivatedComponents: (components: ComponentItem[], index?: string) => void;
 }) {
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    onActivatedComponents([...components], containerIndex);
+    onActivatedComponents([...components], currentIndex);
   };
 
   return (
-    <Form name="basic" initialValues={{ remember: true }} autoComplete="off">
+    <Form
+      style={{ overflow: "hidden", height: "100%" }}
+      name="basic"
+      initialValues={{ remember: true }}
+      autoComplete="off"
+    >
       <ContainerPC
+        currentIndex={currentIndex}
         gridRow={gridRow}
         gridColumn={gridColumn}
         gridScale={gridScale}

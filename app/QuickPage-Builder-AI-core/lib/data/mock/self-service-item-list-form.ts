@@ -6,9 +6,9 @@ const selfServiceItemListForm = {
       url: "InputMP",
       props: {
         gridColumn: 6,
-        gridRow: 2,
         moduleProps: {
           label: "标题",
+          labelCol: { span: 8 },
         },
         data: [
           {
@@ -19,6 +19,16 @@ const selfServiceItemListForm = {
             validateRules: [{ required: true, message: "请输入" }],
           },
         ],
+      },
+    },
+    {
+      id: 2,
+      itemName: "Submit",
+      url: "SubmitMP",
+      props: {
+        moduleProps: {
+          label: "提交",
+        },
       },
     },
   ],

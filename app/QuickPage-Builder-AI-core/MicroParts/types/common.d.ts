@@ -1,5 +1,6 @@
 // 微件基础数据
 export interface BaseDataType<T> {
+  currentIndex?: string;
   gridRow: number;
   gridColumn: number;
   gridScale: number;
@@ -33,6 +34,16 @@ export interface InputDataItem {
   validateRules: ValidateRule[];
 }
 
+/** 提交按钮 */
+export interface SubmitDataItem {
+  /** ID */
+  id: number;
+  event: {
+    /** 提交事件 */
+    submit: () => void;
+  };
+}
+
 // 发布票务微件基础数据
 export interface LaunchTicketProps extends BaseDataType<LaunchTicketDataItem> {
   moduleProps?: {
@@ -45,5 +56,14 @@ export interface InputMPProps extends BaseDataType<InputDataItem> {
   moduleProps?: {
     /** 标签名 */
     label: string;
+    /** 标签名宽度 */
+    labelCol?: { span: number };
+  };
+}
+
+export interface SubmitMPProps extends BaseDataType<SubmitDataItem> {
+  moduleProps?: {
+    /** 提交按钮文本 */
+    submitText: string;
   };
 }

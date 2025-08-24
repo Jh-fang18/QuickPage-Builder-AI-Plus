@@ -1,10 +1,10 @@
 .container {
   position: relative;
-  top: 1px;
   display: grid;
   background-color: #f3f3f3;
-  margin: 20px auto;
+  margin: 0 auto;
   overflow: hidden;
+  height: 100%;
 
   .block {
     position: absolute;
@@ -19,11 +19,11 @@
     background: #fff;
     background: rgba(255, 255, 255, 0.4);
 
-    > div:first-child {
+    > :first-child {
       border: 1px dashed #979797;
     }
 
-    .shape {
+    > .shape {
       width: 100%;
       height: 100%;
       position: absolute;
@@ -32,13 +32,14 @@
       text-indent: -9999px;
       overflow: hidden;
     }
-    .shape.brand {
+    > .shape.brand {
       width: 30px;
       height: 30px;
       right: -29px;
       left: auto;
+      cursor: pointer;
     }
-    .shape.brand:before {
+    > .shape.brand:before {
       content: "";
       display: block;
       position: absolute;
@@ -49,32 +50,36 @@
       background: #4285f4;
       margin-bottom: 10px;
     }
-    .shape.normal {
+    > .shape.normal {
       border-color: #979797;
     }
 
-    .title {
+    > .title,
+    > .delete {
+      font-size: 12px;
+    }
+
+    > .title {
       position: absolute;
       left: 0;
-      bottom: -20px;
-      padding: 0 5px;
+      bottom: -16px;
+      padding: 0 2px;
       width: 100%;
       color: #4285f4;
-      font-size: 12px;
 
       .form a {
         padding-right: 5px;
       }
     }
 
-    .delete {
+    > .delete {
       position: absolute;
       display: none;
-      bottom: 10px;
-      right: 20px;
+      bottom: -16px;
+      right: 2px;
     }
 
-    .morph {
+    > .morph {
       span {
         display: block;
         position: absolute;
@@ -143,7 +148,7 @@
       }
 
       span.up {
-        top: -12px;
+        top: -13px;
         left: 50%;
         margin-left: -15px;
       }
@@ -180,7 +185,7 @@
       }
 
       span.down {
-        bottom: -13px;
+        bottom: -12px;
         left: 50%;
         margin-left: -15px;
       }
@@ -240,17 +245,20 @@
 }
 
 .container.pc {
-  grid-row-gap: 20px;
-  grid-column-gap: 20px;
+  --grid-gap: 20px;
+  grid-row-gap: var(--grid-gap);
+  grid-column-gap: var(--grid-gap);
   /* 网格 */
-  background-image: -webkit-linear-gradient(white 20px, transparent 0),
-    -webkit-linear-gradient(90deg, white 20px, transparent 0);
-  background-image: -moz-linear-gradient(white 20px, transparent 0),
-    -moz-linear-gradient(90deg, white 20px, transparent 0);
-  background-image: -o-linear-gradient(white 20px, transparent 0),
-    -o-linear-gradient(90deg, white 20px, transparent 0);
-  background-image: linear-gradient(white 20px, transparent 0),
-    linear-gradient(90deg, white 20px, transparent 0);
-  background-size: 50px 50px;
-  background-position: -20px -20px;
+  background-image: -webkit-linear-gradient(
+      white var(--grid-gap),
+      transparent 0
+    ),
+    -webkit-linear-gradient(90deg, white var(--grid-gap), transparent 0);
+  background-image: -moz-linear-gradient(white var(--grid-gap), transparent 0),
+    -moz-linear-gradient(90deg, white var(--grid-gap), transparent 0);
+  background-image: -o-linear-gradient(white var(--grid-gap), transparent 0),
+    -o-linear-gradient(90deg, white var(--grid-gap), transparent 0);
+  background-image: linear-gradient(white var(--grid-gap), transparent 0),
+    linear-gradient(90deg, white var(--grid-gap), transparent 0);
+  background-position: calc(-1 * var(--grid-gap)) calc(-1 * var(--grid-gap));
 }

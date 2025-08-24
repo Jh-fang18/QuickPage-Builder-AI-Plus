@@ -4,32 +4,30 @@ const selfServiceItemList = {
       id: 1,
       itemName: "Bottomfiling",
       url: "Bottomfiling",
-      props: {
-      },
+      props: {},
     },
     {
       id: 2,
       itemName: "SmallBoard",
       url: "SmallBoard",
-      props: {
-      },
+      props: {},
     },
     {
       id: 3,
       itemName: "CommonFunctions",
       url: "CommonFunctions",
-      props: {
-
-      },
+      props: {},
     },
     {
       id: 4,
       itemName: "LaunchTicket",
       url: "LaunchTicket",
       props: {
-        title: "启动票",
         gridColumn: 8,
         gridRow: 6,
+        moduleProps: {
+          title: "启动票",
+        },
         data: [
           {
             id: 1,
@@ -42,8 +40,7 @@ const selfServiceItemList = {
       id: 5,
       itemName: "ProcessingWorkOrders",
       url: "ProcessingWorkOrders",
-      props: {
-      },
+      props: {},
     },
   ],
 };

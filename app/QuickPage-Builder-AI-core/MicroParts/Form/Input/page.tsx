@@ -9,6 +9,9 @@ export default function Page() {
       gridPadding={24}
       moduleProps={{
         label: "标题",
+        labelCol: {
+          span: 6,
+        },
       }}
       data={[
         {
