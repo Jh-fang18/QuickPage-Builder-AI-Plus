@@ -5,10 +5,10 @@ import { ComponentItem } from "../../types/common";
 
 const EditContext = createContext<{
   activatedComponents: ComponentItem[];
-  setActivatedComponents: React.Dispatch<React.SetStateAction<ComponentItem[]>>;
+  getActivatedComponents: (components: ComponentItem[]) => void;
 }>({    
   activatedComponents: [],
-  setActivatedComponents: () => {},
+  getActivatedComponents: () => {},
 });
 
 export default EditContext;

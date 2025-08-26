@@ -15,9 +15,16 @@ const selfServiceItemListContainer = {
       itemName: "Form",
       url: "FormMP",
       props: {
-        gridColumn: 16,
-        gridRow: 12,
         activatedComponents: [],
+        moduleProps: {
+          name: "Form",
+          morph: {
+            up: true,
+            down: true,
+            left: true,
+            right: true,
+          },
+        },
       },
     },
   ],

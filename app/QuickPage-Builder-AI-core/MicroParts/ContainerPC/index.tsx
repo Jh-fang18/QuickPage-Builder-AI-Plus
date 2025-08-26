@@ -13,14 +13,12 @@ import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
 
 // 导入类型
-import type { MicroCardsType } from "../../types/common";
+import type { ContainerMPProps } from "../types/common";
 import type { ComponentItem } from "../../types/common";
 
 import "./styles.css";
 
 export default function ContainerPC({
-  currentIndex = "-1",
-  zIndex = 0,
   gridRow,
   gridColumn,
   gridScale,
@@ -28,17 +26,11 @@ export default function ContainerPC({
   MicroCards,
   activatedComponents,
   onActivatedComponents,
-}: {
-  currentIndex?: string;
-  zIndex?: number;
-  gridRow: number;
-  gridColumn: number;
-  gridScale: number;
-  gridPadding: number;
-  MicroCards: MicroCardsType;
-  activatedComponents: ComponentItem[];
-  onActivatedComponents: (components: ComponentItem[], index?: string) => void;
-}) {
+  currentIndex = "-1",
+  moduleProps = {
+    zIndex: 0
+  },
+}: ContainerMPProps) {
   // ======================
   // 响应式变量
   // ======================
@@ -69,9 +61,18 @@ export default function ContainerPC({
             menuKey: item.menuKey,
           };
 
-          _component.width =
-            _component.minWidth || _component.props?.gridColumn;
-          _component.height = _component.minHeight || _component.props?.gridRow;
+          _component.width = _component.props?.gridColumn
+            ? _component.props?.gridColumn < _component.minWidth
+              ? _component.minWidth
+              : _component.props?.gridColumn
+            : _component.minWidth;
+
+          _component.height =
+            _component.props?.gridRow < _component.minHeight
+              ? _component.minHeight
+              : _component.props?.gridRow
+              ? _component.props?.gridRow
+              : _component.minHeight;
 
           if (_activatedComponents && _activatedComponents.length > 0) {
             // 画布不为空
@@ -1443,18 +1444,18 @@ export default function ContainerPC({
     );
     if (!_component) return null;
     const { minColSpan, minRowSpan } = _component.minShape();
-
+   
     // 还需添加传入props的类型验证
     return createElement(_component, {
       ...(newActivatedComponents[index]?.props || {}),
       currentIndex: `${currentIndex}-${index}`,
-      zIndex,
       gridColumn: newActivatedComponents[index]?.props.gridColumn || minColSpan,
       gridRow: newActivatedComponents[index]?.props.gridRow || minRowSpan,
       gridScale,
       gridPadding,
       MicroCards,
       onActivatedComponents: handleSetActivatedComponents,
+      moduleProps: newActivatedComponents[index]?.props.moduleProps,
     });
   };
 
@@ -1468,20 +1469,25 @@ export default function ContainerPC({
     onActivatedComponents([..._activatedComponents], currentIndex);
   }, [_activatedComponents]);
 
+  useEffect(() => {
+    //console.log("activatedComponents", activatedComponents);
+    _setActivatedComponents([...activatedComponents]);
+  }, [activatedComponents]);
+
   return (
     <>
       <div
         ref={drop as any}
         className={`container pc`}
         style={{
-          width: (gridScale + gridPadding) * gridColumn + "px",
+          width: (gridScale + gridPadding) * gridColumn - gridPadding + "px",
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
           gridTemplateAreas: getGridTemplateAreas,
           backgroundSize: `${gridScale + gridPadding}px ${
             gridScale + gridPadding
           }px`,
-          zIndex,
+          zIndex: moduleProps?.zIndex,
           ...(isOverCurrent ? borderStyle : {}), // dropover样式
           ...({ "--grid-gap": `${gridPadding}px` } as React.CSSProperties), //断言自定义属性为CSSProperties合法属性
         }}
@@ -1510,26 +1516,45 @@ export default function ContainerPC({
             >
               遮罩层
             </div>
-            <div className={`title`}>{item.title}</div>
+            <div className={`title`}>
+              {item.title}
+              <span className={`size`}>
+                {item.width * (gridScale + gridPadding) - gridPadding} *
+                {item.height * (gridScale + gridPadding) - gridPadding}
+              </span>
+            </div>
             <div className={`delete`}>
               <button type="button" onClick={() => showConfirm(index)}>
                 删除
               </button>
             </div>
             <div className={`morph`}>
-              <span className={`up`} onMouseDown={(e) => moveTop(e, index)}>
+              <span
+                className={`up`}
+                onMouseDown={(e) => moveTop(e, index)}
+                style={{ display: item.props.moduleProps?.morph?.up ? "block" : "none" }}
+              >
                 上
               </span>
               <span
                 className={`right`}
                 onMouseDown={(e) => moveRight(e, index)}
+                style={{ display: item.props.moduleProps?.morph?.right ? "block" : "none" }}
               >
                 右
               </span>
-              <span className={`down`} onMouseDown={(e) => moveDown(e, index)}>
+              <span
+                className={`down`}
+                onMouseDown={(e) => moveDown(e, index)}
+                style={{ display: item.props.moduleProps?.morph?.down ? "block" : "none" }}
+              >
                 下
               </span>
-              <span className={`left`} onMouseDown={(e) => moveLeft(e, index)}>
+              <span
+                className={`left`}
+                onMouseDown={(e) => moveLeft(e, index)}
+                style={{ display: item.props.moduleProps?.morph?.left ? "block" : "none" }}
+              >
                 左
               </span>
             </div>

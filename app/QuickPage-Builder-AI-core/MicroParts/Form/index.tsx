@@ -6,11 +6,10 @@ import { Form } from "antd";
 import ContainerPC from "../ContainerPC/index";
 
 import { ComponentItem } from "../../types/common";
-import type { MicroCardsType } from "../../types/common";
+import { FormMPProps } from "../types/common";
 
 export default function FormMP({
   currentIndex,
-  zIndex = 0,
   gridRow,
   gridColumn,
   gridScale,
@@ -18,25 +17,19 @@ export default function FormMP({
   MicroCards,
   activatedComponents,
   onActivatedComponents,
-}: {
-  currentIndex: string;
-  zIndex?: number;
-  gridRow: number;
-  gridColumn: number;
-  gridScale: number;
-  gridPadding: number;
-  MicroCards: MicroCardsType;
-  activatedComponents: ComponentItem[];
-  onActivatedComponents: (components: ComponentItem[], index?: string) => void;
-}) {
+  moduleProps = {
+    zIndex: 0,
+    name: "basic",
+  },
+}: FormMPProps) {
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
     onActivatedComponents([...components], currentIndex);
   };
 
   return (
     <Form
-      style={{ overflow: "hidden", height: "100%" }}
-      name="basic"
+      style={{ height: "100%" }}
+      name={moduleProps.name}
       initialValues={{ remember: true }}
       autoComplete="off"
     >
@@ -47,9 +40,11 @@ export default function FormMP({
         gridScale={gridScale}
         gridPadding={gridPadding}
         MicroCards={MicroCards}
-        zIndex={zIndex}
         activatedComponents={activatedComponents}
         onActivatedComponents={handleSetActivatedComponents}
+        moduleProps={{
+          zIndex: moduleProps.zIndex,
+        }}
       />
     </Form>
   );
@@ -57,6 +52,6 @@ export default function FormMP({
 
 // 静态方法
 FormMP.minShape = () => ({
-  minColSpan: 16, // 最小高占格
-  minRowSpan: 12, // 最小宽占格
+  minColSpan: 8, // 最小高占格
+  minRowSpan: 6, // 最小宽占格
 });

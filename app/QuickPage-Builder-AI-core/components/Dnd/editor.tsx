@@ -4,10 +4,15 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { ContainerOutlined, DesktopOutlined, FormOutlined } from "@ant-design/icons";
+import {
+  ContainerOutlined,
+  DesktopOutlined,
+  FormOutlined,
+} from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Spin, Layout, Menu, message } from "antd";
-const { Sider, Content } = Layout;
+import { Spin, Layout, Menu, message, Button } from "antd";
+const { Sider, Content, Footer } = Layout;
+import '@ant-design/v5-patch-for-react-19';
 
 // 导入样式
 import styles from "./editor.module.css";
@@ -31,12 +36,14 @@ export default function Editor({
   gridScale = 34,
   gridPadding = 20,
   microParts,
+  tempId = "tmp",
 }: {
   gridRow?: number;
   gridColumn?: number;
   gridScale?: number;
   gridPadding?: number;
   microParts?: MicroCardsType;
+  tempId?: string;
 }) {
   // 合并微件
   const _MicroCards: MicroCardsType = {
@@ -60,7 +67,6 @@ export default function Editor({
   const [zIndex, setZIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [tempId, setTempId] = useState<string>("");
   const [terminalType, setTerminalType] = useState<number>(0);
 
   // ======================
@@ -68,6 +74,7 @@ export default function Editor({
   // ======================
   const _gridScale = gridScale;
   const _gridPadding = gridPadding;
+  const currentActivatedComponentsRef = useRef<ComponentItem[]>([]);
   const contentIdRef = useRef<number>(0);
   const oldContentRef = useRef<string>("");
 
@@ -75,13 +82,15 @@ export default function Editor({
     {
       Name: "index",
       Props: {
-        zIndex,
         terminalType,
         gridRow: _gridRow,
         gridColumn: _gridColumn,
         gridScale: _gridScale,
         gridPadding: _gridPadding,
         MicroCards: _MicroCards,
+        moduleProps: {
+          zIndex,
+        },
       },
     },
   ];
@@ -138,29 +147,58 @@ export default function Editor({
    * @param _oldContent 旧内容
    */
   const setWorkbenchData = (
-    _tempId: string,
-    _activatedComponents: ComponentItem[],
-    _contentId: number,
-    _oldContent: string
+    activatedComponents: ComponentItem[],
+    contentId: number,
+    oldContent: string,
+    tempId?: string
   ) => {
+    // 使用对象属性简写创建新的工作台数据对象
     const _workbenchData = {
-      activatedComponents: _activatedComponents,
-      contentId: _contentId,
-      oldContent: _oldContent,
+      activatedComponents: [...activatedComponents],
+      contentId,
+      oldContent,
     };
 
-    const workbenchData =
-      JSON.parse(
-        window.sessionStorage.getItem("activatedComponents") || "{}"
-      ) || {};
+    try {
+      // 从 sessionStorage 获取现有数据，使用空值合并运算符处理 null
+      const storedData = window.sessionStorage.getItem("activatedComponents");
+      let parsedData: Record<string, any>;
 
-    if (_tempId) workbenchData[_tempId] = _workbenchData;
-    else workbenchData["tmp"] = _workbenchData;
+      // 解析存储的数据
+      if (storedData) {
+        parsedData = JSON.parse(storedData);
+      } else {
+        parsedData = {};
+      }
 
-    window.sessionStorage.setItem(
-      "activatedComponents",
-      JSON.stringify(workbenchData)
-    );
+      // 确保解析后的数据是普通对象，如果不是则重置为 {}
+      if (
+        typeof parsedData !== "object" ||
+        parsedData === null ||
+        Array.isArray(parsedData)
+      ) {
+        console.warn(
+          "Stored workbench data is not a valid object, resetting to empty object."
+        );
+        parsedData = {};
+      }
+
+      // 使用逻辑或运算符确定键名，并更新数据
+      const key = tempId || "tmp";
+      parsedData[key] = _workbenchData;
+
+      // 存储回 sessionStorage
+      window.sessionStorage.setItem(
+        "activatedComponents",
+        JSON.stringify(parsedData)
+      );
+    } catch (error) {
+      console.error(
+        "Failed to update workbench data in sessionStorage:",
+        error
+      );
+      // 可以根据需要添加更详细的错误处理逻辑，例如显示用户提示
+    }
   };
 
   /**
@@ -272,80 +310,97 @@ export default function Editor({
     //console.log(_component);
     addComponent(_component); // 添加组件到画布
     setWorkbenchData(
-      tempId,
       activatedComponents,
       contentIdRef.current,
-      oldContentRef.current
+      oldContentRef.current,
+      tempId
     ); // 保存已激活模板信息到sessionStorage
 
     //console.log(activatedComponents);
   };
 
+  /**
+   * 保存模板
+   */
+  const handleSave = () => {
+    setWorkbenchData(
+      currentActivatedComponentsRef.current,
+      contentIdRef.current,
+      oldContentRef.current,
+      tempId
+    ); // 保存已激活模板信息到sessionStorage
+  };
+
+  const getActivatedComponents = (components:ComponentItem[]) => {
+    //console.log("currentActivatedComponents", components);
+    currentActivatedComponentsRef.current = [...components];
+  }
+
   // 页面挂在后, 获取微件数据
   useEffect(() => {
-    // 根据微件数量设置菜单，并控制编辑区域高度
-    fetchComponentData(
-      _MicroCards,
-      _gridRow,
-      Number(tempId),
-      terminalType
-    ).then((res) => {
-      //console.log("res", res);
-      setActivatedComponents(res.activatedComponents);
-      setGridRow(res.gridRow);
-      setComponents(res.components);
-      contentIdRef.current = res.contentId;
-      oldContentRef.current = res.oldContent;
+    // 抓取路由参数tempId
+    // if (!tempId) catchRouterData();
 
-      setMenuData([
-        {
-          key: "1",
-          label: "其他类",
-          icon: <DesktopOutlined />,
-          children:
-            (res.components[0] || []).map((item, index) => {
-              item.menuKey = `0-${item.key}_${index}`
-              return {
-                key: item.menuKey,
-                label: <DraggableMenuItem item={item} />,
-              }
-            }) || [],
-        },
-        {
-          key: "2",
-          label: "容器类",
-          icon: <ContainerOutlined />,
-          children:
-            (res.components[1] || []).map((item, index) => {
-              item.menuKey = `1-${item.key}_${index}`
-              return {
-                key: item.menuKey,
-                label: <DraggableMenuItem item={item} />,
-              }
-            }) || [],
-        },
-        {
-          key: "3",
-          label: "表单类",
-          icon: <FormOutlined />,
-          children:
-            (res.components[2] || []).map((item, index) => {
-              item.menuKey = `0-${item.key}_${index}`
-              return {
-                key: item.menuKey,
-                label: <DraggableMenuItem item={item} />,
-              }
-            }) || [],
-        },
-      ]);
-    });
+    // 根据微件数量设置菜单，并控制编辑区域高度
+    fetchComponentData(_MicroCards, _gridRow, tempId, terminalType).then(
+      (res) => {
+        //console.log("res", res.activatedComponents);
+        setActivatedComponents([...res.activatedComponents]);
+        setGridRow(res.gridRow);
+        setComponents(res.components);
+        contentIdRef.current = res.contentId;
+        oldContentRef.current = res.oldContent;
+
+        setMenuData([
+          {
+            key: "1",
+            label: "其他类",
+            icon: <DesktopOutlined />,
+            children:
+              (res.components[0] || []).map((item, index) => {
+                item.menuKey = `0-${item.key}_${index}`;
+                return {
+                  key: item.menuKey,
+                  label: <DraggableMenuItem item={item} />,
+                };
+              }) || [],
+          },
+          {
+            key: "2",
+            label: "容器类",
+            icon: <ContainerOutlined />,
+            children:
+              (res.components[1] || []).map((item, index) => {
+                item.menuKey = `1-${item.key}_${index}`;
+                return {
+                  key: item.menuKey,
+                  label: <DraggableMenuItem item={item} />,
+                };
+              }) || [],
+          },
+          {
+            key: "3",
+            label: "表单类",
+            icon: <FormOutlined />,
+            children:
+              (res.components[2] || []).map((item, index) => {
+                item.menuKey = `0-${item.key}_${index}`;
+                return {
+                  key: item.menuKey,
+                  label: <DraggableMenuItem item={item} />,
+                };
+              }) || [],
+          },
+        ]);
+      }
+    );
   }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <Layout>
         <Spin tip="loading" spinning={loading}>
-          <Layout style={{ background: "#fff" }}>
+          <Layout>
             <Sider style={siderStyle}>
               <div className={styles.title}>微件列表</div>
               <Menu
@@ -355,15 +410,32 @@ export default function Editor({
                 items={menuData}
               />
             </Sider>
-            <Content style={{ padding: "20px 0",overflow: "initial" }}>
-              <Suspense fallback={<h2>Loading...</h2>}>
-                <EditContext.Provider
-                  value={{ activatedComponents, setActivatedComponents }}
-                >
-                  <CoreComponent {...DynamicComponents[0].Props} />
-                </EditContext.Provider>
-              </Suspense>
-            </Content>
+            <Layout style={{ background: "#fff" }}>
+              <Content style={{ overflow: "initial", padding: "20px 0" }}>
+                <Suspense fallback={<h2>Loading...</h2>}>
+                  <EditContext.Provider
+                    value={{ activatedComponents, getActivatedComponents }}
+                  >
+                    <CoreComponent {...DynamicComponents[0].Props} />
+                  </EditContext.Provider>
+                </Suspense>
+              </Content>
+              <Footer
+                style={{
+                  position: "sticky",
+                  bottom: 0,
+                  zIndex: 1,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Button type="primary" onClick={handleSave}>
+                  保存
+                </Button>
+              </Footer>
+            </Layout>
           </Layout>
         </Spin>
       </Layout>

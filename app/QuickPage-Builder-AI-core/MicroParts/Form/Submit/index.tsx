@@ -12,7 +12,6 @@ import {
 } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const SubmitMP = ({
-  currentIndex,
   gridColumn,
   gridRow,
   gridScale,
@@ -49,7 +48,7 @@ const SubmitMP = ({
   return (
     <Form.Item label={null} style={{ width, height, margin: 0 }}>
       <Button type="primary" htmlType="submit" block={true}>
-        提交
+        {baseData.moduleProps?.submitText}
       </Button>
     </Form.Item>
   );
@@ -57,7 +56,7 @@ const SubmitMP = ({
 
 // 静态方法
 SubmitMP.minShape = () => ({
-  minColSpan: 2, // 最小高占格
+  minColSpan: 3, // 最小高占格
   minRowSpan: 1, // 最小宽占格
 });
 

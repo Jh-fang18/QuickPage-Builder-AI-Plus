@@ -5,10 +5,15 @@ const selfServiceItemListForm = {
       itemName: "Input",
       url: "InputMP",
       props: {
-        gridColumn: 6,
         moduleProps: {
           label: "标题",
           labelCol: { span: 8 },
+          morph: {
+            up: false,
+            down: false,
+            left: true,
+            right: true,
+          },
         },
         data: [
           {
@@ -27,7 +32,13 @@ const selfServiceItemListForm = {
       url: "SubmitMP",
       props: {
         moduleProps: {
-          label: "提交",
+          submitText: "提交",
+          morph: {
+            up: false,
+            down: false,
+            left: true,
+            right: true,
+          },
         },
       },
     },

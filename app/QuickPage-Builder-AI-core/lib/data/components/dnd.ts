@@ -142,7 +142,7 @@ const updateComponentItem = (
 export const fetchComponentData = async (
   MicroCards: MicroCardsType,
   gridRow: number,
-  tempId?: number,
+  tempId?: string,
   terminalType?: number
 ) => {
   let _components: ComponentItem[][] = [];
@@ -191,7 +191,7 @@ export const fetchComponentData = async (
         });
 
         //console.log(_components);
-        console.log(1,MicroCards);
+        //console.log(1,MicroCards);
         //console.log(2,microParts);
 
         // PC端
@@ -215,9 +215,6 @@ export const fetchComponentData = async (
             }
             return !!microCard;
           });
-
-          // 抓取路由参数tempId
-          // if (!tempId.value) catchRouterData();
 
           // 从sessionStorage中获取已激活组件数据
           const workbenchData = JSON.parse(
@@ -258,7 +255,7 @@ export const fetchComponentData = async (
       console.error("获取模板信息失败:", err);
       message.error("数据加载失败"); // 新增错误提示
     });
-
+    
   return {
     components: _components,
     activatedComponents: _activatedComponents,

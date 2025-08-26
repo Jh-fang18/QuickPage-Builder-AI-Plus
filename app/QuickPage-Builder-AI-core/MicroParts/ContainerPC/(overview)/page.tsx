@@ -6,8 +6,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 import CoreComponent from "./core";
 
-import { ComponentItem } from "../../types/common";
-import EditContext from "./context";
+import { ComponentItem } from "../../../types/common";
+import EditContext from "../context";
 
 export default function Page() {
   const [activatedComponents, setActivatedComponents] = useState<

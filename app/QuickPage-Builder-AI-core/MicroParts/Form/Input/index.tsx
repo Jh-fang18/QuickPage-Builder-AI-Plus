@@ -28,7 +28,7 @@ const InputMP = ({
   // ======================
 
   // 基础静态数据获取和定义
-  const baseData = useBaseData<InputDataItem, InputMPProps['moduleProps']>({
+  const baseData = useBaseData<InputDataItem, InputMPProps["moduleProps"]>({
     gridColumn,
     gridRow,
     gridScale,
@@ -51,9 +51,7 @@ const InputMP = ({
 
   // 根据data中传入的类型定义FieldType
   const inputType = `${baseData.data[0].inputType}_${currentIndex}`;
-  type FieldType = {
-    [inputType]: InputDataItem["value"];
-  };
+  type FieldType = Record<typeof inputType, InputDataItem["value"]>;
 
   return (
     <Form.Item<FieldType>

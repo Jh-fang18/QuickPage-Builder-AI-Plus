@@ -64,6 +64,10 @@ export interface ComponentItem {
   /** 组件的属性 */
   props: {
     [key: string]: any;
+    /** 组件的属性 */
+    moduleProps?: {
+      [key: string]: any;
+    };
   };
 }
 

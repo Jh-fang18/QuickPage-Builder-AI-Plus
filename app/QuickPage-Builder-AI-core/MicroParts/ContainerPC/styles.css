@@ -3,7 +3,6 @@
   display: grid;
   background-color: #f3f3f3;
   margin: 0 auto;
-  overflow: hidden;
   height: 100%;
 
   .block {
@@ -56,24 +55,23 @@
 
     > .title,
     > .delete {
+      position: absolute;
       font-size: 12px;
     }
 
     > .title {
-      position: absolute;
       left: 0;
       bottom: -16px;
       padding: 0 2px;
       width: 100%;
       color: #4285f4;
 
-      .form a {
-        padding-right: 5px;
+      span {
+        padding: 0 5px;
       }
     }
 
     > .delete {
-      position: absolute;
       display: none;
       bottom: -16px;
       right: 2px;
