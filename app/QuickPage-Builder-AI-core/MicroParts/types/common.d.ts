@@ -6,14 +6,7 @@ export interface BaseDataType<T> {
   gridPadding: number;
   data?: T[];
   currentIndex?: string;
-  moduleProps?: {
-    morph?: {
-      up: boolean;
-      down: boolean;
-      left: boolean;
-      right: boolean;
-    };
-  };
+  moduleProps?: {};
 }
 
 /** 发布票务 */
@@ -54,14 +47,14 @@ export interface SubmitDataItem {
 
 // 发布票务微件基础数据
 export interface LaunchTicketProps extends BaseDataType<LaunchTicketDataItem> {
-  moduleProps?: BaseDataType<LaunchTicketDataItem>['moduleProps'] & {
+  moduleProps?: BaseDataType<LaunchTicketDataItem>["moduleProps"] & {
     /** 标题 */
     title: string;
   };
 }
 
 export interface InputMPProps extends BaseDataType<InputDataItem> {
-  moduleProps?: BaseDataType<InputDataItem>['moduleProps'] & {
+  moduleProps?: BaseDataType<InputDataItem>["moduleProps"] & {
     /** 标签名 */
     label: string;
     /** 标签名宽度 */
@@ -70,7 +63,7 @@ export interface InputMPProps extends BaseDataType<InputDataItem> {
 }
 
 export interface SubmitMPProps extends BaseDataType<SubmitDataItem> {
-  moduleProps?: BaseDataType<SubmitDataItem>['moduleProps'] & {
+  moduleProps?: BaseDataType<SubmitDataItem>["moduleProps"] & {
     /** 提交按钮文本 */
     submitText: string;
   };
@@ -80,14 +73,14 @@ export interface ContainerMPProps<T = any> extends BaseDataType<T> {
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
   onActivatedComponents: (components: ComponentItem[], index?: string) => void;
-  moduleProps?: BaseDataType<T>['moduleProps'] & {
+  moduleProps?: BaseDataType<T>["moduleProps"] & {
     /** 容器z-index */
     zIndex: number;
   };
 }
 
 export interface FormMPProps<T = any> extends ContainerMPProps<T> {
-  moduleProps?: ContainerMPProps<T>['moduleProps'] & {
+  moduleProps?: ContainerMPProps<T>["moduleProps"] & {
     /** 容器z-index */
     name: string;
   };

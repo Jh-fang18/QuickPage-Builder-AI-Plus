@@ -10,16 +10,16 @@ import {
   FormOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Spin, Layout, Menu, message, Button } from "antd";
+import { Spin, Layout, Menu, message, Button, Flex } from "antd";
 const { Sider, Content, Footer } = Layout;
-import '@ant-design/v5-patch-for-react-19';
+import "@ant-design/v5-patch-for-react-19";
 
 // 导入样式
 import styles from "./editor.module.css";
 
 // 导入自定义组件
 import * as MicroCards from "../../MicroParts/index";
-import CoreComponent from "./Core/index";
+import Core from "./Core/index";
 import EditContext from "./context";
 
 // 导入类型
@@ -68,6 +68,7 @@ export default function Editor({
   const [loading, setLoading] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState(false);
   const [terminalType, setTerminalType] = useState<number>(0);
+  const [preview, setPreview] = useState<boolean>(false);
 
   // ======================
   // 非响应式变量
@@ -331,10 +332,17 @@ export default function Editor({
     ); // 保存已激活模板信息到sessionStorage
   };
 
-  const getActivatedComponents = (components:ComponentItem[]) => {
+  /**
+   * 预览模板
+   */
+  const handlePreview = () => {
+    setPreview(true);
+  };
+
+  const getActivatedComponents = (components: ComponentItem[]) => {
     //console.log("currentActivatedComponents", components);
     currentActivatedComponentsRef.current = [...components];
-  }
+  };
 
   // 页面挂在后, 获取微件数据
   useEffect(() => {
@@ -416,7 +424,7 @@ export default function Editor({
                   <EditContext.Provider
                     value={{ activatedComponents, getActivatedComponents }}
                   >
-                    <CoreComponent {...DynamicComponents[0].Props} />
+                    <Core {...DynamicComponents[0].Props} />
                   </EditContext.Provider>
                 </Suspense>
               </Content>
@@ -431,9 +439,12 @@ export default function Editor({
                   justifyContent: "flex-end",
                 }}
               >
-                <Button type="primary" onClick={handleSave}>
-                  保存
-                </Button>
+                <Flex gap="small" wrap>
+                  <Button onClick={handlePreview}>预览</Button>
+                  <Button type="primary" onClick={handleSave}>
+                    保存
+                  </Button>
+                </Flex>
               </Footer>
             </Layout>
           </Layout>

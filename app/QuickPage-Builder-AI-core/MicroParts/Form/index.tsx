@@ -8,7 +8,7 @@ import ContainerPC from "../ContainerPC/index";
 import { ComponentItem } from "../../types/common";
 import { FormMPProps } from "../types/common";
 
-export default function FormMP({
+const FormMP = ({
   currentIndex,
   gridRow,
   gridColumn,
@@ -21,7 +21,7 @@ export default function FormMP({
     zIndex: 0,
     name: "basic",
   },
-}: FormMPProps) {
+}: FormMPProps) => {
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
     onActivatedComponents([...components], currentIndex);
   };
@@ -48,10 +48,12 @@ export default function FormMP({
       />
     </Form>
   );
-}
+};
 
 // 静态方法
 FormMP.minShape = () => ({
   minColSpan: 8, // 最小高占格
   minRowSpan: 6, // 最小宽占格
 });
+
+export default FormMP;
