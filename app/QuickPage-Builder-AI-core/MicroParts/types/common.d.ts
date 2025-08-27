@@ -69,19 +69,20 @@ export interface SubmitMPProps extends BaseDataType<SubmitDataItem> {
   };
 }
 
-export interface ContainerMPProps<T = any> extends BaseDataType<T> {
+export interface ContainerPCProps<T = any> extends BaseDataType<T> {
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
-  onActivatedComponents: (components: ComponentItem[], index?: string) => void;
+  onActivatedComponents?: (components: ComponentItem[], index?: string) => void;
+  html?: boolean;
   moduleProps?: BaseDataType<T>["moduleProps"] & {
     /** 容器z-index */
     zIndex: number;
   };
 }
 
-export interface FormMPProps<T = any> extends ContainerMPProps<T> {
-  moduleProps?: ContainerMPProps<T>["moduleProps"] & {
-    /** 容器z-index */
+export interface FormMPProps<T = any> extends ContainerPCProps<T> {
+  moduleProps?: ContainerPCProps<T>["moduleProps"] & {
+    /** 表单名称 */
     name: string;
   };
 }

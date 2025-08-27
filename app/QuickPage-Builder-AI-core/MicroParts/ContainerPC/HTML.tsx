@@ -1,13 +1,24 @@
 "use client";
 
-import { useMemo, useState, createElement, Suspense } from "react";
+import { useMemo, useState, Suspense, useEffect } from "react";
 
 // 导入类型
-import type { MicroCardsType } from "../../types/common";
+import type { ContainerPCProps } from "../types/common";
 import type { ComponentItem } from "../../types/common";
 
-import "./styles.css";
+// 导入函数
+import { dynamicComponent } from "./utils";
 
+import "./styles.html.css";
+
+/**
+ * HTML 组件
+ * 这是一个容器组件，根据 `html` 属性的值来决定渲染 HTML 版本还是 Core 版本。
+ * 它接收一系列属性并将其传递给相应的子组件。
+ * 用于显示用户可用的界面
+ * @param {ContainerPCProps} props - 组件的属性
+ * @returns {JSX.Element} 渲染后的组件
+ */
 export default function HTML({
   gridRow,
   gridColumn,
@@ -19,18 +30,7 @@ export default function HTML({
     zIndex: 0,
   },
   currentIndex = "-1",
-}: {
-  gridRow: number;
-  gridColumn: number;
-  gridScale: number;
-  gridPadding: number;
-  MicroCards: MicroCardsType;
-  activatedComponents: ComponentItem[];
-  moduleProps: {
-    zIndex: number;
-  };
-  currentIndex?: string;
-}) {
+}: ContainerPCProps) {
   // ======================
   // 响应式变量
   // ======================
@@ -79,33 +79,9 @@ export default function HTML({
 
   /** end **/
 
-  const Component = (index: number) => {
-    const componentName = _activatedComponents[index].url;
-    const _component = MicroCards[componentName];
-    const newActivatedComponents = _activatedComponents.map((item, i) =>
-      i === index
-        ? {
-            ...item,
-            props: {
-              ...(item?.props || {}),
-            },
-          }
-        : item
-    );
-    if (!_component) return null;
-
-    // 还需添加传入props的类型验证
-    return createElement(_component, {
-      ...(newActivatedComponents[index]?.props || {}),
-      currentIndex: `${currentIndex}-${index}`,
-      gridColumn: newActivatedComponents[index]?.props.gridColumn,
-      gridRow: newActivatedComponents[index]?.props.gridRow,
-      gridScale,
-      gridPadding,
-      MicroCards,
-      moduleProps: newActivatedComponents[index]?.props.moduleProps,
-    });
-  };
+  useEffect(() => {
+    _setActivatedComponents([...activatedComponents]);
+  }, [activatedComponents]);
 
   return (
     <>
@@ -133,7 +109,16 @@ export default function HTML({
               gridArea: item.ccs,
             }}
           >
-            <Suspense fallback={"loading..."}>{Component(index)}</Suspense>
+            <Suspense fallback={"loading..."}>
+              {dynamicComponent(
+                currentIndex,
+                index,
+                gridScale,
+                gridPadding,
+                MicroCards,
+                _activatedComponents,
+              )}
+            </Suspense>
           </div>
         ))}
       </div>

@@ -13,10 +13,10 @@ import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
 
 // 导入类型
-import type { ContainerMPProps } from "../types/common";
+import type { ContainerPCProps } from "../types/common";
 import type { ComponentItem } from "../../types/common";
 
-import "./styles.css";
+import "./styles.core.css";
 
 export default function Core({
   gridRow,
@@ -30,7 +30,7 @@ export default function Core({
   moduleProps = {
     zIndex: 0
   },
-}: ContainerMPProps) {
+}: ContainerPCProps) {
   // ======================
   // 响应式变量
   // ======================
@@ -1426,7 +1426,9 @@ export default function Core({
     );
     //console.log("newActivatedComponents for father end", newActivatedComponents);
 
-    onActivatedComponents([...newActivatedComponents], currentIndex);
+    if (onActivatedComponents) {
+      onActivatedComponents([...newActivatedComponents], currentIndex);
+    }
   };
 
   const Component = (index: number) => {
@@ -1466,7 +1468,9 @@ export default function Core({
   useEffect(() => {
     // console.log("update currentIndex", currentIndex);
     // console.log("update _activatedComponents", _activatedComponents);
-    onActivatedComponents([..._activatedComponents], currentIndex);
+    if (onActivatedComponents) {
+      onActivatedComponents([..._activatedComponents], currentIndex);
+    }
   }, [_activatedComponents]);
 
   useEffect(() => {

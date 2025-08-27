@@ -23,7 +23,11 @@ const FormMP = ({
   },
 }: FormMPProps) => {
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    onActivatedComponents([...components], currentIndex);
+    if (onActivatedComponents) {
+      onActivatedComponents([...components], currentIndex);
+    } else {
+      console.error("onActivatedComponents is not defined");
+    }
   };
 
   return (
@@ -34,6 +38,7 @@ const FormMP = ({
       autoComplete="off"
     >
       <ContainerPC
+        html={true}
         currentIndex={currentIndex}
         gridRow={gridRow}
         gridColumn={gridColumn}
