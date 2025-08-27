@@ -1,6 +1,3 @@
-// 导入样式
-import styles from "./styles.module.css";
-
 // 导入已有组件
 import { Form, Input } from "antd";
 
