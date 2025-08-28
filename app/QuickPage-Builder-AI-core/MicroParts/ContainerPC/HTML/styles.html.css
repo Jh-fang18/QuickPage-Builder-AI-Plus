@@ -1,0 +1,43 @@
+.html-container {
+  position: relative;
+  display: grid;
+  margin: 0 auto;
+  height: 100%;
+
+  .block {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+    align-content: center;
+    user-select: none;
+    background: #fff;
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.html-container.mobile {
+  width: 383px;
+  grid-row-gap: 8px;
+  grid-column-gap: 8px;
+  /* 网格 */
+  background-image: -webkit-linear-gradient(white 8px, transparent 0),
+    -webkit-linear-gradient(90deg, white 8px, transparent 0);
+  background-image: -moz-linear-gradient(white 8px, transparent 0),
+    -moz-linear-gradient(90deg, white 8px, transparent 0);
+  background-image: -o-linear-gradient(white 8px, transparent 0),
+    -o-linear-gradient(90deg, white 8px, transparent 0);
+  background-image: linear-gradient(white 8px, transparent 0),
+    linear-gradient(90deg, white 8px, transparent 0);
+  background-size: 38.3px 38.3px;
+  background-position: -8px -8px;
+}
+
+.html-container.pc {
+  --grid-gap: 20px;
+  grid-row-gap: var(--grid-gap);
+  grid-column-gap: var(--grid-gap);
+}

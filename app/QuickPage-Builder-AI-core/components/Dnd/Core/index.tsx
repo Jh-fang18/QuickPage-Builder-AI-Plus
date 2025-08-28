@@ -17,6 +17,7 @@ export default function Core({
   moduleProps = {
     zIndex: 0,
   },
+  html = false,
 }: {
   terminalType: number;
   gridRow: number;
@@ -27,6 +28,7 @@ export default function Core({
   moduleProps: {
     zIndex: number;
   };
+  html: boolean;
 }) {
   const { activatedComponents, getActivatedComponents } =
     useContext(EditContext);
@@ -38,6 +40,7 @@ export default function Core({
 
   return (
     <ContainerPC
+      html={html}
       gridRow={gridRow}
       gridColumn={gridColumn}
       gridScale={gridScale}

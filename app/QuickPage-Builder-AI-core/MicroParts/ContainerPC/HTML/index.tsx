@@ -3,11 +3,11 @@
 import { useMemo, useState, Suspense, useEffect } from "react";
 
 // 导入类型
-import type { ContainerPCProps } from "../types/common";
-import type { ComponentItem } from "../../types/common";
+import type { ContainerPCProps } from "../../types/common";
+import type { ComponentItem } from "../../../types/common";
 
 // 导入函数
-import { dynamicComponent } from "./utils";
+import { dynamicComponent } from "../utils";
 
 import "./styles.html.css";
 
@@ -86,7 +86,7 @@ export default function HTML({
   return (
     <>
       <div
-        className={`container pc`}
+        className={`html-container pc`}
         style={{
           width: (gridScale + gridPadding) * gridColumn - gridPadding + "px",
           gridTemplateColumns: getGridTemplateColumns,
@@ -110,6 +110,7 @@ export default function HTML({
             }}
           >
             <Suspense fallback={"loading..."}>
+              {/* 渲染子元素的HTML版本 */}
               {dynamicComponent(
                 currentIndex,
                 index,
@@ -117,6 +118,7 @@ export default function HTML({
                 gridPadding,
                 MicroCards,
                 _activatedComponents,
+                true
               )}
             </Suspense>
           </div>

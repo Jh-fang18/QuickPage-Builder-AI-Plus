@@ -8,14 +8,17 @@ import {
   createElement,
   Suspense,
 } from "react";
-
 import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
 
 // 导入类型
-import type { ContainerPCProps } from "../types/common";
-import type { ComponentItem } from "../../types/common";
+import type { ContainerPCProps } from "../../types/common";
+import type { ComponentItem } from "../../../types/common";
 
+// 导入动态组件渲染函数
+import { dynamicComponent } from "../utils";
+
+// 导入样式
 import "./styles.core.css";
 
 export default function Core({
@@ -28,7 +31,7 @@ export default function Core({
   onActivatedComponents,
   currentIndex = "-1",
   moduleProps = {
-    zIndex: 0
+    zIndex: 0,
   },
 }: ContainerPCProps) {
   // ======================
@@ -1431,36 +1434,6 @@ export default function Core({
     }
   };
 
-  const Component = (index: number) => {
-    const componentName = _activatedComponents[index].url;
-    const _component = MicroCards[componentName];
-    const newActivatedComponents = _activatedComponents.map((item, i) =>
-      i === index
-        ? {
-            ...item,
-            props: {
-              ...(item?.props || {}),
-            },
-          }
-        : item
-    );
-    if (!_component) return null;
-    const { minColSpan, minRowSpan } = _component.minShape();
-   
-    // 还需添加传入props的类型验证
-    return createElement(_component, {
-      ...(newActivatedComponents[index]?.props || {}),
-      currentIndex: `${currentIndex}-${index}`,
-      gridColumn: newActivatedComponents[index]?.props.gridColumn || minColSpan,
-      gridRow: newActivatedComponents[index]?.props.gridRow || minRowSpan,
-      gridScale,
-      gridPadding,
-      MicroCards,
-      onActivatedComponents: handleSetActivatedComponents,
-      moduleProps: newActivatedComponents[index]?.props.moduleProps,
-    });
-  };
-
   const borderStyle = {
     backgroundColor: "pink",
   };
@@ -1482,7 +1455,7 @@ export default function Core({
     <>
       <div
         ref={drop as any}
-        className={`container pc`}
+        className={`core-container pc`}
         style={{
           width: (gridScale + gridPadding) * gridColumn - gridPadding + "px",
           gridTemplateColumns: getGridTemplateColumns,
@@ -1509,7 +1482,19 @@ export default function Core({
               if (el) blockRefs.current["block" + index] = el;
             }}
           >
-            <Suspense fallback={"loading..."}>{Component(index)}</Suspense>
+            <Suspense fallback={"loading..."}>
+              {/* 渲染子元素的编辑版本 */}
+              {dynamicComponent(
+                currentIndex,
+                index,
+                gridScale,
+                gridPadding,
+                MicroCards,
+                _activatedComponents,
+                false,
+                handleSetActivatedComponents
+              )}
+            </Suspense>
             <div
               className={`shape ${
                 item.url === "ContainerPC" || item.url === "FormMP"
@@ -1536,28 +1521,42 @@ export default function Core({
               <span
                 className={`up`}
                 onMouseDown={(e) => moveTop(e, index)}
-                style={{ display: item.props.moduleProps?.morph?.up ? "block" : "none" }}
+                style={{
+                  display: item.props.moduleProps?.morph?.up ? "block" : "none",
+                }}
               >
                 上
               </span>
               <span
                 className={`right`}
                 onMouseDown={(e) => moveRight(e, index)}
-                style={{ display: item.props.moduleProps?.morph?.right ? "block" : "none" }}
+                style={{
+                  display: item.props.moduleProps?.morph?.right
+                    ? "block"
+                    : "none",
+                }}
               >
                 右
               </span>
               <span
                 className={`down`}
                 onMouseDown={(e) => moveDown(e, index)}
-                style={{ display: item.props.moduleProps?.morph?.down ? "block" : "none" }}
+                style={{
+                  display: item.props.moduleProps?.morph?.down
+                    ? "block"
+                    : "none",
+                }}
               >
                 下
               </span>
               <span
                 className={`left`}
                 onMouseDown={(e) => moveLeft(e, index)}
-                style={{ display: item.props.moduleProps?.morph?.left ? "block" : "none" }}
+                style={{
+                  display: item.props.moduleProps?.morph?.left
+                    ? "block"
+                    : "none",
+                }}
               >
                 左
               </span>

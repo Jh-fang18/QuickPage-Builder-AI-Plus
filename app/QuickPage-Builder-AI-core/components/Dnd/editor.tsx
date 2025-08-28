@@ -339,6 +339,13 @@ export default function Editor({
     setPreview(true);
   };
 
+  /**
+   * 取消预览
+   */
+  const handleCancelPreview = () => {
+    setPreview(false);
+  };
+
   const getActivatedComponents = (components: ComponentItem[]) => {
     //console.log("currentActivatedComponents", components);
     currentActivatedComponentsRef.current = [...components];
@@ -409,7 +416,9 @@ export default function Editor({
       <Layout>
         <Spin tip="loading" spinning={loading}>
           <Layout>
-            <Sider style={siderStyle}>
+            <Sider
+              style={{ ...siderStyle, display: preview ? "none" : "block" }}
+            >
               <div className={styles.title}>微件列表</div>
               <Menu
                 defaultOpenKeys={["1", "2", "3"]}
@@ -424,7 +433,7 @@ export default function Editor({
                   <EditContext.Provider
                     value={{ activatedComponents, getActivatedComponents }}
                   >
-                    <Core {...DynamicComponents[0].Props} />
+                    <Core {...DynamicComponents[0].Props} html={preview} />
                   </EditContext.Provider>
                 </Suspense>
               </Content>
@@ -440,7 +449,19 @@ export default function Editor({
                 }}
               >
                 <Flex gap="small" wrap>
-                  <Button onClick={handlePreview}>预览</Button>
+                  <Button
+                    onClick={handlePreview}
+                    style={{ display: preview ? "none" : "block" }}
+                  >
+                    预览
+                  </Button>
+                  <Button
+                    onClick={handleCancelPreview}
+                    disabled={!preview}
+                    style={{ display: preview ? "block" : "none" }}
+                  >
+                    取消预览
+                  </Button>
                   <Button type="primary" onClick={handleSave}>
                     保存
                   </Button>

@@ -10,6 +10,8 @@ const dynamicComponent = (
   gridPadding: number,
   MicroCards: MicroCardsType,
   activatedComponents: ComponentItem[],
+  html: boolean,
+  handleSetActivatedComponents?: (activatedComponents: ComponentItem[], index: string) => void,
 ) => {
   const componentName = activatedComponents[index].url;
   const _component = MicroCards[componentName];
@@ -25,7 +27,7 @@ const dynamicComponent = (
   );
 
   if (!_component) return null;
-  
+
   const { minColSpan, minRowSpan } = _component.minShape();
 
   // 还需添加传入props的类型验证
@@ -44,6 +46,8 @@ const dynamicComponent = (
     gridPadding,
     MicroCards,
     moduleProps: newActivatedComponents[index]?.props.moduleProps,
+    html: html,
+    onActivatedComponents: handleSetActivatedComponents,
   });
 };
 

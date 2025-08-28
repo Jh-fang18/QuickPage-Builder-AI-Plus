@@ -30,8 +30,8 @@ const ContainerPC = ({
   moduleProps = {
     zIndex: 0,
   },
-  /** 是否使用 HTML 版本，默认为 true */
-  html = true,
+  /** 是否使用 HTML 版本，默认为 false */
+  html = false,
 }: ContainerPCProps) => {
 
   return html ? (

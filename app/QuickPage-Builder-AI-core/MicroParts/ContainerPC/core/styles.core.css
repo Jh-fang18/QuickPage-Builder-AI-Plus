@@ -1,4 +1,4 @@
-.container {
+.core-container {
   position: relative;
   display: grid;
   background-color: #f3f3f3;
@@ -225,7 +225,7 @@
   }
 }
 
-.container.mobile {
+.core-container.mobile {
   width: 383px;
   grid-row-gap: 8px;
   grid-column-gap: 8px;
@@ -242,7 +242,7 @@
   background-position: -8px -8px;
 }
 
-.container.pc {
+.core-container.pc {
   --grid-gap: 20px;
   grid-row-gap: var(--grid-gap);
   grid-column-gap: var(--grid-gap);

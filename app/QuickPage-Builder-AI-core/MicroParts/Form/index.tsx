@@ -21,6 +21,7 @@ const FormMP = ({
     zIndex: 0,
     name: "basic",
   },
+  html = false,
 }: FormMPProps) => {
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
     if (onActivatedComponents) {
@@ -38,7 +39,7 @@ const FormMP = ({
       autoComplete="off"
     >
       <ContainerPC
-        html={true}
+        html={html}
         currentIndex={currentIndex}
         gridRow={gridRow}
         gridColumn={gridColumn}
