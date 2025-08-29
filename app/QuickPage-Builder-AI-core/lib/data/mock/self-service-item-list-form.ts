@@ -6,8 +6,6 @@ const selfServiceItemListForm = {
       url: "InputMP",
       props: {
         moduleProps: {
-          label: "标题",
-          labelCol: { span: 8 },
           morph: {
             up: false,
             down: false,
@@ -18,6 +16,8 @@ const selfServiceItemListForm = {
         data: [
           {
             id: 1,
+            label: "标题",
+            labelCol: { span: 8 },
             inputType: "text",
             value: "",
             placeholder: "请输入",
@@ -32,7 +32,6 @@ const selfServiceItemListForm = {
       url: "SubmitMP",
       props: {
         moduleProps: {
-          submitText: "提交",
           morph: {
             up: false,
             down: false,
@@ -40,6 +39,12 @@ const selfServiceItemListForm = {
             right: true,
           },
         },
+        data: [
+          {
+            id: 1,
+            submitText: "提交",
+          },
+        ],
       },
     },
   ],

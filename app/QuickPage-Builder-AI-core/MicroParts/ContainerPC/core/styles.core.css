@@ -19,7 +19,21 @@
     background: rgba(255, 255, 255, 0.4);
 
     > :first-child {
+      box-sizing: content-box;
       border: 1px dashed #979797;
+    }
+
+    > :first-child.highlight {
+      border-color: red;
+    }
+
+    > .shape,
+    > .title,
+    > .delete,
+    > .attribute,
+    > .size,
+    > .morph {
+      font-size: 10px;
     }
 
     > .shape {
@@ -33,48 +47,62 @@
     }
     > .shape.brand {
       width: 30px;
-      height: 30px;
+      height: 60px;
+      padding-top: 6px;
+      padding-left: 1px;
+      top: 10px;
       right: -29px;
       left: auto;
       cursor: pointer;
+      text-indent: 0;
+      color: #fff;
+      writing-mode: vertical-lr;
     }
     > .shape.brand:before {
       content: "";
       display: block;
       position: absolute;
-      top: 1px;
-      left: 1px;
-      width: 50%;
-      height: 50%;
+      top: 0;
+      left: 0;
+      width: 55%;
+      height: 60%;
       background: #4285f4;
       margin-bottom: 10px;
-    }
-    > .shape.normal {
-      border-color: #979797;
+      z-index: -1;
     }
 
     > .title,
-    > .delete {
+    > .delete,
+    > .attribute,
+    > .size {
       position: absolute;
-      font-size: 12px;
     }
 
-    > .title {
+    > .title,
+    > .size {
       left: 0;
-      bottom: -16px;
       padding: 0 2px;
       width: 100%;
       color: #4285f4;
+    }
 
-      span {
-        padding: 0 5px;
-      }
+    > .title {
+      bottom: -14px;
+    }
+    > .size {
+      top: -16px;
+    }
+    > .delete,
+    > .attribute {
+      display: none;
+      bottom: -15px;
     }
 
     > .delete {
-      display: none;
-      bottom: -16px;
       right: 2px;
+    }
+    > .attribute {
+      right: 30px;
     }
 
     > .morph {
@@ -217,11 +245,12 @@
     }
   }
 
-  .block:hover .delete {
+  .block:hover .delete,
+  .block:hover .attribute {
     display: block;
   }
   .block.zIndex999 {
-    z-index: 999;
+    z-index: 999 !important;
   }
 }
 

@@ -48,7 +48,7 @@ const SubmitMP = ({
   return (
     <Form.Item label={null} style={{ width, height, margin: 0 }}>
       <Button type="primary" htmlType="submit" block={true}>
-        {baseData.moduleProps?.submitText}
+        {baseData.data[0].submitText}
       </Button>
     </Form.Item>
   );

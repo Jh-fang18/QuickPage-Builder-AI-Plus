@@ -4,7 +4,7 @@ export interface BaseDataType<T> {
   gridColumn: number;
   gridScale: number;
   gridPadding: number;
-  data?: T[];
+  data: T[];
   currentIndex?: string;
   moduleProps?: {};
 }
@@ -25,6 +25,10 @@ export interface LaunchTicketDataItem {
 export interface InputDataItem {
   /** ID */
   id: number;
+  /** 标签名 */
+  label: string;
+  /** 标签名宽度 */
+  labelCol?: { span: number };
   /** 数据类型 */
   inputType: string;
   /** 输入值 */
@@ -39,10 +43,21 @@ export interface InputDataItem {
 export interface SubmitDataItem {
   /** ID */
   id: number;
+  submitText: string;
   event: {
     /** 提交事件 */
     submit: () => void;
   };
+}
+
+/** 提交按钮 */
+export interface FormMPPropsItem {
+  /** ID */
+  id: number;
+  /** 表单名称 */
+  name: string;
+  /** 表单标题 */
+  title: string;
 }
 
 // 发布票务微件基础数据
@@ -53,36 +68,20 @@ export interface LaunchTicketProps extends BaseDataType<LaunchTicketDataItem> {
   };
 }
 
-export interface InputMPProps extends BaseDataType<InputDataItem> {
-  moduleProps?: BaseDataType<InputDataItem>["moduleProps"] & {
-    /** 标签名 */
-    label: string;
-    /** 标签名宽度 */
-    labelCol?: { span: number };
-  };
-}
+export interface InputMPProps extends BaseDataType<InputDataItem> {}
 
-export interface SubmitMPProps extends BaseDataType<SubmitDataItem> {
-  moduleProps?: BaseDataType<SubmitDataItem>["moduleProps"] & {
-    /** 提交按钮文本 */
-    submitText: string;
-  };
-}
+export interface SubmitMPProps extends BaseDataType<SubmitDataItem> {}
 
 export interface ContainerPCProps<T = any> extends BaseDataType<T> {
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
   onActivatedComponents?: (components: ComponentItem[], index?: string) => void;
+  data?: T[];
   html?: boolean;
   moduleProps?: BaseDataType<T>["moduleProps"] & {
-    /** 容器z-index */
+    /** 用于drop时修正zindex识别鼠标滑过的元素 */
     zIndex: number;
   };
 }
 
-export interface FormMPProps<T = any> extends ContainerPCProps<T> {
-  moduleProps?: ContainerPCProps<T>["moduleProps"] & {
-    /** 表单名称 */
-    name: string;
-  };
-}
+export interface FormMPProps<FormMPPropsItem> extends ContainerPCProps<T> {}

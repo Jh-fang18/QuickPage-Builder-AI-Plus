@@ -108,7 +108,7 @@ export default function Editor({
   };
 
   /**
-   * 可拖动菜单项
+   * 可拖动菜单项子组件
    * @param item 微件数据
    */
   const DraggableMenuItem: React.FC<{ item: ComponentItem }> = ({ item }) => {
@@ -324,6 +324,7 @@ export default function Editor({
    * 保存模板
    */
   const handleSave = () => {
+    console.log("TOP", currentActivatedComponentsRef.current);
     setWorkbenchData(
       currentActivatedComponentsRef.current,
       contentIdRef.current,
@@ -337,6 +338,8 @@ export default function Editor({
    */
   const handlePreview = () => {
     setPreview(true);
+    // 需要触发渲染，数据流传回时不会自动更新activatedComponents
+    setActivatedComponents(currentActivatedComponentsRef.current);
   };
 
   /**
@@ -347,8 +350,8 @@ export default function Editor({
   };
 
   const getActivatedComponents = (components: ComponentItem[]) => {
-    //console.log("currentActivatedComponents", components);
     currentActivatedComponentsRef.current = [...components];
+    handleSave();
   };
 
   // 页面挂在后, 获取微件数据
@@ -449,19 +452,13 @@ export default function Editor({
                 }}
               >
                 <Flex gap="small" wrap>
-                  <Button
-                    onClick={handlePreview}
-                    style={{ display: preview ? "none" : "block" }}
-                  >
-                    预览
-                  </Button>
-                  <Button
-                    onClick={handleCancelPreview}
-                    disabled={!preview}
-                    style={{ display: preview ? "block" : "none" }}
-                  >
-                    取消预览
-                  </Button>
+                  {preview ? (
+                    <Button onClick={handleCancelPreview} disabled={!preview}>
+                      取消预览
+                    </Button>
+                  ) : (
+                    <Button onClick={handlePreview}>预览</Button>
+                  )}
                   <Button type="primary" onClick={handleSave}>
                     保存
                   </Button>

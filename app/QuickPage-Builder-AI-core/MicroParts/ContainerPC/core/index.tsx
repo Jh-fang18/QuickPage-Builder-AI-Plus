@@ -1,15 +1,11 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-  createElement,
-  Suspense,
-} from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
+
+// 导入自有组件
+import DrawerForm from "./drawerForm";
 
 // 导入类型
 import type { ContainerPCProps } from "../../types/common";
@@ -48,6 +44,8 @@ export default function Core({
   const [_activatedComponents, _setActivatedComponents] = useState<
     ComponentItem[]
   >([...activatedComponents]);
+  const [modal, contextHolder] = Modal.useModal();
+  const [openDrawer, setOpenDrawer] = useState(false);
   const [{ isOverCurrent }, drop] = useDrop(
     () => ({
       accept: "MENU_ITEM",
@@ -189,8 +187,8 @@ export default function Core({
   let downMax = 0;
   let rightMax = 0;
 
-  const blockRefs = useRef<Record<string, HTMLDivElement>>({});
-  const [modal, contextHolder] = Modal.useModal();
+  const blockZIndex = currentIndex.split("-").length;
+  const blockRefs: Record<string, HTMLDivElement> = {};
 
   /* ====================== 核心方法 ====================== */
 
@@ -537,18 +535,17 @@ export default function Core({
    */
   const focusComponent = (index: number) => {
     if (index < 0) return;
-    const block = blockRefs.current[`block${index}`];
-    if (block && block.lastElementChild) {
+    const block = blockRefs[`block${index}`];
+
+    if (block && block.firstElementChild) {
       if (block.classList.contains("zIndex999"))
         block.classList.remove("zIndex999");
       else block.classList.add("zIndex999");
 
-      if (block.lastElementChild.classList.contains("highlight")) {
-        block.lastElementChild.classList.remove("highlight");
-        block.lastElementChild.classList.add("normal");
+      if (block.firstElementChild.classList.contains("highlight")) {
+        block.firstElementChild.classList.remove("highlight");
       } else {
-        block.lastElementChild.classList.remove("normal");
-        block.lastElementChild.classList.add("highlight");
+        block.firstElementChild.classList.add("highlight");
       }
     }
   };
@@ -562,7 +559,7 @@ export default function Core({
   const moveTop = (e: React.MouseEvent<HTMLSpanElement>, index: number) => {
     e.preventDefault(); // 阻止默认事件
 
-    const oBlock = blockRefs.current["block" + index], // 获取当前点击微件
+    const oBlock = blockRefs["block" + index], // 获取当前点击微件
       gridUnit = gridScale + gridPadding,
       _gridArea = getComponentCcs(oBlock.style.gridArea), // 获取当前微件的gridArea值
       _maxTop = Math.max(0, _gridArea[0] - 1) * gridUnit; // 最大可移动距离, 无需减去gridPadding
@@ -672,7 +669,7 @@ export default function Core({
   const moveRight = (e: React.MouseEvent<HTMLSpanElement>, index: number) => {
     e.preventDefault(); // 阻止默认事件
 
-    const oBlock = blockRefs.current["block" + index], //获取当前点击微件
+    const oBlock = blockRefs["block" + index], //获取当前点击微件
       oCcs = getComponentCcs(_activatedComponents[index].ccs), //获取当前点击微件的ccs
       gridUnit = gridScale + gridPadding,
       _gridArea = getComponentCcs(oBlock.style.gridArea); // 获取当前微件的gridArea值
@@ -811,7 +808,7 @@ export default function Core({
   const moveDown = (e: React.MouseEvent<HTMLSpanElement>, index: number) => {
     e.preventDefault(); // 阻止默认事件
 
-    const oBlock = blockRefs.current["block" + index], //获取当前点击微件
+    const oBlock = blockRefs["block" + index], //获取当前点击微件
       gridUnit = gridScale + gridPadding,
       _gridArea = getComponentCcs(oBlock.style.gridArea), // 获取当前微件的gridArea值
       _maxDown = (gridRow - _gridArea[2] + 1) * gridUnit; // 最大可移动距离, 无需减去gridPadding
@@ -947,7 +944,7 @@ export default function Core({
   const moveLeft = (e: React.MouseEvent<HTMLSpanElement>, index: number) => {
     e.preventDefault(); // 阻止默认事件
 
-    let oBlock = blockRefs.current["block" + index], //获取当前点击微件
+    let oBlock = blockRefs["block" + index], //获取当前点击微件
       disX = e.clientX - 0,
       oLeft: number | string = 0;
 
@@ -1267,9 +1264,9 @@ export default function Core({
       setDivLeft(oDiv.offsetLeft);
     };
 
-    // 是否显示div位置数值
     focusComponent(index);
     setShouldShow(index);
+    // 是否显示div位置数值
     setDiv();
 
     let newActivatedComponents: ComponentItem[] = [..._activatedComponents];
@@ -1438,6 +1435,14 @@ export default function Core({
     backgroundColor: "pink",
   };
 
+  // 控制抽屉
+  const showDrawer = () => {
+    setOpenDrawer(true);
+  };
+  const onCloseDrawer = () => {
+    setOpenDrawer(false);
+  };
+
   useEffect(() => {
     // console.log("update currentIndex", currentIndex);
     // console.log("update _activatedComponents", _activatedComponents);
@@ -1460,7 +1465,7 @@ export default function Core({
           width: (gridScale + gridPadding) * gridColumn - gridPadding + "px",
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
-          gridTemplateAreas: getGridTemplateAreas,
+          // gridTemplateAreas: getGridTemplateAreas,
           backgroundSize: `${gridScale + gridPadding}px ${
             gridScale + gridPadding
           }px`,
@@ -1477,11 +1482,13 @@ export default function Core({
               top: item.positionY,
               left: item.positionX,
               gridArea: item.ccs,
+              zIndex: blockZIndex,
             }}
             ref={(el) => {
-              if (el) blockRefs.current["block" + index] = el;
+              if (el) blockRefs["block" + index] = el;
             }}
           >
+            {}
             <Suspense fallback={"loading..."}>
               {/* 渲染子元素的编辑版本 */}
               {dynamicComponent(
@@ -1503,14 +1510,15 @@ export default function Core({
               }`}
               onMouseDown={(e) => mousedown(e, item, index)}
             >
-              遮罩层
+              移动
             </div>
-            <div className={`title`}>
-              {item.title}
-              <span className={`size`}>
-                {item.width * (gridScale + gridPadding) - gridPadding} *
-                {item.height * (gridScale + gridPadding) - gridPadding}
-              </span>
+            <div className={`title`}>{item.title}</div>
+            <div className={`size`}>
+              {item.width * (gridScale + gridPadding) - gridPadding} *
+              {item.height * (gridScale + gridPadding) - gridPadding}
+            </div>
+            <div className="attribute">
+              <DrawerForm />
             </div>
             <div className={`delete`}>
               <button type="button" onClick={() => showConfirm(index)}>

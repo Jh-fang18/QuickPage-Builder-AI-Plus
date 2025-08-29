@@ -91,7 +91,7 @@ export default function HTML({
           width: (gridScale + gridPadding) * gridColumn - gridPadding + "px",
           gridTemplateColumns: getGridTemplateColumns,
           gridTemplateRows: getGridTemplateRows,
-          gridTemplateAreas: getGridTemplateAreas,
+          // gridTemplateAreas: getGridTemplateAreas,
           backgroundSize: `${gridScale + gridPadding}px ${
             gridScale + gridPadding
           }px`,

@@ -6,7 +6,12 @@ import { Form } from "antd";
 import ContainerPC from "../ContainerPC/index";
 
 import { ComponentItem } from "../../types/common";
-import { FormMPProps } from "../types/common";
+import { FormMPProps, FormMPPropsItem } from "../types/common";
+
+// 导入自有hooks
+import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
+import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
+
 
 const FormMP = ({
   currentIndex,
@@ -17,12 +22,30 @@ const FormMP = ({
   MicroCards,
   activatedComponents,
   onActivatedComponents,
+  data,
   moduleProps = {
-    zIndex: 0,
-    name: "basic",
+    zIndex: 0
   },
   html = false,
-}: FormMPProps) => {
+}: FormMPProps<FormMPPropsItem>) => {
+  // 基础静态数据获取和定义
+  const baseData = useBaseData<FormMPPropsItem, FormMPProps<FormMPPropsItem>["moduleProps"]>({
+    gridColumn,
+    gridRow,
+    gridScale,
+    gridPadding,
+    data,
+    moduleProps,
+    minShape: FormMP.minShape,
+  });
+
+  // ======================
+  // 计算属性
+  // ======================
+
+  // 计算样式
+  const { width, height } = useStyleCalculator(baseData);
+
   const handleSetActivatedComponents = (components: ComponentItem[]) => {
     if (onActivatedComponents) {
       onActivatedComponents([...components], currentIndex);
@@ -33,8 +56,8 @@ const FormMP = ({
 
   return (
     <Form
-      style={{ height: "100%" }}
-      name={moduleProps.name}
+      style={{ width, height }}
+      name={baseData.data[0].name}
       initialValues={{ remember: true }}
       autoComplete="off"
     >

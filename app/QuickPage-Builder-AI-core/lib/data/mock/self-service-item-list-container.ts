@@ -8,6 +8,14 @@ const selfServiceItemListContainer = {
         gridColumn: 16,
         gridRow: 12,
         activatedComponents: [],
+        moduleProps: {
+          morph: {
+            up: true,
+            down: true,
+            left: true,
+            right: true,
+          },
+        },
       },
     },
     {
@@ -17,7 +25,6 @@ const selfServiceItemListContainer = {
       props: {
         activatedComponents: [],
         moduleProps: {
-          name: "Form",
           morph: {
             up: true,
             down: true,
@@ -25,6 +32,13 @@ const selfServiceItemListContainer = {
             right: true,
           },
         },
+        data: [
+          {
+            id: 1,
+            title: "表单",
+            name: "basic",
+          },
+        ],
       },
     },
   ],

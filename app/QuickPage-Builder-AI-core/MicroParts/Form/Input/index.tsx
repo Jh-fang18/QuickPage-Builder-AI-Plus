@@ -1,7 +1,7 @@
 // 导入已有组件
 import { Form, Input } from "antd";
 
-// 导入自有组件
+// 导入自有hooks
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
@@ -52,8 +52,8 @@ const InputMP = ({
 
   return (
     <Form.Item<FieldType>
-      labelCol={{ span: 8 }}
-      label={baseData.moduleProps?.label}
+      label={baseData.data[0].label}
+      labelCol={baseData.data[0].labelCol}
       name={inputType}
       rules={[...baseData.data[0].validateRules]}
       style={{ width, height, margin: 0 }}
