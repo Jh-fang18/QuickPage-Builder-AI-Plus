@@ -20,16 +20,16 @@ import "./styles.html.css";
  * @returns {JSX.Element} 渲染后的组件
  */
 export default function HTML({
-  gridRow,
   gridColumn,
+  gridRow,
   gridScale,
   gridPadding,
   MicroCards,
   activatedComponents,
+  currentIndex = "-1",
   moduleProps = {
     zIndex: 0,
   },
-  currentIndex = "-1",
 }: ContainerPCProps) {
   // ======================
   // 响应式变量

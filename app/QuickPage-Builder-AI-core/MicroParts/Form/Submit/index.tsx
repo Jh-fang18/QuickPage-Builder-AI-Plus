@@ -16,8 +16,8 @@ const SubmitMP = ({
   gridRow,
   gridScale,
   gridPadding,
-  data,
   moduleProps,
+  data,
 }: SubmitMPProps) => {
   // ======================
   // 私有响应状态

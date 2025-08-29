@@ -14,7 +14,6 @@ import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/us
 
 
 const FormMP = ({
-  currentIndex,
   gridRow,
   gridColumn,
   gridScale,
@@ -22,11 +21,12 @@ const FormMP = ({
   MicroCards,
   activatedComponents,
   onActivatedComponents,
+  currentIndex,
   data,
+  html = false,
   moduleProps = {
     zIndex: 0
   },
-  html = false,
 }: FormMPProps<FormMPPropsItem>) => {
   // 基础静态数据获取和定义
   const baseData = useBaseData<FormMPPropsItem, FormMPProps<FormMPPropsItem>["moduleProps"]>({
@@ -57,7 +57,7 @@ const FormMP = ({
   return (
     <Form
       style={{ width, height }}
-      name={baseData.data[0].name}
+      name={baseData.data[0].name + "_" + currentIndex}
       initialValues={{ remember: true }}
       autoComplete="off"
     >

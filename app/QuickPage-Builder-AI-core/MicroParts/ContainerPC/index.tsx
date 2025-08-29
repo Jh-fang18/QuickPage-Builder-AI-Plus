@@ -26,12 +26,13 @@ const ContainerPC = ({
   onActivatedComponents,
   /** 当前索引，默认为 "-1" */
   currentIndex = "-1",
-  /** 模块属性，默认 zIndex 为 0 */
-  moduleProps = {
-    zIndex: 0,
-  },
   /** 是否使用 HTML 版本，默认为 false */
   html = false,
+  /** 模块属性 */
+  moduleProps = {
+    /** 用于drop时修正zindex识别鼠标滑过的元素 */
+    zIndex: 0,
+  },
 }: ContainerPCProps) => {
 
   return html ? (

@@ -12,13 +12,13 @@ import {
 } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const InputMP = ({
-  currentIndex,
   gridColumn,
   gridRow,
   gridScale,
   gridPadding,
-  data,
+  currentIndex,
   moduleProps,
+  data,
 }: InputMPProps) => {
   // ======================
   // 私有响应状态

@@ -18,8 +18,8 @@ import { dynamicComponent } from "../utils";
 import "./styles.core.css";
 
 export default function Core({
-  gridRow,
   gridColumn,
+  gridRow,
   gridScale,
   gridPadding,
   MicroCards,
@@ -682,8 +682,11 @@ export default function Core({
     oBlock.style.borderColor = " red";
 
     // 修改微件实例宽度为100%，以便自适应变型的宽度
-    if (oBlock.firstElementChild)
-      (oBlock.firstElementChild as HTMLElement).style.width = "100%";
+    const firstEle = oBlock.firstElementChild;
+    if (firstEle instanceof HTMLElement) {
+      firstEle.style.width = "100%";
+      firstEle.style.overflow = "hidden";
+    }
 
     // 控制微件宽度
     document.onmousemove = (e) => {
@@ -796,6 +799,11 @@ export default function Core({
       document.onmousemove = null;
       document.onmousedown = null;
       document.onmouseup = null;
+
+      // 取消overflow:hidden，确保内部元素不会被裁剪
+      if (firstEle instanceof HTMLElement) {
+        firstEle.style.overflow = "inherit";
+      }
     };
   };
 
