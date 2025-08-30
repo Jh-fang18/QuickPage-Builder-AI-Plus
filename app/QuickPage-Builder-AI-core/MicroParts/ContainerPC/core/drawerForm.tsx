@@ -1,4 +1,3 @@
-import { PlusOutlined } from "@ant-design/icons";
 import {
   DrawerForm,
   ProForm,
@@ -8,6 +7,9 @@ import {
 } from "@ant-design/pro-components";
 import { Form, message } from "antd";
 
+import type { ComponentItem } from "../../../types/common";
+import type { InputDataItem } from "../../types/common";
+
 const waitTime = (time: number = 100) => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -16,7 +18,7 @@ const waitTime = (time: number = 100) => {
   });
 };
 
-export default () => {
+export default (props: { componentData: ComponentItem<InputDataItem> }) => {
   const [form] = Form.useForm<{ name: string; company: string }>();
 
   return (
@@ -24,7 +26,7 @@ export default () => {
       name: string;
       company: string;
     }>
-      title="新建表单"
+      title={props.componentData.title}
       resize={{
         onResize() {
           console.log("resize!");
@@ -46,13 +48,26 @@ export default () => {
       submitTimeout={2000}
       onFinish={async (values) => {
         await waitTime(2000);
-        console.log(values.name);
+        console.log(values);
         message.success("提交成功");
         // 不返回不会关闭弹框
         return true;
       }}
     >
       <ProForm.Group>
+        {Object.entries(props.componentData.props.data?.[0] || {}).map(
+          ([key, value]) => {
+            console.log(key, value);
+            return (
+              <ProFormText
+                name={key}
+                width="md"
+                label={key}
+                placeholder={`请输入${key}`}
+              />
+            );
+          }
+        )}
         <ProFormText
           name="name"
           width="md"

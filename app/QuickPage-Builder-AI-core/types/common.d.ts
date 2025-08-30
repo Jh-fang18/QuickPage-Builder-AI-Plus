@@ -28,11 +28,10 @@ export interface SelfServiceDataItem {
   props: {
     [key: string]: any;
   };
-
 }
 
 /** 可拖拽组件的基础元数据 */
-export interface ComponentItem {
+export interface ComponentItem<T = any> {
   /** 组件显示名称 */
   title: string;
   /** 组件唯一标识符（格式：组件ID） */
@@ -68,6 +67,7 @@ export interface ComponentItem {
     moduleProps?: {
       [key: string]: any;
     };
+    data?: T[];
   };
 }
 
