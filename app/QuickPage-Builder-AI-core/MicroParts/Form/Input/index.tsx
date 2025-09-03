@@ -1,15 +1,13 @@
 // 导入已有组件
 import { Form, Input } from "antd";
+import { useEffect } from "react";
 
 // 导入自有hooks
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
 // 导入类型
-import {
-  InputMPProps,
-  InputDataItem,
-} from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+import { InputMPProps, InputDataItem } from "../../types/common";
 
 const InputMP = ({
   gridColumn,
@@ -25,7 +23,7 @@ const InputMP = ({
   // ======================
 
   // 基础静态数据获取和定义
-  const baseData = useBaseData<InputDataItem, InputMPProps["moduleProps"]>({
+  const baseData = useBaseData<InputDataItem>({
     gridColumn,
     gridRow,
     gridScale,
@@ -47,15 +45,17 @@ const InputMP = ({
   // ======================
 
   // 根据data中传入的类型定义FieldType
-  const inputType = `${baseData.data[0].inputType}_${currentIndex}`;
-  type FieldType = Record<typeof inputType, InputDataItem["value"]>;
+  const inputType = `${baseData.data[0].nameType}_${currentIndex}`;
+  type FieldType = Record<typeof inputType, InputDataItem["nameValue"]>;
+  
+  useEffect(() => {
+    console.log(baseData.data[0].itemProps);
+  }, [data]);
 
   return (
     <Form.Item<FieldType>
-      label={baseData.data[0].label}
-      labelCol={baseData.data[0].labelCol}
+      {...baseData.data[0].itemProps}
       name={inputType}
-      rules={[...baseData.data[0].validateRules]}
       style={{ width, height, margin: 0 }}
     >
       <Input />

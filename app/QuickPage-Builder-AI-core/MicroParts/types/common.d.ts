@@ -1,3 +1,5 @@
+import { FormItemProps } from "antd";
+
 // 微件基础数据
 export interface BaseDataType<T> {
   gridRow: number;
@@ -6,7 +8,15 @@ export interface BaseDataType<T> {
   gridPadding: number;
   data: T[];
   currentIndex?: string;
-  moduleProps?: {};
+  moduleProps?: {
+    /** 形态 */
+    morph?: {
+      up: boolean;
+      down: boolean;
+      left: boolean;
+      right: boolean;
+    };
+  };
 }
 
 /** 发布票务 */
@@ -23,20 +33,12 @@ export interface LaunchTicketDataItem {
 
 /** 输入框 */
 export interface InputDataItem {
-  /** ID */
-  id: number;
-  /** 标签名 */
-  label: string;
-  /** 标签名宽度 */
-  labelCol?: { span: number };
-  /** 数据类型 */
-  inputType: string;
-  /** 输入值 */
-  value: string;
-  /** 占位符 */
-  placeholder: string;
-  /** 校验规则 */
-  validateRules: ValidateRule[];
+  /** input name的类型 */
+  nameType: string;
+  /** input name的值 */
+  nameValue: string;
+  /** 可修改的属性继承自ant对应模块 */
+  itemProps: FormItemProps;
 }
 
 /** 提交按钮 */

@@ -43,7 +43,7 @@ export default function Core({
   const [shouldShow, setShouldShow] = useState<number>(-1);
   const [_activatedComponents, _setActivatedComponents] = useState<
     ComponentItem[]
-  >([...activatedComponents]);
+  >([...activatedComponents]); // 传入props的类型还需定义
   const [modal, contextHolder] = Modal.useModal();
   const [{ isOverCurrent }, drop] = useDrop(
     () => ({
@@ -479,7 +479,7 @@ export default function Core({
     //console.log("area", oDiv.style.gridArea);
   };
 
-  /** 
+  /**
    * 设置div位置数值
    * @param oDiv 元素
    * @param gDiv 父元素
@@ -1209,9 +1209,8 @@ export default function Core({
   };
 
   /**
-   * 子组件传递激活微件列表给父组件，父组件再传递给上一级组件，直到根组件
-   * 并更新当前组件的激活微件列表
-   * @param components 子组件中激活的微件列表
+   * 子组件传递激活微件列表给父组件的微件列表，父组件再传递给上一级组件，直到根组件
+   * @param components 当前container下的微件列表，通过onActivatedComponents方法传递给上层的微件列表
    * @param index 微件在父组件中的索引
    */
   const handleSetActivatedComponents = (
@@ -1252,6 +1251,21 @@ export default function Core({
       onActivatedComponents([...newActivatedComponents], currentIndex);
     }
   };
+
+  /** 修改当前container下的微件列表 */
+  const handleSetCurrentActivatedComponent = (component: ComponentItem, index: number) => {
+    const newActivatedComponents = _activatedComponents.map((item, i) =>
+      i === index
+        ? {
+            ...component,
+            props: {
+              ...component.props,
+            },
+          }
+        : item
+    );
+    _setActivatedComponents([...newActivatedComponents]);
+  }
 
   /** 事件函数 end */
 
@@ -1308,14 +1322,14 @@ export default function Core({
             <Suspense fallback={"loading..."}>
               {/* 渲染子元素的编辑版本 */}
               {dynamicComponent(
-                currentIndex,
-                index,
-                gridScale,
-                gridPadding,
-                MicroCards,
-                _activatedComponents,
-                false,
-                handleSetActivatedComponents
+                currentIndex, // 父组件索引
+                index, // 子组件索引
+                gridScale, // 子组件缩放比例
+                gridPadding, // 子组件间距
+                MicroCards, // 微件列表
+                item, // 当前微件信息
+                false, // 子组件是否为编辑状态
+                handleSetActivatedComponents // 微件信息传递函数
               )}
             </Suspense>
             <div
@@ -1334,7 +1348,11 @@ export default function Core({
               {item.height * (gridScale + gridPadding) - gridPadding}
             </div> */}
             <div className="attribute">
-              <DrawerForm componentData={item || {}} />
+              <DrawerForm
+                index={index}
+                component={item || {}}
+                onCurrentActivatedComponent={handleSetCurrentActivatedComponent}
+              />
             </div>
             <div className={`delete`}>
               <button type="button" onClick={() => showConfirm(index)}>

@@ -1,3 +1,8 @@
+// 导入类型
+import {
+  InputDataItem,
+} from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+
 const selfServiceItemListForm = {
   dataList: [
     {
@@ -13,15 +18,16 @@ const selfServiceItemListForm = {
             right: true,
           },
         },
-        data: [
+        data: <InputDataItem[]>[
           {
-            id: 1,
-            label: "标题",
-            labelCol: { span: 8 },
-            inputType: "text",
-            value: "",
-            placeholder: "请输入",
-            validateRules: [{ required: true, message: "请输入" }],
+            nameType: "text",
+            nameValue: "string",
+            itemProps: {
+              label: "标题",
+              labelCol: { span: 8, offset: 0 },
+              initialValue: "text",
+              rules: [{ required: true, message: "请输入" }],
+            },
           },
         ],
       },

@@ -117,7 +117,7 @@ export default function HTML({
                 gridScale,
                 gridPadding,
                 MicroCards,
-                _activatedComponents,
+                item,
                 true
               )}
             </Suspense>

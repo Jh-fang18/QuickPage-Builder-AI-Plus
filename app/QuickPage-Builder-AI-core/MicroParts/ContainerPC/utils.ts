@@ -1,4 +1,3 @@
-
 import { createElement } from "react";
 
 import { ComponentItem, MicroCardsType } from "../../types/common";
@@ -9,22 +8,21 @@ const dynamicComponent = (
   gridScale: number,
   gridPadding: number,
   MicroCards: MicroCardsType,
-  activatedComponents: ComponentItem[],
+  activatedComponent: ComponentItem,
   html: boolean,
-  handleSetActivatedComponents?: (activatedComponents: ComponentItem[], index: string) => void,
+  handleSetActivatedComponents?: (
+    activatedComponents: ComponentItem[],
+    index: string
+  ) => void
 ) => {
-  const componentName = activatedComponents[index].url;
+  const componentName = activatedComponent.url;
   const _component = MicroCards[componentName];
-  const newActivatedComponents = activatedComponents.map((item, i) =>
-    i === index
-      ? {
-          ...item,
-          props: {
-            ...(item?.props || {}),
-          },
-        }
-      : item
-  );
+  const newActivatedComponent = {
+    ...activatedComponent,
+    props: {
+      ...(activatedComponent?.props || {}),
+    },
+  };
 
   if (!_component) return null;
 
@@ -32,20 +30,20 @@ const dynamicComponent = (
 
   // 还需添加传入props的类型验证
   return createElement(_component, {
-    ...(newActivatedComponents[index]?.props || {}),
+    ...(newActivatedComponent?.props || {}),
     currentIndex: `${currentIndex}-${index}`,
     gridColumn:
-      newActivatedComponents[index]?.width ||
-      newActivatedComponents[index]?.props.gridColumn ||
+      newActivatedComponent?.width ||
+      newActivatedComponent?.props.gridColumn ||
       minColSpan,
     gridRow:
-      newActivatedComponents[index]?.height ||
-      newActivatedComponents[index]?.props.gridRow ||
+      newActivatedComponent?.height ||
+      newActivatedComponent?.props.gridRow ||
       minRowSpan,
     gridScale,
     gridPadding,
     MicroCards,
-    moduleProps: newActivatedComponents[index]?.props.moduleProps,
+    moduleProps: newActivatedComponent?.props.moduleProps,
     html: html,
     onActivatedComponents: handleSetActivatedComponents,
   });
