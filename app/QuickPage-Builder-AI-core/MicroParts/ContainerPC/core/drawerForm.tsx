@@ -43,7 +43,7 @@ const renderFormItem = (
         {Object.entries(value).map(([subKey, subValue]) => {
           const subPath = `${path}.${subKey}`;
           // 传递父级键名给子级
-          return renderFormItem(`${key}.${subKey}`, subValue, subPath);
+          return renderFormItem(`${subKey}`, subValue, subPath);
         })}
       </ProForm.Group>
     );
@@ -81,12 +81,12 @@ const renderBasicFormItem = (key: string, value: any, path: string) => {
   if (typeof value === "number") {
     return (
       <ProFormDigit
-        key={key}
-        name={key}
+        key={path}
+        name={path}
         width="md"
-        label={path}
+        label={key}
         initialValue={value}
-        placeholder={`请输入${path}`}
+        placeholder={`请输入${key}`}
       />
     );
   }
@@ -94,16 +94,16 @@ const renderBasicFormItem = (key: string, value: any, path: string) => {
   else if (typeof value === "boolean") {
     return (
       <ProFormSelect
-        key={key}
-        name={key}
+        key={path}
+        name={path}
         width="md"
-        label={path}
+        label={key}
         initialValue={value}
         options={[
           { label: "True", value: true },
           { label: "False", value: false },
         ]}
-        placeholder={`请选择${path}`}
+        placeholder={`请选择${key}`}
       />
     );
   }
@@ -111,12 +111,12 @@ const renderBasicFormItem = (key: string, value: any, path: string) => {
   else {
     return (
       <ProFormText
-        key={key}
-        name={key}
+        key={path}
+        name={path}
         width="md"
-        label={path}
+        label={key}
         initialValue={value}
-        placeholder={`请输入${path}`}
+        placeholder={`请输入${key}`}
       />
     );
   }
@@ -169,17 +169,24 @@ const convertFlatToNested = (flatObj: Record<string, any>) => {
   });
 
   // 将处理后的数组属性合并到nestedObj
+  // 保持原始数组索引顺序
   Object.keys(arrayKeys).forEach((arrayName) => {
     nestedObj[arrayName] = [];
     Object.keys(arrayKeys[arrayName])
       .sort((a, b) => parseInt(a) - parseInt(b))
       .forEach((index) => {
-        (nestedObj[arrayName] as any[]).push(arrayKeys[arrayName][index]);
+        // 确保数组索引是连续的
+        while (nestedObj[arrayName].length <= parseInt(index)) {
+          nestedObj[arrayName].push(undefined);
+        }
+        nestedObj[arrayName][parseInt(index)] = arrayKeys[arrayName][index];
       });
   });
 
   // 处理点表示法的嵌套属性，如 labelCol.span
+  // 保持属性顺序，先处理嵌套属性，再处理普通属性
   Object.keys(flatObj).forEach((key) => {
+    const value = flatObj[key];
     if (key.includes(".") && !key.includes("[")) {
       const parts = key.split(".");
       let current = nestedObj;
@@ -191,11 +198,11 @@ const convertFlatToNested = (flatObj: Record<string, any>) => {
         current = current[parts[i]];
       }
 
-      current[parts[parts.length - 1]] = flatObj[key];
+      current[parts[parts.length - 1]] = value;
     }
     // 处理普通属性
     else if (!key.includes("[") && !key.includes(".")) {
-      nestedObj[key] = flatObj[key];
+      nestedObj[key] = value;
     }
   });
 
@@ -205,76 +212,88 @@ const convertFlatToNested = (flatObj: Record<string, any>) => {
 export default (props: {
   index: number;
   component: ComponentItem<InputDataItem>;
-  onCurrentActivatedComponent: ( // 传递给父组件，更新父组件的激活微件列表
+  onCurrentActivatedComponent: (
+    // 传递给父组件，更新父组件的激活微件列表
     component: ComponentItem,
     index: number
   ) => void;
 }) => {
-  const [form] = Form.useForm<{ name: string; company: string }>();
-
+  const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
+  console.log(props.component.props.data?.[0]?.itemProps);
   return (
-    <DrawerForm<{
-      name: string;
-      company: string;
-    }>
-      title={props.component.title}
-      resize={{
-        onResize() {
-          console.log("resize!");
-        },
-        maxWidth: window.innerWidth * 0.8,
-        minWidth: 300,
-      }}
-      form={form}
-      trigger={<button type="button">属性</button>}
-      autoFocusFirstInput
-      drawerProps={{
-        destroyOnClose: true,
-        styles: {
-          mask: {
-            background: "none",
+    <>
+      <DrawerForm
+        title={props.component.title}
+        resize={{
+          onResize() {
+            console.log("resize!");
           },
-        },
-      }}
-      submitTimeout={2000}
-      onFinish={async (values) => {
-        await waitTime(2000);
-
-        // 将提交的values转换为InputDataItem格式
-        // 先获取原始数据，如果没有则创建一个空的InputDataItem结构
-        const originalData = props.component.props.data?.[0] || {
-          nameType: "",
-          nameValue: "",
-          itemProps: {},
-        };
-
-        const formattedData: InputDataItem = {
-          nameType: originalData.nameType,
-          nameValue: originalData.nameValue,
-          itemProps: convertFlatToNested(values),
-        };
-
-        props.onCurrentActivatedComponent(
-          {
-            ...props.component,
-            props: {
-              ...props.component.props,
-              data: [formattedData],
+          maxWidth: window.innerWidth * 0.8,
+          minWidth: 300,
+        }}
+        layout="horizontal"
+        form={form}
+        trigger={<button type="button">属性</button>}
+        autoFocusFirstInput
+        drawerProps={{
+          destroyOnClose: true,
+          styles: {
+            mask: {
+              background: "none",
             },
           },
-          props.index
-        );
-        console.log("Formatted Data:", formattedData);
-        message.success("提交成功");
-        // 不返回不会关闭弹框
-        return true;
-      }}
-    >
-      <ProForm.Group>
-        {Object.entries(props.component.props.data?.[0]?.itemProps || {}).map(
-          ([key, value]) => renderFormItem(key, value)
-        )}
-      </ProForm.Group>
-    </DrawerForm>
+        }}
+        submitTimeout={2000}
+        onFinish={async (values) => {
+          await waitTime(2000);
+
+          // 将提交的values转换为InputDataItem格式
+          // 先获取原始数据，如果没有则创建一个空的InputDataItem结构
+          const originalData = props.component.props.data?.[0] || {
+            nameType: "",
+            nameValue: "",
+            itemProps: {},
+          };
+
+          const formattedData: InputDataItem = {
+            nameType: originalData.nameType,
+            nameValue: originalData.nameValue,
+            itemProps: convertFlatToNested(values),
+          };
+
+          // 确保属性属性不变
+          props.onCurrentActivatedComponent(
+            {
+              ...props.component,
+              props: {
+                ...props.component.props,
+                data: [
+                  { 
+                    ...originalData,
+                    itemProps: {
+                      ...originalData.itemProps,
+                      ...formattedData.itemProps,
+                    },
+                  },
+                ],
+              },
+            },
+            props.index
+          );
+          console.log("Formatted Data:", formattedData);
+          messageApi.success("提交成功");
+          // 不返回不会关闭弹框
+          return true;
+        }}
+      >
+        <ProForm.Group>
+          {Object.entries(props.component.props.data?.[0]?.itemProps || {}).map(
+            ([key, value]) => renderFormItem(key, value)
+          )}
+        </ProForm.Group>
+      </DrawerForm>
+      {contextHolder}
+    </>
   );
 };

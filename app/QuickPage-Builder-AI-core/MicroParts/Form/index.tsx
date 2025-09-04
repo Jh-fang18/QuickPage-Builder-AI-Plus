@@ -54,12 +54,15 @@ const FormMP = ({
     }
   };
 
+   const [form] = Form.useForm();
+
   return (
     <Form
       style={{ width, height }}
       name={baseData.data[0].name + "_" + currentIndex}
       initialValues={{ remember: true }}
       autoComplete="off"
+      form={form}
     >
       <ContainerPC
         html={html}

@@ -32,6 +32,11 @@ const InputMP = ({
     moduleProps,
     minShape: InputMP.minShape,
   });
+  const form = Form.useFormInstance();
+
+  // 根据data中传入的类型定义FieldType
+  const inputType = `${baseData.data[0].nameType}_${currentIndex}`;
+  type FieldType = Record<typeof inputType, InputDataItem["nameValue"]>;
 
   // ======================
   // 计算属性
@@ -44,17 +49,16 @@ const InputMP = ({
   // 副作用
   // ======================
 
-  // 根据data中传入的类型定义FieldType
-  const inputType = `${baseData.data[0].nameType}_${currentIndex}`;
-  type FieldType = Record<typeof inputType, InputDataItem["nameValue"]>;
-  
   useEffect(() => {
-    console.log(baseData.data[0].itemProps);
-  }, [data]);
+    form.setFieldValue(
+      inputType,
+      baseData.data[0]?.itemProps.initialValue || ""
+    );
+  }, [baseData.data[0]?.itemProps.initialValue || null]);
 
   return (
     <Form.Item<FieldType>
-      {...baseData.data[0].itemProps}
+      {...(baseData.data[0]?.itemProps || {})}
       name={inputType}
       style={{ width, height, margin: 0 }}
     >
