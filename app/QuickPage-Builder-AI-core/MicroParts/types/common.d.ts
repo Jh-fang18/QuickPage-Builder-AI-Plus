@@ -1,4 +1,4 @@
-import { FormItemProps } from "antd";
+import { FormItemProps, ButtonProps } from "antd";
 
 // 微件基础数据
 export interface BaseDataType<T> {
@@ -19,6 +19,15 @@ export interface BaseDataType<T> {
   };
 }
 
+/** 微件props基础数据项 */
+export interface BaseDataItem<T> {
+  /** 可修改的属性继承自ant对应模块 */
+  itemProps: T & {
+    gridScale?: number;
+    gridPadding?: number;
+  };
+}
+
 /** 发布票务 */
 export interface LaunchTicketDataItem {
   /** ID */
@@ -32,34 +41,25 @@ export interface LaunchTicketDataItem {
 }
 
 /** 输入框 */
-export interface InputDataItem {
+export interface InputDataItem extends BaseDataItem<FormItemProps> {
   /** input name的类型 */
   nameType: string;
   /** input name的值 */
   nameValue: string;
-  /** 可修改的属性继承自ant对应模块 */
-  itemProps: FormItemProps;
 }
 
 /** 提交按钮 */
-export interface SubmitDataItem {
-  /** ID */
-  id: number;
-  submitText: string;
-  event: {
-    /** 提交事件 */
-    submit: () => void;
+export interface SubmitDataItem extends BaseDataItem<ButtonProps> {
+  itemProps?: BaseDataItem<ButtonProps>["itemProps"] & {
+    /** 按钮文本 */
+    submitText: string;
   };
 }
 
-/** 提交按钮 */
-export interface FormMPPropsItem {
-  /** ID */
-  id: number;
+/** from表单 */
+export interface FormMPPropsItem extends BaseDataItem<FormItemProps> {
   /** 表单名称 */
   name: string;
-  /** 表单标题 */
-  title: string;
 }
 
 // 发布票务微件基础数据

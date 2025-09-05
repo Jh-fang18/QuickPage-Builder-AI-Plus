@@ -1,16 +1,19 @@
+import { useState } from "react";
+
 import {
   DrawerForm,
   ProForm,
   ProFormSelect,
   ProFormText,
   ProFormDigit,
+  ProCard,
 } from "@ant-design/pro-components";
 import { Form, message } from "antd";
 
 import type { ComponentItem } from "../../../types/common";
 import type { InputDataItem } from "../../types/common";
 
-const waitTime = (time: number = 100) => {
+const waitTime = (time: number = 50) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(true);
@@ -218,9 +221,10 @@ export default (props: {
     index: number
   ) => void;
 }) => {
+  const [tab, setTab] = useState("tab1");
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  console.log(props.component.props.data?.[0]?.itemProps);
+
   return (
     <>
       <DrawerForm
@@ -244,9 +248,9 @@ export default (props: {
             },
           },
         }}
-        submitTimeout={2000}
+        submitTimeout={1000}
         onFinish={async (values) => {
-          await waitTime(2000);
+          await waitTime(1000);
 
           // 将提交的values转换为InputDataItem格式
           // 先获取原始数据，如果没有则创建一个空的InputDataItem结构
@@ -269,7 +273,7 @@ export default (props: {
               props: {
                 ...props.component.props,
                 data: [
-                  { 
+                  {
                     ...originalData,
                     itemProps: {
                       ...originalData.itemProps,
@@ -287,11 +291,33 @@ export default (props: {
           return true;
         }}
       >
-        <ProForm.Group>
-          {Object.entries(props.component.props.data?.[0]?.itemProps || {}).map(
-            ([key, value]) => renderFormItem(key, value)
-          )}
-        </ProForm.Group>
+        <ProCard
+          tabs={{
+            tabPosition: "top",
+            activeKey: tab,
+            items: [
+              {
+                label: `属性`,
+                key: "tab1",
+                children: (
+                  <ProForm.Group>
+                    {Object.entries(
+                      props.component.props.data?.[0]?.itemProps || {}
+                    ).map(([key, value]) => renderFormItem(key, value))}
+                  </ProForm.Group>
+                ),
+              },
+              {
+                label: `事件`,
+                key: "tab2",
+                children: `内容二`,
+              },
+            ],
+            onChange: (key) => {
+              setTab(key);
+            },
+          }}
+        />
       </DrawerForm>
       {contextHolder}
     </>

@@ -12,7 +12,6 @@ import { FormMPProps, FormMPPropsItem } from "../types/common";
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
-
 const FormMP = ({
   gridRow,
   gridColumn,
@@ -25,11 +24,14 @@ const FormMP = ({
   data,
   html = false,
   moduleProps = {
-    zIndex: 0
+    zIndex: 0,
   },
 }: FormMPProps<FormMPPropsItem>) => {
   // 基础静态数据获取和定义
-  const baseData = useBaseData<FormMPPropsItem, FormMPProps<FormMPPropsItem>["moduleProps"]>({
+  const baseData = useBaseData<
+    FormMPPropsItem,
+    FormMPProps<FormMPPropsItem>["moduleProps"]
+  >({
     gridColumn,
     gridRow,
     gridScale,
@@ -54,10 +56,15 @@ const FormMP = ({
     }
   };
 
-   const [form] = Form.useForm();
+  const [form] = Form.useForm();
+
+    // 从 itemProps 中排除 submitText 属性
+  // submitText不是Button自带的属性，故需分离
+  const { gridPadding: _gridPadding, ...filteredItemProps } = baseData.data[0].itemProps || {};
 
   return (
     <Form
+      {...filteredItemProps}
       style={{ width, height }}
       name={baseData.data[0].name + "_" + currentIndex}
       initialValues={{ remember: true }}

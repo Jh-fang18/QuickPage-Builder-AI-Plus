@@ -1,7 +1,5 @@
 // 导入类型
-import {
-  InputDataItem,
-} from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+import { InputDataItem } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
 
 const selfServiceItemListForm = {
   dataList: [
@@ -47,8 +45,9 @@ const selfServiceItemListForm = {
         },
         data: [
           {
-            id: 1,
-            submitText: "提交",
+            itemProps: {
+              submitText: "提交3",
+            },
           },
         ],
       },

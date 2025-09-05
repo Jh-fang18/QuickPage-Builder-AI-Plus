@@ -34,9 +34,10 @@ const selfServiceItemListContainer = {
         },
         data: [
           {
-            id: 1,
-            title: "表单",
             name: "basic",
+            itemProps: {
+              gridPadding: 16,
+            }
           },
         ],
       },
