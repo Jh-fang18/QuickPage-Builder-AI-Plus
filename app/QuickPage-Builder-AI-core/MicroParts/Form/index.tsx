@@ -6,7 +6,7 @@ import { Form } from "antd";
 import ContainerPC from "../ContainerPC/index";
 
 import { ComponentItem } from "../../types/common";
-import { FormMPProps, FormMPPropsItem } from "../types/common";
+import { FormMPProps, FormMPDataItem } from "../types/common";
 
 // 导入自有hooks
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
@@ -26,11 +26,11 @@ const FormMP = ({
   moduleProps = {
     zIndex: 0,
   },
-}: FormMPProps<FormMPPropsItem>) => {
+}: FormMPProps<FormMPDataItem>) => {
   // 基础静态数据获取和定义
   const baseData = useBaseData<
-    FormMPPropsItem,
-    FormMPProps<FormMPPropsItem>["moduleProps"]
+    FormMPDataItem,
+    FormMPProps<FormMPDataItem>["moduleProps"]
   >({
     gridColumn,
     gridRow,
@@ -58,9 +58,10 @@ const FormMP = ({
 
   const [form] = Form.useForm();
 
-    // 从 itemProps 中排除 submitText 属性
+  // 从 itemProps 中排除 submitText 属性
   // submitText不是Button自带的属性，故需分离
-  const { gridPadding: _gridPadding, ...filteredItemProps } = baseData.data[0].itemProps || {};
+  const { gridPadding: _gridPadding, ...filteredItemProps } =
+    baseData.data[0].itemProps || {};
 
   return (
     <Form
@@ -94,5 +95,7 @@ FormMP.minShape = () => ({
   minColSpan: 8, // 最小高占格
   minRowSpan: 6, // 最小宽占格
 });
+
+FormMP.requiredProps = ["MicroCards", "html", "onActivatedComponents"];
 
 export default FormMP;

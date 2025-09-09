@@ -433,11 +433,11 @@ export default function Editor({
             <Layout style={{ background: "#fff" }}>
               <Content style={{ overflow: "initial", padding: "20px 0" }}>
                 <Suspense fallback={<h2>Loading...</h2>}>
-                  <EditContext.Provider
+                  <EditContext
                     value={{ activatedComponents, getActivatedComponents }}
                   >
                     <Core {...DynamicComponents[0].Props} html={preview} />
-                  </EditContext.Provider>
+                  </EditContext>
                 </Suspense>
               </Content>
               <Footer

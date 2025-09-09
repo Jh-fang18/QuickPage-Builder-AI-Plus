@@ -8,10 +8,9 @@ import {
   ProFormDigit,
   ProCard,
 } from "@ant-design/pro-components";
-import { Form, message } from "antd";
+import { Form, message, Button } from "antd";
 
 import type { ComponentItem } from "../../../types/common";
-import type { InputDataItem } from "../../types/common";
 
 const waitTime = (time: number = 50) => {
   return new Promise((resolve) => {
@@ -212,21 +211,174 @@ const convertFlatToNested = (flatObj: Record<string, any>) => {
   return nestedObj;
 };
 
+// 将嵌套对象结构扁平化为表单key值
+const convertNestedToFlat = (nestedObj: Record<string, any>, prefix = "") => {
+  const flatObj: Record<string, any> = {};
+
+  Object.keys(nestedObj).forEach((key) => {
+    const value = nestedObj[key];
+    const newKey = prefix ? `${prefix}.${key}` : key;
+
+    if (
+      value !== null &&
+      value !== undefined &&
+      Object.prototype.toString.call(value) === "[object Object]"
+    ) {
+      // 递归处理嵌套对象
+      Object.assign(flatObj, convertNestedToFlat(value, newKey));
+    } else if (Array.isArray(value)) {
+      // 处理数组
+      value.forEach((item, index) => {
+        const arrayKey = `${newKey}[${index}]`;
+        if (
+          item !== null &&
+          item !== undefined &&
+          (typeof item === "object" || Array.isArray(item))
+        ) {
+          // 递归处理数组中的对象或数组
+          Object.assign(flatObj, convertNestedToFlat(item, arrayKey));
+        } else {
+          // 数组中的基本类型
+          flatObj[arrayKey] = item;
+        }
+      });
+    } else {
+      // 基本类型
+      flatObj[newKey] = value;
+    }
+  });
+
+  return flatObj;
+};
+
 export default (props: {
   index: number;
-  component: ComponentItem<InputDataItem>;
+  component: ComponentItem;
   onCurrentActivatedComponent: (
     // 传递给父组件，更新父组件的激活微件列表
     component: ComponentItem,
     index: number
   ) => void;
 }) => {
+  //类型定义，抓取传入component的data类型
+  type ExtractComponentDataType<T> = T extends ComponentItem<infer U>
+    ? U
+    : never;
+  type dataType = ExtractComponentDataType<typeof props.component>;
+
   const [tab, setTab] = useState("tab1");
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const [drawerVisit, setDrawerVisit] = useState(false);
+
+  // 存储原始数据，用于取消操作
+  const [originalData, setOriginalData] = useState({
+    ...(props.component.props.data?.[0] || {}),
+  });
+
+  // 通用数据处理函数
+  const processData = (values: any): Record<string, any> => {
+    return {
+      ...originalData,
+      itemProps: convertFlatToNested(values),
+    };
+  };
+
+  // 更新组件数据的公共函数
+  const updateComponentData = (formattedData: dataType) => {
+    const updatedComponent = {
+      ...props.component,
+      props: {
+        ...props.component?.props,
+        data: [
+          {
+            ...originalData,
+            itemProps: {
+              ...originalData?.itemProps,
+              ...formattedData.itemProps,
+            },
+          },
+        ],
+      },
+    };
+
+    // 更新原始数据状态
+    setOriginalData({
+      ...updatedComponent.props.data[0],
+      itemProps: updatedComponent.props.data[0].itemProps,
+    });
+
+    // 确保属性属性不变
+    props.onCurrentActivatedComponent(updatedComponent, props.index);
+    console.log("Formatted Data:", formattedData);
+  };
+
+  // 仅更新父组件数据，不修改 originalData
+  const updateParentComponentData = (formattedData: dataType) => {
+    const updatedComponent = {
+      ...props.component,
+      props: {
+        ...props.component?.props,
+        data: [
+          {
+            ...originalData,
+            itemProps: {
+              ...originalData?.itemProps,
+              ...formattedData.itemProps,
+            },
+          },
+        ],
+      },
+    };
+
+    // 不更新原始数据状态
+    props.onCurrentActivatedComponent(updatedComponent, props.index);
+    console.log("Preview Data:", formattedData);
+  };
+
+  // 将原始数据传递给父组件并重置表单
+  const resetToOriginalData = () => {
+    const originalComponent = {
+      ...props.component,
+      props: {
+        ...props.component?.props,
+        data: [
+          {
+            ...originalData,
+          },
+        ],
+      },
+    };
+
+    // 还原原始数据状态，使用扁平化后的数据
+    const flatOriginalData = convertNestedToFlat(originalData.itemProps);
+    form.setFieldsValue(flatOriginalData);
+    props.onCurrentActivatedComponent(originalComponent, props.index);
+  };
+
+  // 处理表单提交
+  const handleFinish = async (values: any) => {
+    // 原有的提交逻辑保持不变
+    await waitTime(1000);
+
+    const formattedData = processData(values);
+    updateComponentData(formattedData);
+
+    messageApi.success("提交成功");
+    // 不返回不会关闭弹框
+    return true;
+  };
 
   return (
     <>
+      <button
+        type="button"
+        onClick={() => {
+          setDrawerVisit(true);
+        }}
+      >
+        属性
+      </button>
       <DrawerForm
         title={props.component.title}
         resize={{
@@ -234,11 +386,12 @@ export default (props: {
             console.log("resize!");
           },
           maxWidth: window.innerWidth * 0.8,
-          minWidth: 300,
+          minWidth: 328,
         }}
         layout="horizontal"
         form={form}
-        trigger={<button type="button">属性</button>}
+        open={drawerVisit}
+        onOpenChange={setDrawerVisit}
         autoFocusFirstInput
         drawerProps={{
           destroyOnClose: true,
@@ -246,50 +399,57 @@ export default (props: {
             mask: {
               background: "none",
             },
+            body: {
+              padding: 0,
+            },
+          },
+          onClose: () => {
+            resetToOriginalData();
+          },
+        }}
+        submitter={{
+          resetButtonProps: {
+            style: {
+              display: "none",
+            },
+          },
+          render: (_, defaultDoms) => {
+            return [
+              <Button
+                key="preview"
+                type="primary"
+                onClick={async () => {
+                  const values = await form.validateFields();
+                  const formattedData = processData(values);
+                  updateParentComponentData(formattedData);
+                }}
+              >
+                预览
+              </Button>,
+              <Button
+                key="reset"
+                onClick={() => {
+                  resetToOriginalData();
+                }}
+              >
+                重置
+              </Button>,
+              ...defaultDoms,
+              <Button
+                key="cancel"
+                onClick={() => {
+                  resetToOriginalData();
+                  setDrawerVisit(false);
+                }}
+                style={{ marginRight: 8 }}
+              >
+                取消
+              </Button>,
+            ];
           },
         }}
         submitTimeout={1000}
-        onFinish={async (values) => {
-          await waitTime(1000);
-
-          // 将提交的values转换为InputDataItem格式
-          // 先获取原始数据，如果没有则创建一个空的InputDataItem结构
-          const originalData = props.component.props.data?.[0] || {
-            nameType: "",
-            nameValue: "",
-            itemProps: {},
-          };
-
-          const formattedData: InputDataItem = {
-            nameType: originalData.nameType,
-            nameValue: originalData.nameValue,
-            itemProps: convertFlatToNested(values),
-          };
-
-          // 确保属性属性不变
-          props.onCurrentActivatedComponent(
-            {
-              ...props.component,
-              props: {
-                ...props.component.props,
-                data: [
-                  {
-                    ...originalData,
-                    itemProps: {
-                      ...originalData.itemProps,
-                      ...formattedData.itemProps,
-                    },
-                  },
-                ],
-              },
-            },
-            props.index
-          );
-          console.log("Formatted Data:", formattedData);
-          messageApi.success("提交成功");
-          // 不返回不会关闭弹框
-          return true;
-        }}
+        onFinish={handleFinish}
       >
         <ProCard
           tabs={{

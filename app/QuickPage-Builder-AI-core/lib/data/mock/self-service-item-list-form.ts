@@ -1,6 +1,3 @@
-// 导入类型
-import { InputDataItem } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
-
 const selfServiceItemListForm = {
   dataList: [
     {
@@ -16,7 +13,7 @@ const selfServiceItemListForm = {
             right: true,
           },
         },
-        data: <InputDataItem[]>[
+        data: [
           {
             nameType: "text",
             nameValue: "string",

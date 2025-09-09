@@ -1,4 +1,5 @@
 import { FormItemProps, ButtonProps } from "antd";
+import { MicroCardsType } from "../../types/common";
 
 // 微件基础数据
 export interface BaseDataType<T> {
@@ -57,7 +58,7 @@ export interface SubmitDataItem extends BaseDataItem<ButtonProps> {
 }
 
 /** from表单 */
-export interface FormMPPropsItem extends BaseDataItem<FormItemProps> {
+export interface FormMPDataItem extends BaseDataItem<FormItemProps> {
   /** 表单名称 */
   name: string;
 }

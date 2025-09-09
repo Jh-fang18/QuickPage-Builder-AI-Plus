@@ -104,6 +104,7 @@ interface MicroCardComponent extends React.FC<any> {
     minRowSpan: number;
     minColSpan: number;
   };
+  requiredProps?: string[]; // 声明该组件需要的参数
 }
 
 // 微件组件类型

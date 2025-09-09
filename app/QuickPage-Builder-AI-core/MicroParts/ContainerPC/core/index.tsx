@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, Suspense } from "react";
+import { useMemo, useState, useEffect, Suspense, ComponentProps } from "react";
 import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
 
@@ -18,15 +18,15 @@ import { dynamicComponent } from "../utils";
 import "./styles.core.css";
 
 export default function Core({
-  gridColumn,
-  gridRow,
-  gridScale,
-  gridPadding,
-  MicroCards,
-  activatedComponents,
-  onActivatedComponents,
-  currentIndex = "-1",
-  moduleProps = {
+  gridColumn, // 容器列数
+  gridRow, // 容器行数
+  gridScale, // 容器缩放比例
+  gridPadding, // 容器内边距
+  MicroCards, // 微件列表
+  activatedComponents, // 已激活组件列表
+  onActivatedComponents, // 激活组件列表改变回调
+  currentIndex = "-1", // 当前选中组件索引
+  moduleProps = { // 微件z-index深度
     zIndex: 0,
   },
 }: ContainerPCProps) {
@@ -1253,7 +1253,10 @@ export default function Core({
   };
 
   /** 修改当前container下的微件列表 */
-  const handleSetCurrentActivatedComponent = (component: ComponentItem, index: number) => {
+  const handleSetCurrentActivatedComponent = (
+    component: ComponentItem,
+    index: number
+  ) => {
     const newActivatedComponents = _activatedComponents.map((item, i) =>
       i === index
         ? {
@@ -1265,7 +1268,7 @@ export default function Core({
         : item
     );
     _setActivatedComponents([...newActivatedComponents]);
-  }
+  };
 
   /** 事件函数 end */
 
@@ -1304,136 +1307,137 @@ export default function Core({
           ...({ "--grid-gap": `${gridPadding}px` } as React.CSSProperties), //断言自定义属性为CSSProperties合法属性
         }}
       >
-        {_activatedComponents.map((item, index) => (
-          <div
-            key={index}
-            className={`block`}
-            style={{
-              top: item.positionY,
-              left: item.positionX,
-              gridArea: item.ccs,
-              zIndex: blockZIndex,
-            }}
-            ref={(el) => {
-              if (el) blockRefs["block" + index] = el;
-            }}
-          >
-            {}
-            <Suspense fallback={"loading..."}>
-              {/* 渲染子元素的编辑版本 */}
-              {dynamicComponent(
-                currentIndex, // 父组件索引
-                index, // 子组件索引
-                gridScale, // 子组件缩放比例
-                gridPadding, // 子组件间距
-                MicroCards, // 微件列表
-                item, // 当前微件信息
-                false, // 子组件是否为编辑状态
-                handleSetActivatedComponents // 微件信息传递函数
-              )}
-            </Suspense>
+        {_activatedComponents.map((item, index) => {
+          return (
             <div
-              className={`shape ${
-                item.url === "ContainerPC" || item.url === "FormMP"
-                  ? "brand"
-                  : "normal"
-              }`}
-              onMouseDown={(e) => mousedown(e, item, index)}
+              key={index}
+              className={`block`}
+              style={{
+                top: item.positionY,
+                left: item.positionX,
+                gridArea: item.ccs,
+                zIndex: blockZIndex,
+              }}
+              ref={(el) => {
+                if (el) blockRefs["block" + index] = el;
+              }}
             >
-              移动
+              <Suspense fallback={"loading..."}>
+                {/* 渲染子元素的编辑版本 */}
+                {dynamicComponent({
+                  currentIndex, // 父组件索引
+                  index, // 子组件索引
+                  gridScale, // 子组件缩放比例
+                  gridPadding, // 子组件间距
+                  MicroCards, // 微件列表
+                  activatedComponent: item, // 当前微件信息
+                  html: false, // 子组件是否为编辑状态
+                  handleSetActivatedComponents, // 微件信息传递函数
+                })}
+              </Suspense>
+              <div
+                className={`shape ${
+                  item.url === "ContainerPC" || item.url === "FormMP"
+                    ? "brand"
+                    : "normal"
+                }`}
+                onMouseDown={(e) => mousedown(e, item, index)}
+              >
+                移动
+              </div>
+              <div className={`title`}>{item.title}</div>
+              <div className="attribute">
+                <DrawerForm
+                  index={index}
+                  component={item || {}}
+                  onCurrentActivatedComponent={
+                    handleSetCurrentActivatedComponent
+                  }
+                />
+              </div>
+              <div className={`delete`}>
+                <button type="button" onClick={() => showConfirm(index)}>
+                  删除
+                </button>
+              </div>
+              <div className={`morph`}>
+                <span
+                  className={`up`}
+                  onMouseDown={(e) => moveTop(e, index)}
+                  style={{
+                    display: item.props.moduleProps?.morph?.up
+                      ? "block"
+                      : "none",
+                  }}
+                >
+                  上
+                </span>
+                <span
+                  className={`right`}
+                  onMouseDown={(e) => moveRight(e, index)}
+                  style={{
+                    display: item.props.moduleProps?.morph?.right
+                      ? "block"
+                      : "none",
+                  }}
+                >
+                  右
+                </span>
+                <span
+                  className={`down`}
+                  onMouseDown={(e) => moveDown(e, index)}
+                  style={{
+                    display: item.props.moduleProps?.morph?.down
+                      ? "block"
+                      : "none",
+                  }}
+                >
+                  下
+                </span>
+                <span
+                  className={`left`}
+                  onMouseDown={(e) => moveLeft(e, index)}
+                  style={{
+                    display: item.props.moduleProps?.morph?.left
+                      ? "block"
+                      : "none",
+                  }}
+                >
+                  左
+                </span>
+              </div>
+              <div
+                className={`morph`}
+                style={{ display: shouldShow === index ? "block" : "none" }}
+              >
+                <span
+                  className={`padding up`}
+                  style={{ top: -divTop - 10, height: divTop }}
+                >
+                  {divTop}
+                </span>
+                <span
+                  className={`padding right`}
+                  style={{ left: divRightLeft, width: divRight }}
+                >
+                  {divRight}
+                </span>
+                <span
+                  className={`padding down`}
+                  style={{ top: divBottomTop, height: divBottom }}
+                >
+                  {divBottom}
+                </span>
+                <span
+                  className={`padding left`}
+                  style={{ left: -divLeft - 10, width: divLeft }}
+                >
+                  {divLeft}
+                </span>
+              </div>
             </div>
-            <div className={`title`}>{item.title}</div>
-            {/* <div className={`size`}>
-              {item.width * (gridScale + gridPadding) - gridPadding} *
-              {item.height * (gridScale + gridPadding) - gridPadding}
-            </div> */}
-            <div className="attribute">
-              <DrawerForm
-                index={index}
-                component={item || {}}
-                onCurrentActivatedComponent={handleSetCurrentActivatedComponent}
-              />
-            </div>
-            <div className={`delete`}>
-              <button type="button" onClick={() => showConfirm(index)}>
-                删除
-              </button>
-            </div>
-            <div className={`morph`}>
-              <span
-                className={`up`}
-                onMouseDown={(e) => moveTop(e, index)}
-                style={{
-                  display: item.props.moduleProps?.morph?.up ? "block" : "none",
-                }}
-              >
-                上
-              </span>
-              <span
-                className={`right`}
-                onMouseDown={(e) => moveRight(e, index)}
-                style={{
-                  display: item.props.moduleProps?.morph?.right
-                    ? "block"
-                    : "none",
-                }}
-              >
-                右
-              </span>
-              <span
-                className={`down`}
-                onMouseDown={(e) => moveDown(e, index)}
-                style={{
-                  display: item.props.moduleProps?.morph?.down
-                    ? "block"
-                    : "none",
-                }}
-              >
-                下
-              </span>
-              <span
-                className={`left`}
-                onMouseDown={(e) => moveLeft(e, index)}
-                style={{
-                  display: item.props.moduleProps?.morph?.left
-                    ? "block"
-                    : "none",
-                }}
-              >
-                左
-              </span>
-            </div>
-            <div
-              className={`morph`}
-              style={{ display: shouldShow === index ? "block" : "none" }}
-            >
-              <span
-                className={`padding up`}
-                style={{ top: -divTop - 10, height: divTop }}
-              >
-                {divTop}
-              </span>
-              <span
-                className={`padding right`}
-                style={{ left: divRightLeft, width: divRight }}
-              >
-                {divRight}
-              </span>
-              <span
-                className={`padding down`}
-                style={{ top: divBottomTop, height: divBottom }}
-              >
-                {divBottom}
-              </span>
-              <span
-                className={`padding left`}
-                style={{ left: -divLeft - 10, width: divLeft }}
-              >
-                {divLeft}
-              </span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {contextHolder}
     </>

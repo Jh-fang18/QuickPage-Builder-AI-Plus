@@ -5,58 +5,33 @@ import type { ContainerPCProps } from "../types/common";
 
 /**
  * ContainerPC 组件
- * 
+ *
  * 这是一个容器组件，根据 `html` 属性的值来决定渲染 HTML 版本还是 Core 版本。
  * 它接收一系列属性并将其传递给相应的子组件。
  */
-const ContainerPC = ({
-  /** 网格行数 */
-  gridRow,
-  /** 网格列数 */
-  gridColumn,
-  /** 网格缩放比例 */
-  gridScale,
-  /** 网格内边距 */
-  gridPadding,
-  /** 微卡片数据 */
-  MicroCards,
-  /** 激活的组件列表 */
-  activatedComponents,
-  /** 更新激活组件列表的回调函数 */
-  onActivatedComponents,
-  /** 当前索引，默认为 "-1" */
-  currentIndex = "-1",
-  /** 是否使用 HTML 版本，默认为 false */
-  html = false,
-  /** 模块属性 */
-  moduleProps = {
-    /** 用于drop时修正zindex识别鼠标滑过的元素 */
-    zIndex: 0,
-  },
-}: ContainerPCProps) => {
-
-  return html ? (
+const ContainerPC = (props: ContainerPCProps) => {
+  return props.html ? (
     <HTML
-      gridRow={gridRow}
-      gridColumn={gridColumn}
-      gridScale={gridScale}
-      gridPadding={gridPadding}
-      MicroCards={MicroCards}
-      activatedComponents={activatedComponents}
-      currentIndex={currentIndex}
-      moduleProps={moduleProps}
+      gridRow={props.gridRow}
+      gridColumn={props.gridColumn}
+      gridScale={props.gridScale}
+      gridPadding={props.gridPadding}
+      MicroCards={props.MicroCards}
+      activatedComponents={props.activatedComponents}
+      currentIndex={props.currentIndex}
+      moduleProps={props.moduleProps}
     />
   ) : (
     <Core
-      gridRow={gridRow}
-      gridColumn={gridColumn}
-      gridScale={gridScale}
-      gridPadding={gridPadding}
-      MicroCards={MicroCards}
-      activatedComponents={activatedComponents}
-      onActivatedComponents={onActivatedComponents}
-      currentIndex={currentIndex}
-      moduleProps={moduleProps}
+      gridRow={props.gridRow}
+      gridColumn={props.gridColumn}
+      gridScale={props.gridScale}
+      gridPadding={props.gridPadding}
+      MicroCards={props.MicroCards}
+      activatedComponents={props.activatedComponents}
+      onActivatedComponents={props.onActivatedComponents}
+      currentIndex={props.currentIndex}
+      moduleProps={props.moduleProps}
     />
   );
 };
@@ -70,5 +45,7 @@ ContainerPC.minShape = () => ({
   minColSpan: 16, // 最小宽占格
   minRowSpan: 12, // 最小高占格
 });
+
+ContainerPC.requiredProps = ["MicroCards", "html", "onActivatedComponents"];
 
 export default ContainerPC;

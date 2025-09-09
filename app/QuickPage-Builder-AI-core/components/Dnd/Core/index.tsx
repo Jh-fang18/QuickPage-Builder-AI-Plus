@@ -7,18 +7,7 @@ import type { MicroCardsType } from "../../../types/common";
 
 import EditContext from "../context";
 
-export default function Core({
-  terminalType,
-  gridRow,
-  gridColumn,
-  gridScale,
-  gridPadding,
-  MicroCards,
-  moduleProps = {
-    zIndex: 0,
-  },
-  html = false,
-}: {
+export default function Core(props: {
   terminalType: number;
   gridRow: number;
   gridColumn: number;
@@ -40,15 +29,15 @@ export default function Core({
 
   return (
     <ContainerPC
-      html={html}
-      gridRow={gridRow}
-      gridColumn={gridColumn}
-      gridScale={gridScale}
-      gridPadding={gridPadding}
-      MicroCards={MicroCards}
+      html={props.html}
+      gridRow={props.gridRow}
+      gridColumn={props.gridColumn}
+      gridScale={props.gridScale}
+      gridPadding={props.gridPadding}
+      MicroCards={props.MicroCards}
       activatedComponents={activatedComponents}
       onActivatedComponents={handleSetActivatedComponents}
-      moduleProps={moduleProps}
+      moduleProps={props.moduleProps}
     />
   );
 }

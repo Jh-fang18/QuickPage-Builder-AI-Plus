@@ -111,15 +111,15 @@ export default function HTML({
           >
             <Suspense fallback={"loading..."}>
               {/* 渲染子元素的HTML版本 */}
-              {dynamicComponent(
+              {dynamicComponent({
                 currentIndex,
                 index,
                 gridScale,
                 gridPadding,
                 MicroCards,
-                item,
-                true
-              )}
+                activatedComponent: item,
+                html: true,
+              })}
             </Suspense>
           </div>
         ))}
