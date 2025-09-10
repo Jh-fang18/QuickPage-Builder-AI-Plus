@@ -10,30 +10,8 @@ import type { ContainerPCProps } from "../types/common";
  * 它接收一系列属性并将其传递给相应的子组件。
  */
 const ContainerPC = (props: ContainerPCProps) => {
-  return props.html ? (
-    <HTML
-      gridRow={props.gridRow}
-      gridColumn={props.gridColumn}
-      gridScale={props.gridScale}
-      gridPadding={props.gridPadding}
-      MicroCards={props.MicroCards}
-      activatedComponents={props.activatedComponents}
-      currentIndex={props.currentIndex}
-      moduleProps={props.moduleProps}
-    />
-  ) : (
-    <Core
-      gridRow={props.gridRow}
-      gridColumn={props.gridColumn}
-      gridScale={props.gridScale}
-      gridPadding={props.gridPadding}
-      MicroCards={props.MicroCards}
-      activatedComponents={props.activatedComponents}
-      onActivatedComponents={props.onActivatedComponents}
-      currentIndex={props.currentIndex}
-      moduleProps={props.moduleProps}
-    />
-  );
+  const { onActivatedComponents, ...restProps } = props;
+  return props.html ? <HTML {...restProps} /> : <Core {...props} />;
 };
 
 // 静态方法
@@ -46,6 +24,6 @@ ContainerPC.minShape = () => ({
   minRowSpan: 12, // 最小高占格
 });
 
-ContainerPC.requiredProps = ["MicroCards", "html", "onActivatedComponents"];
+ContainerPC.requiredProps = ["html", "MicroCards", "onActivatedComponents"];
 
 export default ContainerPC;

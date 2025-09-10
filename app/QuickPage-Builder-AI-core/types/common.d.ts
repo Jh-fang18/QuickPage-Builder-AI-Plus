@@ -24,27 +24,27 @@ export interface SelfServiceDataItem {
   itemName: string;
   /** 服务对应的API端点 */
   url: string;
-  /** 组件的属性 */
+  /** 微件的属性 */
   props: {
     [key: string]: any;
   };
 }
 
-/** 可拖拽组件的基础元数据 */
+/** 可拖拽微件的基础元数据 */
 export interface ComponentItem<T = any> {
-  /** 组件显示名称 */
+  /** 微件显示名称 */
   title: string;
-  /** 组件唯一标识符（格式：组件ID） */
+  /** 微件唯一标识符（格式：微件ID） */
   key: string;
-  /** 组件对应的组件路径 */
+  /** 微件对应的微件路径 */
   url: string;
-  /** 组件最小宽度（栅格单位） */
+  /** 微件最小宽度（栅格单位） */
   minWidth: number;
-  /** 组件最小高度（栅格单位） */
+  /** 微件最小高度（栅格单位） */
   minHeight: number;
-  /** 组件当前宽度（栅格单位） */
+  /** 微件当前宽度（栅格单位） */
   width: number;
-  /** 组件当前高度（栅格单位） */
+  /** 微件当前高度（栅格单位） */
   height: number;
   /** 是否允许编辑标题 */
   editTitle: boolean;
@@ -58,15 +58,20 @@ export interface ComponentItem<T = any> {
   menuKey: string;
   /** CSS Grid布局坐标（格式：row-start/column-start/row-end/column-end） */
   ccs: string;
-  /** 用于记录当前组件的行索引, 即在画布的位置顺序 */
+  /** 用于记录当前微件的行索引, 即在画布的位置顺序 */
   rowIndex: number;
-  /** 组件的属性 */
+  /** 微件的属性 */
   props: {
     [key: string]: any;
-    /** 组件的属性 */
+    /** 子微件内部容器的宽度 */
+    gridColumn?: number;
+    /** 子微件内部容器的高度 */
+    gridRow?: number;
+    /** 子微件不能修改的属性 */
     moduleProps?: {
       [key: string]: any;
     };
+    /** 子微件可修改的属性 */
     data?: T[];
   };
 }
@@ -82,20 +87,20 @@ export interface FormState {
   gridColumn: number;
 }
 
-/** 组件数据规范（用于动态加载组件） */
+/** 微件数据规范（用于动态加载微件） */
 export interface TempInfoData {
   /** 模板ID */
   tempId: number;
-  /** 组件列表 */
+  /** 微件列表 */
   dataList: {
     id: number;
     content: string;
   };
 }
 
-/** 组件数据规范（用于动态加载组件） */
+/** 微件数据规范（用于动态加载微件） */
 export interface SelfServiceData {
-  /** 组件列表 */
+  /** 微件列表 */
   dataList: SelfServiceDataItem[];
 }
 
@@ -104,8 +109,8 @@ interface MicroCardComponent extends React.FC<any> {
     minRowSpan: number;
     minColSpan: number;
   };
-  requiredProps?: string[]; // 声明该组件需要的参数
+  requiredProps?: string[];
 }
 
-// 微件组件类型
+// 微件微件类型
 export type MicroCardsType = Record<string, MicroCardComponent>;

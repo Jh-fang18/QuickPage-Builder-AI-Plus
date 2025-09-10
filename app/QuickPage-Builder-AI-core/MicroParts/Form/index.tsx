@@ -12,49 +12,27 @@ import { FormMPProps, FormMPDataItem } from "../types/common";
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
-const FormMP = ({
-  gridRow,
-  gridColumn,
-  gridScale,
-  gridPadding,
-  MicroCards,
-  activatedComponents,
-  onActivatedComponents,
-  currentIndex,
-  data,
-  html = false,
-  moduleProps = {
-    zIndex: 0,
-  },
-}: FormMPProps<FormMPDataItem>) => {
+const FormMP = (props: FormMPProps) => {
   // 基础静态数据获取和定义
   const baseData = useBaseData<
     FormMPDataItem,
-    FormMPProps<FormMPDataItem>["moduleProps"]
+    FormMPProps["moduleProps"]
   >({
-    gridColumn,
-    gridRow,
-    gridScale,
-    gridPadding,
-    data,
-    moduleProps,
+    gridColumn: props.gridColumn,
+    gridRow: props.gridRow,
+    gridScale: props.gridScale,
+    gridPadding: props.gridPadding,
+    data: props.data,
+    moduleProps: props.moduleProps,
     minShape: FormMP.minShape,
   });
-
+  
   // ======================
   // 计算属性
   // ======================
 
   // 计算样式
   const { width, height } = useStyleCalculator(baseData);
-
-  const handleSetActivatedComponents = (components: ComponentItem[]) => {
-    if (onActivatedComponents) {
-      onActivatedComponents([...components], currentIndex);
-    } else {
-      console.error("onActivatedComponents is not defined");
-    }
-  };
 
   const [form] = Form.useForm();
 
@@ -67,24 +45,13 @@ const FormMP = ({
     <Form
       {...filteredItemProps}
       style={{ width, height }}
-      name={baseData.data[0].name + "_" + currentIndex}
+      name={baseData.data[0].name + "_" + props.currentIndex}
       initialValues={{ remember: true }}
       autoComplete="off"
       form={form}
     >
       <ContainerPC
-        html={html}
-        currentIndex={currentIndex}
-        gridRow={gridRow}
-        gridColumn={gridColumn}
-        gridScale={gridScale}
-        gridPadding={gridPadding}
-        MicroCards={MicroCards}
-        activatedComponents={activatedComponents}
-        onActivatedComponents={handleSetActivatedComponents}
-        moduleProps={{
-          zIndex: moduleProps.zIndex,
-        }}
+        {...props}
       />
     </Form>
   );

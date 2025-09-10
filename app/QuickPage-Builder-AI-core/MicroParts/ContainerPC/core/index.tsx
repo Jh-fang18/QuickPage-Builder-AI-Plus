@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, Suspense, ComponentProps } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
 
@@ -18,6 +18,7 @@ import { dynamicComponent } from "../utils";
 import "./styles.core.css";
 
 export default function Core({
+  html,
   gridColumn, // 容器列数
   gridRow, // 容器行数
   gridScale, // 容器缩放比例
@@ -26,7 +27,8 @@ export default function Core({
   activatedComponents, // 已激活组件列表
   onActivatedComponents, // 激活组件列表改变回调
   currentIndex = "-1", // 当前选中组件索引
-  moduleProps = { // 微件z-index深度
+  moduleProps = {
+    // 微件z-index深度
     zIndex: 0,
   },
 }: ContainerPCProps) {
@@ -67,12 +69,11 @@ export default function Core({
               : _component.props?.gridColumn
             : _component.minWidth;
 
-          _component.height =
-            _component.props?.gridRow < _component.minHeight
+          _component.height = _component.props?.gridRow
+            ? _component.props?.gridRow < _component.minHeight
               ? _component.minHeight
               : _component.props?.gridRow
-              ? _component.props?.gridRow
-              : _component.minHeight;
+            : _component.minHeight;
 
           if (_activatedComponents && _activatedComponents.length > 0) {
             // 画布不为空
@@ -1302,7 +1303,7 @@ export default function Core({
           backgroundSize: `${gridScale + gridPadding}px ${
             gridScale + gridPadding
           }px`,
-          zIndex: moduleProps?.zIndex,
+          zIndex: moduleProps.zIndex,
           ...(isOverCurrent ? borderStyle : {}), // dropover样式
           ...({ "--grid-gap": `${gridPadding}px` } as React.CSSProperties), //断言自定义属性为CSSProperties合法属性
         }}
@@ -1331,8 +1332,8 @@ export default function Core({
                   gridPadding, // 子组件间距
                   MicroCards, // 微件列表
                   activatedComponent: item, // 当前微件信息
-                  html: false, // 子组件是否为编辑状态
-                  handleSetActivatedComponents, // 微件信息传递函数
+                  html: html, // 子组件是否为编辑状态
+                  onActivatedComponents: handleSetActivatedComponents, // 微件信息传递函数
                 })}
               </Suspense>
               <div

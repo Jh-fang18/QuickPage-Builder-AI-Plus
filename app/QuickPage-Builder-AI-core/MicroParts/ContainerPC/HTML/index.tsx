@@ -3,7 +3,7 @@
 import { useMemo, useState, Suspense, useEffect } from "react";
 
 // 导入类型
-import type { ContainerPCProps } from "../../types/common";
+import type { ContainerPCHTMLProps } from "../../types/common";
 import type { ComponentItem } from "../../../types/common";
 
 // 导入函数
@@ -20,6 +20,7 @@ import "./styles.html.css";
  * @returns {JSX.Element} 渲染后的组件
  */
 export default function HTML({
+  html,
   gridColumn,
   gridRow,
   gridScale,
@@ -30,7 +31,7 @@ export default function HTML({
   moduleProps = {
     zIndex: 0,
   },
-}: ContainerPCProps) {
+}: ContainerPCHTMLProps) {
   // ======================
   // 响应式变量
   // ======================
@@ -52,18 +53,6 @@ export default function HTML({
   const getGridTemplateRows = useMemo(() => {
     return Array(gridRow).fill(`${gridScale}px`).join(" ");
   }, [gridRow, gridScale]);
-
-  // 计算网格区域
-  const getGridTemplateAreas = useMemo(() => {
-    return Array.from(
-      { length: gridRow },
-      (_, i) =>
-        `'${Array.from(
-          { length: gridColumn },
-          (_, j) => `g${i + 1}x${j + 1}`
-        ).join(" ")}'`
-    ).join(" ");
-  }, [gridRow, gridColumn]);
 
   /* ====================== 核心方法 ====================== */
 
@@ -95,7 +84,7 @@ export default function HTML({
           backgroundSize: `${gridScale + gridPadding}px ${
             gridScale + gridPadding
           }px`,
-          zIndex: moduleProps?.zIndex,
+          zIndex: moduleProps.zIndex,
           ...({ "--grid-gap": `${gridPadding}px` } as React.CSSProperties), //断言自定义属性为CSSProperties合法属性
         }}
       >
@@ -118,7 +107,7 @@ export default function HTML({
                 gridPadding,
                 MicroCards,
                 activatedComponent: item,
-                html: true,
+                html: html,
               })}
             </Suspense>
           </div>

@@ -5,8 +5,8 @@ export interface BaseDataProps<T, U = {}> {
   gridColumn?: number;
   gridScale: number;
   gridPadding: number;
-  data?: T[];
   minShape: () => { minRowSpan: number; minColSpan: number };
+  data?: T[];
   moduleProps?: U; // 模块特有属性
 }
 
