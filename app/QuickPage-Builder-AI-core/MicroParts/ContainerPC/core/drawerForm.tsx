@@ -10,7 +10,12 @@ import {
 } from "@ant-design/pro-components";
 import { Form, message, Button } from "antd";
 
+// 导入类型
 import type { ComponentItem } from "../../../types/common";
+
+// 类型定义
+// 抓取ComponentItem<T>中T的类型
+type ExtractComponentDataType<T> = T extends ComponentItem<infer U> ? U : never;
 
 const waitTime = (time: number = 50) => {
   return new Promise((resolve) => {
@@ -260,10 +265,6 @@ export default (props: {
     index: number
   ) => void;
 }) => {
-  //类型定义，抓取传入component的data类型
-  type ExtractComponentDataType<T> = T extends ComponentItem<infer U>
-    ? U
-    : never;
   type dataType = ExtractComponentDataType<typeof props.component>;
 
   const [tab, setTab] = useState("tab1");
@@ -276,12 +277,27 @@ export default (props: {
     ...(props.component.props.data?.[0] || {}),
   });
 
+  // 验证数据类型
+  const validateDataType = (data: any): data is dataType => {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      ("itemProps" in data || Object.keys(data).length >= 0)
+    );
+  };
+
   // 通用数据处理函数
-  const processData = (values: any): Record<string, any> => {
-    return {
+  const processData = (values: any): dataType => {
+    const _data = {
       ...originalData,
       itemProps: convertFlatToNested(values),
     };
+
+    if (!validateDataType(_data)) {
+      throw new Error("Invalid data type");
+    }
+
+    return _data;
   };
 
   // 更新组件数据的公共函数
@@ -358,15 +374,19 @@ export default (props: {
 
   // 处理表单提交
   const handleFinish = async (values: any) => {
-    // 原有的提交逻辑保持不变
-    await waitTime(1000);
+    try {
+      // 原有的提交逻辑保持不变
+      await waitTime(1000);
+      
+      const formattedData = processData(values);
+      updateComponentData(formattedData);
 
-    const formattedData = processData(values);
-    updateComponentData(formattedData);
-
-    messageApi.success("提交成功");
-    // 不返回不会关闭弹框
-    return true;
+      messageApi.success("提交成功");
+      // 不返回不会关闭弹框
+      return true;
+    } catch (error) {
+      messageApi.error(error instanceof Error ? error.message : "提交失败");
+    }
   };
 
   return (
