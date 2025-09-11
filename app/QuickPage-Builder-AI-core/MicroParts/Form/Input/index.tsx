@@ -7,7 +7,7 @@ import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseDa
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
 // 导入类型
-import { InputMPProps, InputDataItem } from "../../types/common";
+import type { InputMPProps, InputDataItem } from "../../types/common";
 
 const InputMP = ({
   gridColumn,

@@ -1,3 +1,5 @@
+import type { FormMPDataItem } from "../../../MicroParts/types/common";
+
 const selfServiceItemListContainer = {
   dataList: [
     {
@@ -36,8 +38,21 @@ const selfServiceItemListContainer = {
           {
             name: "basic",
             itemProps: {
-              gridPadding: 16,
-            }
+              gridPadding: 17,
+              gridScale: 30,
+              onFinish: {
+                type: "function",
+              },
+              onFieldsChange: {
+                type: "function",
+              },
+              onFinishFailed: {
+                type: "function",
+              },
+              onValuesChange: {
+                type: "function",
+              },
+            },
           },
         ],
       },

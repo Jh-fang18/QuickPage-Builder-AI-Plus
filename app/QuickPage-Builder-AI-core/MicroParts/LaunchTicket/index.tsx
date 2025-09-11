@@ -11,7 +11,7 @@ import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseDa
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
 // 导入类型
-import {
+import type {
   LaunchTicketDataItem,
   LaunchTicketProps,
 } from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";

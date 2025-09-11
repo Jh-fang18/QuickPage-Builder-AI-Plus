@@ -246,11 +246,11 @@ export default function Editor({
     };
 
     _component.width =
-      (_component.minWidth >= _component.props?.gridColumn
+      (_component.minWidth >= (_component.props?.gridColumn ?? 0)
         ? _component.minWidth
         : _component.props?.gridColumn) || 0;
     _component.height =
-      (_component.minHeight >= _component.props?.gridRow
+      (_component.minHeight >= (_component.props?.gridRow ?? 0)
         ? _component.minHeight
         : _component.props?.gridRow) || 0;
 

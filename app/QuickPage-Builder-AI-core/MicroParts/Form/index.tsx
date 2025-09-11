@@ -5,8 +5,8 @@ import { Form } from "antd";
 
 import ContainerPC from "../ContainerPC/index";
 
-import { ComponentItem } from "../../types/common";
-import { FormMPProps, FormMPDataItem } from "../types/common";
+// 导入类型
+import type { FormMPProps, FormMPDataItem } from "../types/common";
 
 // 导入自有hooks
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
@@ -14,10 +14,7 @@ import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/us
 
 const FormMP = (props: FormMPProps) => {
   // 基础静态数据获取和定义
-  const baseData = useBaseData<
-    FormMPDataItem,
-    FormMPProps["moduleProps"]
-  >({
+  const baseData = useBaseData<FormMPDataItem, FormMPProps["moduleProps"]>({
     gridColumn: props.gridColumn,
     gridRow: props.gridRow,
     gridScale: props.gridScale,
@@ -26,7 +23,7 @@ const FormMP = (props: FormMPProps) => {
     moduleProps: props.moduleProps,
     minShape: FormMP.minShape,
   });
-  
+
   // ======================
   // 计算属性
   // ======================
@@ -36,9 +33,13 @@ const FormMP = (props: FormMPProps) => {
 
   const [form] = Form.useForm();
 
+  baseData.data[0].itemProps 当类型是function时需要转换，按结构描述
+
+  
+
   // 从 itemProps 中排除 submitText 属性
   // submitText不是Button自带的属性，故需分离
-  const { gridPadding: _gridPadding, ...filteredItemProps } =
+  const { gridScale: _gridScale, gridPadding: _gridPadding, ...filteredItemProps } =
     baseData.data[0].itemProps || {};
 
   return (
@@ -50,9 +51,7 @@ const FormMP = (props: FormMPProps) => {
       autoComplete="off"
       form={form}
     >
-      <ContainerPC
-        {...props}
-      />
+      <ContainerPC {...props} />
     </Form>
   );
 };

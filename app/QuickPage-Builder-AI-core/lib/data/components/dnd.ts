@@ -66,6 +66,7 @@ const getSelfServiceItemList = async (
     })();
 
     const _format = JSON.parse(JSON.stringify(res));
+    //console.log(_format)
 
     if (!_format?.dataList || _format?.dataList.length === 0)
       message.error("数据加载失败");
@@ -163,7 +164,7 @@ export const fetchComponentData = async (
     getSelfServiceItemList(2, 0), //表单类
   ])
     .then((res) => {
-      // console.log("res", res);
+      //console.log("res", res);
       if (!res) return;
       
       (res || []).map((item, index) => {

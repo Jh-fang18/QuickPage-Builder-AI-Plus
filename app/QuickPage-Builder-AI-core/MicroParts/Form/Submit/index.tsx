@@ -6,10 +6,10 @@ import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseDa
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
 
 // 导入类型
-import {
+import type {
   SubmitMPProps,
   SubmitDataItem,
-} from "@/app/QuickPage-Builder-AI-core/MicroParts/types/common";
+} from "../../types/common";
 
 const SubmitMP = ({
   gridColumn,

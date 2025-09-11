@@ -1,4 +1,4 @@
-import { FormItemProps, ButtonProps } from "antd";
+import { FormProps, FormItemProps, ButtonProps } from "antd";
 import { MicroCardsType } from "../../types/common";
 
 // 微件基础数据
@@ -7,9 +7,10 @@ export interface BaseDataType<T = any> {
   gridColumn: number;
   gridScale: number;
   gridPadding: number;
-  data: T[];
+  data: T[]; // 微件可修改属性，数组形式，方便扩展，单值现默认是[0]
   currentIndex?: string;
-  moduleProps?: { // 微件模块属性, 不能修改的属性
+  moduleProps?: {
+    // 微件模块属性, 不能修改的属性
     /** 形态 */
     morph?: {
       up: boolean;
@@ -19,6 +20,12 @@ export interface BaseDataType<T = any> {
     };
   };
 }
+
+// 创建预定义的联合类型
+export type SupportedDataTypes =
+  | InputDataItem
+  | SubmitDataItem
+  | FormMPDataItem;
 
 /** 微件props基础数据项 */
 export interface BaseDataItem<T = any> {
@@ -58,7 +65,7 @@ export interface SubmitDataItem extends BaseDataItem<ButtonProps> {
 }
 
 /** from表单 */
-export interface FormMPDataItem extends BaseDataItem<FormItemProps> {
+export interface FormMPDataItem extends BaseDataItem<FormProps> {
   /** 表单名称 */
   name: string;
 }
@@ -80,14 +87,15 @@ export interface ContainerPCProps<T = any> extends BaseDataType {
   MicroCards: MicroCardsType;
   activatedComponents: ComponentItem[];
   onActivatedComponents: (components: ComponentItem[], index?: string) => void;
-  moduleProps: BaseDataType["moduleProps"] & { //微件不能修改的属性
+  moduleProps: BaseDataType["moduleProps"] & {
+    //微件不能修改的属性
     /** 用于drop时修正zindex识别鼠标滑过的元素 */
     zIndex: number;
   };
   data?: T[]; // 微件可修改属性
 }
 
-export interface ContainerPCHTMLProps extends ContainerPCProps{
+export interface ContainerPCHTMLProps extends ContainerPCProps {
   onActivatedComponents?: (components: ComponentItem[], index?: string) => void;
 }
-export interface FormMPProps extends ContainerPCProps {}
+export interface FormMPProps extends ContainerPCProps<FormMPDataItem> {}

@@ -11,11 +11,8 @@ import {
 import { Form, message, Button } from "antd";
 
 // 导入类型
+import type { SupportedDataTypes } from "../../types/common";
 import type { ComponentItem } from "../../../types/common";
-
-// 类型定义
-// 抓取ComponentItem<T>中T的类型
-type ExtractComponentDataType<T> = T extends ComponentItem<infer U> ? U : never;
 
 const waitTime = (time: number = 50) => {
   return new Promise((resolve) => {
@@ -256,17 +253,51 @@ const convertNestedToFlat = (nestedObj: Record<string, any>, prefix = "") => {
   return flatObj;
 };
 
+// 分离事件属性的函数
+const extractEventProps = (itemProps: Record<string, any> = {}) => {
+  console.log("itemProps", itemProps);
+  const eventProps: Record<string, any> = {};
+  const normalProps: Record<string, any> = {};
+
+  Object.keys(itemProps).forEach((key) => {
+    if (key.startsWith("on")) {
+      eventProps[key] = itemProps[key];
+    } else {
+      normalProps[key] = itemProps[key];
+    }
+  });
+
+  return { eventProps, normalProps };
+};
+
+// 更严格的类型谓词
+const validateDataType = (data: any): data is SupportedDataTypes => {
+  // 更详细的运行时验证
+  if (typeof data !== "object" || data === null) {
+    console.warn("validateDataType: data is not an object or is null");
+    return false;
+  }
+
+  // 检查必需的结构
+  const hasValidStructure =
+    // 必须有 itemProps 属性（可以为 undefined）
+    ("itemProps" in data &&
+      // 如果 itemProps 存在，必须是对象或 undefined
+      (data.itemProps === undefined || typeof data.itemProps === "object")) ||
+    // 或者至少有一些其他属性
+    Object.keys(data).length > 0;
+
+  return hasValidStructure;
+};
+
 export default (props: {
   index: number;
   component: ComponentItem;
   onCurrentActivatedComponent: (
-    // 传递给父组件，更新父组件的激活微件列表
     component: ComponentItem,
     index: number
   ) => void;
 }) => {
-  type dataType = ExtractComponentDataType<typeof props.component>;
-
   const [tab, setTab] = useState("tab1");
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
@@ -277,22 +308,13 @@ export default (props: {
     ...(props.component.props.data?.[0] || {}),
   });
 
-  // 验证数据类型
-  const validateDataType = (data: any): data is dataType => {
-    return (
-      typeof data === "object" &&
-      data !== null &&
-      ("itemProps" in data || Object.keys(data).length >= 0)
-    );
-  };
-
   // 通用数据处理函数
-  const processData = (values: any): dataType => {
+  const processData = (values: any): SupportedDataTypes => {
     const _data = {
       ...originalData,
       itemProps: convertFlatToNested(values),
+      d: 1,
     };
-
     if (!validateDataType(_data)) {
       throw new Error("Invalid data type");
     }
@@ -301,7 +323,7 @@ export default (props: {
   };
 
   // 更新组件数据的公共函数
-  const updateComponentData = (formattedData: dataType) => {
+  const updateComponentData = (formattedData: SupportedDataTypes) => {
     const updatedComponent = {
       ...props.component,
       props: {
@@ -330,7 +352,7 @@ export default (props: {
   };
 
   // 仅更新父组件数据，不修改 originalData
-  const updateParentComponentData = (formattedData: dataType) => {
+  const updateParentComponentData = (formattedData: SupportedDataTypes) => {
     const updatedComponent = {
       ...props.component,
       props: {
@@ -377,7 +399,7 @@ export default (props: {
     try {
       // 原有的提交逻辑保持不变
       await waitTime(1000);
-      
+
       const formattedData = processData(values);
       updateComponentData(formattedData);
 
@@ -388,6 +410,10 @@ export default (props: {
       messageApi.error(error instanceof Error ? error.message : "提交失败");
     }
   };
+
+  // 分离事件属性和普通属性
+  const itemProps = props.component.props.data?.[0]?.itemProps || {};
+  const { eventProps } = extractEventProps(itemProps);
 
   return (
     <>
@@ -490,7 +516,24 @@ export default (props: {
               {
                 label: `事件`,
                 key: "tab2",
-                children: `内容二`,
+                children: (
+                  <ProForm.Group>
+                    {Object.keys(eventProps).length > 0 ? (
+                      <ProFormSelect
+                        name="selectedEvent"
+                        label="选择事件"
+                        options={Object.keys(eventProps).map((eventName) => ({
+                          label: eventName,
+                          value: eventName,
+                        }))}
+                        placeholder="请选择事件"
+                        width="md"
+                      />
+                    ) : (
+                      <div>暂无事件属性</div>
+                    )}
+                  </ProForm.Group>
+                ),
               },
             ],
             onChange: (key) => {
