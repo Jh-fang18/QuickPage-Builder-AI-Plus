@@ -42,15 +42,31 @@ const selfServiceItemListContainer = {
               gridScale: 30,
               onFinish: {
                 type: "function",
+                name: "onFinish",
+                parameters: [
+                  { name: "values", type: "object", required: true },
+                ],
               },
               onFieldsChange: {
                 type: "function",
+                name: "onFieldsChange",
+                parameters: [
+                  { name: "values", type: "object", required: true },
+                ],
               },
               onFinishFailed: {
                 type: "function",
+                name: "onFinishFailed",
+                parameters: [
+                  { name: "values", type: "object", required: true },
+                ],
               },
               onValuesChange: {
                 type: "function",
+                name: "onValuesChange",
+                parameters: [
+                  { name: "values", type: "object", required: true },
+                ],
               },
             },
           },

@@ -255,7 +255,7 @@ const convertNestedToFlat = (nestedObj: Record<string, any>, prefix = "") => {
 
 // 分离事件属性的函数
 const extractEventProps = (itemProps: Record<string, any> = {}) => {
-  console.log("itemProps", itemProps);
+  //console.log("itemProps", itemProps);
   const eventProps: Record<string, any> = {};
   const normalProps: Record<string, any> = {};
 
@@ -413,7 +413,7 @@ export default (props: {
 
   // 分离事件属性和普通属性
   const itemProps = props.component.props.data?.[0]?.itemProps || {};
-  const { eventProps } = extractEventProps(itemProps);
+  const { eventProps, normalProps } = extractEventProps(itemProps);
 
   return (
     <>
@@ -508,7 +508,7 @@ export default (props: {
                 children: (
                   <ProForm.Group>
                     {Object.entries(
-                      props.component.props.data?.[0]?.itemProps || {}
+                      normalProps || {}
                     ).map(([key, value]) => renderFormItem(key, value))}
                   </ProForm.Group>
                 ),

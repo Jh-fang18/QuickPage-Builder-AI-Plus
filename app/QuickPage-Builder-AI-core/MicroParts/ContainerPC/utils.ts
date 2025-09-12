@@ -2,8 +2,8 @@ import { createElement } from "react";
 
 import { ComponentItem, MicroCardsType } from "../../types/common";
 
-const dynamicComponent = (
-  props: Record<string, any> & {
+export const dynamicComponent = (
+  props: {
     currentIndex: string;
     index: number;
     gridScale: number;
@@ -63,7 +63,9 @@ const dynamicComponent = (
   if (_component.requiredProps && Array.isArray(_component.requiredProps)) {
     _component.requiredProps.forEach((prop) => {
       if (props.hasOwnProperty(prop)) {
-        childProps[prop] = props[prop];
+        if (prop in props) {
+          childProps[prop] = (props as any)[prop];
+        }
       }
     });
   }
@@ -72,4 +74,3 @@ const dynamicComponent = (
   return createElement(_component, childProps);
 };
 
-export { dynamicComponent };

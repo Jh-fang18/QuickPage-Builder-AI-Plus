@@ -324,7 +324,7 @@ export default function Editor({
    * 保存模板
    */
   const handleSave = () => {
-    console.log("TOP", currentActivatedComponentsRef.current);
+    //console.log("TOP", currentActivatedComponentsRef.current);
     setWorkbenchData(
       currentActivatedComponentsRef.current,
       contentIdRef.current,
