@@ -64,7 +64,7 @@ export const dynamicComponent = (
     _component.requiredProps.forEach((prop) => {
       if (props.hasOwnProperty(prop)) {
         if (prop in props) {
-          childProps[prop] = (props as any)[prop];
+          childProps[prop] = props[prop as keyof typeof props];
         }
       }
     });

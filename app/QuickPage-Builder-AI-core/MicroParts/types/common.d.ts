@@ -68,6 +68,10 @@ export interface SubmitDataItem extends BaseDataItem<ButtonProps> {
 export interface FormMPDataItem extends BaseDataItem<FormProps> {
   /** 表单名称 */
   name: string;
+  itemProps?: BaseDataItem<FormProps>["itemProps"] & {
+    /** 事件列表 */
+    eventsList?: [];
+  };
 }
 
 // 发布票务微件基础数据

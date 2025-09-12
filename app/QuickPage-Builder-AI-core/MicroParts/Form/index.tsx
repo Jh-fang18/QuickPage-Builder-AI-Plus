@@ -11,7 +11,6 @@ import type { FormMPProps, FormMPDataItem } from "../types/common";
 // 导入自有hooks
 import { useBaseData } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useBaseData";
 import { useStyleCalculator } from "@/app/QuickPage-Builder-AI-core/lib/hooks/useStyleCalculator";
-import { useEffect } from "react";
 
 // 定义一个空函数，用于处理事件属性
 const createEmptyFunction = (
@@ -60,7 +59,7 @@ const FormMP = (props: FormMPProps) => {
 
   // 从 itemProps 中排除 gridScale 和 gridPadding 属性
   // 这些不是 Form 组件的原生属性，需要分离
-  const { gridScale: _gridScale, gridPadding: _gridPadding, ...filteredItemProps } =
+  const { gridScale, gridPadding, eventsList, ...filteredItemProps } =
     baseData.data[0].itemProps || {};
 
   // 处理 itemProps 中的函数类型属性

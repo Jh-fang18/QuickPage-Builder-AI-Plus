@@ -7,6 +7,9 @@ import {
   ProFormText,
   ProFormDigit,
   ProCard,
+  ModalForm,
+  ProFormRadio,
+  ProFormDependency,
 } from "@ant-design/pro-components";
 import { Form, message, Button } from "antd";
 
@@ -254,16 +257,16 @@ const convertNestedToFlat = (nestedObj: Record<string, any>, prefix = "") => {
 };
 
 // 分离事件属性的函数
-const extractEventProps = (itemProps: Record<string, any> = {}) => {
+const extractEventProps = (itemProps: SupportedDataTypes["itemProps"] = {}) => {
   //console.log("itemProps", itemProps);
   const eventProps: Record<string, any> = {};
   const normalProps: Record<string, any> = {};
 
   Object.keys(itemProps).forEach((key) => {
-    if (key.startsWith("on")) {
-      eventProps[key] = itemProps[key];
+    if (key.startsWith("on") || key === "eventsList") {
+      eventProps[key] = itemProps[key as keyof SupportedDataTypes["itemProps"]];
     } else {
-      normalProps[key] = itemProps[key];
+      normalProps[key] = itemProps[key as keyof SupportedDataTypes["itemProps"]];
     }
   });
 
@@ -302,6 +305,8 @@ export default (props: {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const [drawerVisit, setDrawerVisit] = useState(false);
+  const [modalVisit, setModalVisit] = useState(false);
+  const [eventsList, setEventsList] = useState<any[]>([]);
 
   // 存储原始数据，用于取消操作
   const [originalData, setOriginalData] = useState({
@@ -507,9 +512,9 @@ export default (props: {
                 key: "tab1",
                 children: (
                   <ProForm.Group>
-                    {Object.entries(
-                      normalProps || {}
-                    ).map(([key, value]) => renderFormItem(key, value))}
+                    {Object.entries(normalProps || {}).map(([key, value]) =>
+                      renderFormItem(key, value)
+                    )}
                   </ProForm.Group>
                 ),
               },
@@ -519,16 +524,178 @@ export default (props: {
                 children: (
                   <ProForm.Group>
                     {Object.keys(eventProps).length > 0 ? (
-                      <ProFormSelect
-                        name="selectedEvent"
-                        label="选择事件"
-                        options={Object.keys(eventProps).map((eventName) => ({
-                          label: eventName,
-                          value: eventName,
-                        }))}
-                        placeholder="请选择事件"
-                        width="md"
-                      />
+                      <>
+                        <Button 
+                          type="primary" 
+                          onClick={() => setModalVisit(true)}
+                        >
+                          新建
+                        </Button>
+                        
+                        {/* 事件列表展示 */}
+                        {eventsList.length > 0 && (
+                          <div style={{ marginTop: '20px', width: '100%' }}>
+                            <h4>已配置的事件:</h4>
+                            {eventsList.map((event, index) => (
+                              <div 
+                                key={event.id} 
+                                style={{ 
+                                  display: 'flex', 
+                                  justifyContent: 'space-between', 
+                                  alignItems: 'center',
+                                  padding: '8px',
+                                  border: '1px solid #d9d9d9',
+                                  borderRadius: '4px',
+                                  marginBottom: '8px'
+                                }}
+                              >
+                                <div>
+                                  <div><strong>动作类型:</strong> {event.actionType}</div>
+                                  <div><strong>事件:</strong> {event.selectedEvent}</div>
+                                </div>
+                                <Button 
+                                  type="text" 
+                                  icon={<span>-</span>}
+                                  onClick={() => {
+                                    setEventsList(prev => prev.filter((_, i) => i !== index));
+                                  }}
+                                  danger
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* 新建事件对话框 */}
+                        <ModalForm
+                          title="配置事件"
+                          open={modalVisit}
+                          onOpenChange={setModalVisit}
+                          onFinish={async (values) => {
+                            console.log('事件配置:', values);
+                            // 将配置添加到事件列表中
+                            setEventsList(prev => [...prev, { ...values, id: Date.now() }]);
+                            messageApi.success('配置已保存');
+                            return true;
+                          }}
+                        >
+                          <ProFormSelect
+                            name="selectedEvent"
+                            label="选择事件"
+                            options={Object.keys(eventProps).map(
+                              (eventName) => ({
+                                label: eventName,
+                                value: eventName,
+                              })
+                            )}
+                            placeholder="请选择事件"
+                            width="md"
+                          />
+
+                          <ProFormSelect
+                            name="actionType"
+                            label="执行动作"
+                            options={[
+                              { label: "提交数据", value: "submitData" },
+                              { label: "页面跳转", value: "pageRedirect" },
+                              { label: "展示提示信息", value: "showMessage" },
+                              { label: "控制组件", value: "controlComponent" },
+                              {
+                                label: "界面变量赋值",
+                                value: "assignVariable",
+                              },
+                            ]}
+                            placeholder="请选择执行动作"
+                            width="md"
+                            rules={[
+                              { required: true, message: "请选择执行动作" },
+                            ]}
+                          />
+
+                          {/* 根据选择的动作显示不同的配置项 */}
+                          <ProFormDependency name={["actionType"]}>
+                            {({ actionType }: any) => {
+                              if (actionType === "showMessage") {
+                                return (
+                                  <ProFormText
+                                    name="messageContent"
+                                    label="提示信息内容"
+                                    width="md"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "请输入提示信息内容",
+                                      },
+                                    ]}
+                                  />
+                                );
+                              }
+                              if (actionType === "pageRedirect") {
+                                return (
+                                  <ProFormText
+                                    name="redirectUrl"
+                                    label="跳转地址"
+                                    width="md"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "请输入跳转地址",
+                                      },
+                                    ]}
+                                  />
+                                );
+                              }
+                              if (actionType === "controlComponent") {
+                                return (
+                                  <ProFormText
+                                    name="componentId"
+                                    label="组件ID"
+                                    width="md"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "请输入组件ID",
+                                      },
+                                    ]}
+                                  />
+                                );
+                              }
+                              if (actionType === "assignVariable") {
+                                return (
+                                  <>
+                                    <ProFormText
+                                      name="variableName"
+                                      label="变量名"
+                                      width="md"
+                                      rules={[
+                                        {
+                                          required: true,
+                                          message: "请输入变量名",
+                                        },
+                                      ]}
+                                    />
+                                    <ProFormRadio.Group
+                                      name="variableValue"
+                                      label="变量值"
+                                      options={[
+                                        { label: "固定值", value: "fixed" },
+                                        { label: "表单值", value: "formValue" },
+                                      ]}
+                                      rules={[
+                                        {
+                                          required: true,
+                                          message: "请选择变量值类型",
+                                        },
+                                      ]}
+                                    />
+                                  </>
+                                );
+                              }
+                              return null;
+                            }}
+                          </ProFormDependency>
+                        </ModalForm>
+                      </>
                     ) : (
                       <div>暂无事件属性</div>
                     )}
