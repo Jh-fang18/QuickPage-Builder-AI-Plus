@@ -38,7 +38,7 @@ export default function HTML({
 
   const [_activatedComponents, _setActivatedComponents] = useState<
     ComponentItem[]
-  >([...activatedComponents]);
+  >(activatedComponents ? [...activatedComponents] : []);
 
   // ======================
   // 计算属性

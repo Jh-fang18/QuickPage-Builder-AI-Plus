@@ -45,7 +45,7 @@ export default function Core({
   const [shouldShow, setShouldShow] = useState<number>(-1);
   const [_activatedComponents, _setActivatedComponents] = useState<
     ComponentItem[]
-  >([...activatedComponents]); // 传入props的类型还需定义
+  >(activatedComponents ? [...activatedComponents] : []); // 传入props的类型还需定义
   const [modal, contextHolder] = Modal.useModal();
   const [{ isOverCurrent }, drop] = useDrop(
     () => ({
@@ -1285,7 +1285,7 @@ export default function Core({
 
   useEffect(() => {
     //console.log("activatedComponents", activatedComponents);
-    _setActivatedComponents([...activatedComponents]);
+    _setActivatedComponents(activatedComponents ? [...activatedComponents] : []);
   }, [activatedComponents]);
 
   /** 脱困机制 end */

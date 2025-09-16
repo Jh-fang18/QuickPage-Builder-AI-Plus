@@ -1,5 +1,5 @@
-import { useState } from "react";
-
+import { useState, useRef } from "react";
+import { Form, message, Button } from "antd";
 import {
   DrawerForm,
   ProForm,
@@ -11,10 +11,9 @@ import {
   ProFormRadio,
   ProFormDependency,
 } from "@ant-design/pro-components";
-import { Form, message, Button } from "antd";
 
 // 导入类型
-import type { SupportedDataTypes } from "../../types/common";
+import type { SupportedDataTypes, BaseDataItem } from "../../types/common";
 import type { ComponentItem } from "../../../types/common";
 
 const waitTime = (time: number = 50) => {
@@ -263,10 +262,11 @@ const extractEventProps = (itemProps: SupportedDataTypes["itemProps"] = {}) => {
   const normalProps: Record<string, any> = {};
 
   Object.keys(itemProps).forEach((key) => {
-    if (key.startsWith("on") || key === "eventsList") {
+    if (key.startsWith("on")) {
       eventProps[key] = itemProps[key as keyof SupportedDataTypes["itemProps"]];
-    } else {
-      normalProps[key] = itemProps[key as keyof SupportedDataTypes["itemProps"]];
+    } else if (key !== "eventsList") {
+      normalProps[key] =
+        itemProps[key as keyof SupportedDataTypes["itemProps"]];
     }
   });
 
@@ -306,7 +306,12 @@ export default (props: {
   const [messageApi, contextHolder] = message.useMessage();
   const [drawerVisit, setDrawerVisit] = useState(false);
   const [modalVisit, setModalVisit] = useState(false);
-  const [eventsList, setEventsList] = useState<any[]>([]);
+  const [eventsList, setEventsList] = useState<
+    Array<{ id: number; actionType: string; selectedEvent: string }>
+  >([...(props.component.props.data?.[0]?.itemProps?.eventsList || [])]);
+
+  // 非响应式数据
+  const modalFormRef = useRef<any>(null);
 
   // 存储原始数据，用于取消操作
   const [originalData, setOriginalData] = useState({
@@ -318,7 +323,6 @@ export default (props: {
     const _data = {
       ...originalData,
       itemProps: convertFlatToNested(values),
-      d: 1,
     };
     if (!validateDataType(_data)) {
       throw new Error("Invalid data type");
@@ -329,6 +333,29 @@ export default (props: {
 
   // 更新组件数据的公共函数
   const updateComponentData = (formattedData: SupportedDataTypes) => {
+    const _formattedData = {
+      ...formattedData,
+      itemProps: {
+        ...(formattedData.itemProps || {}),
+        eventsList: [...(formattedData.itemProps?.eventsList || [])],
+      },
+    };
+
+    // 当name在formattedData中时，可以确保 formattedData 是 FormMPDataItem 类型且有 eventsList 属性
+    if (
+      "name" in _formattedData &&
+      _formattedData.itemProps &&
+      "eventsList" in _formattedData.itemProps
+    ) {
+      // 这里可以安全地访问 eventsList
+      if (eventsList.length > 0) {
+        _formattedData.itemProps = {
+          ..._formattedData.itemProps,
+          eventsList: [...eventsList],
+        };
+      }
+    }
+
     const updatedComponent = {
       ...props.component,
       props: {
@@ -338,7 +365,7 @@ export default (props: {
             ...originalData,
             itemProps: {
               ...originalData?.itemProps,
-              ...formattedData.itemProps,
+              ..._formattedData.itemProps,
             },
           },
         ],
@@ -353,7 +380,7 @@ export default (props: {
 
     // 确保属性属性不变
     props.onCurrentActivatedComponent(updatedComponent, props.index);
-    console.log("Formatted Data:", formattedData);
+    console.log("Formatted Data:", originalData);
   };
 
   // 仅更新父组件数据，不修改 originalData
@@ -396,6 +423,10 @@ export default (props: {
     // 还原原始数据状态，使用扁平化后的数据
     const flatOriginalData = convertNestedToFlat(originalData.itemProps);
     form.setFieldsValue(flatOriginalData);
+    // 复原eventsList
+    setEventsList(originalData.itemProps?.eventsList || []);
+
+    // 复原activatedComponent
     props.onCurrentActivatedComponent(originalComponent, props.index);
   };
 
@@ -522,42 +553,60 @@ export default (props: {
                 label: `事件`,
                 key: "tab2",
                 children: (
-                  <ProForm.Group>
+                  <>
                     {Object.keys(eventProps).length > 0 ? (
-                      <>
-                        <Button 
-                          type="primary" 
-                          onClick={() => setModalVisit(true)}
+                      <ProForm.Group>
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            // 打开模态框前重置表单
+                            if (modalFormRef.current) {
+                              modalFormRef.current.resetFields();
+                            }
+                            setModalVisit(true);
+                          }}
                         >
                           新建
                         </Button>
-                        
+
                         {/* 事件列表展示 */}
                         {eventsList.length > 0 && (
-                          <div style={{ marginTop: '20px', width: '100%' }}>
-                            <h4>已配置的事件:</h4>
+                          <div style={{ marginTop: "20px", width: "100%" }}>
+                            <h4 style={{ marginBottom: "10px" }}>已配置的事件:</h4>
                             {eventsList.map((event, index) => (
-                              <div 
-                                key={event.id} 
-                                style={{ 
-                                  display: 'flex', 
-                                  justifyContent: 'space-between', 
-                                  alignItems: 'center',
-                                  padding: '8px',
-                                  border: '1px solid #d9d9d9',
-                                  borderRadius: '4px',
-                                  marginBottom: '8px'
+                              <div
+                                key={event.id}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  padding: "8px",
+                                  border: "1px solid #d9d9d9",
+                                  borderRadius: "4px",
+                                  marginBottom: "8px",
                                 }}
                               >
-                                <div>
-                                  <div><strong>动作类型:</strong> {event.actionType}</div>
-                                  <div><strong>事件:</strong> {event.selectedEvent}</div>
+                                <div
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                    height: "26px",
+                                    lineHeight: "26px",
+                                    padding: "0 5px",
+                                  }}
+                                >
+                                  <strong>类型:</strong> {event.actionType}
+                                  {" - "}
+                                  <strong>名称:</strong> {event.selectedEvent}
                                 </div>
-                                <Button 
-                                  type="text" 
-                                  icon={<span>-</span>}
+                                <Button
+                                  type="text"
+                                  icon={<span>—</span>}
                                   onClick={() => {
-                                    setEventsList(prev => prev.filter((_, i) => i !== index));
+                                    setEventsList((prev) =>
+                                      prev.filter((_, i) => i !== index)
+                                    );
                                   }}
                                   danger
                                 />
@@ -565,18 +614,63 @@ export default (props: {
                             ))}
                           </div>
                         )}
-                        
+
                         {/* 新建事件对话框 */}
                         <ModalForm
+                          formRef={modalFormRef}
                           title="配置事件"
                           open={modalVisit}
-                          onOpenChange={setModalVisit}
                           onFinish={async (values) => {
-                            console.log('事件配置:', values);
-                            // 将配置添加到事件列表中
-                            setEventsList(prev => [...prev, { ...values, id: Date.now() }]);
-                            messageApi.success('配置已保存');
-                            return true;
+                              // 如果是submitData动作类型，调用Coze工作流API
+                              // if (values.actionType === "submitData") {
+                              //   try {
+                              //     // 动态导入Coze服务以避免不必要的加载
+                              //     const { submitDataToDatabase } = await import('./api/cozeService');
+                                  
+                              //     // 调用Coze工作流API
+                              //     const result = await submitDataToDatabase(
+                              //       values.workflowId,
+                              //       values.apiKey,
+                              //       values.databaseUrl,
+                              //       values
+                              //     );
+                                  
+                              //     if (!result.success) {
+                              //       console.error("提交数据到工作流失败:", result.error);
+                              //       // 可以添加错误提示给用户
+                              //     } else {
+                              //       console.log("数据提交成功:", result.data);
+                              //     }
+                              //   } catch (error) {
+                              //     console.error("提交数据到工作流失败:", error);
+                              //     // 可以添加错误提示给用户
+                              //   }
+                              // }
+                              
+                              // 将配置的事件添加到事件列表中
+                              setEventsList((prev) => [
+                                ...prev,
+                                {
+                                  id: Date.now(), // 简单的ID生成方式
+                                  actionType: values.actionType,
+                                  selectedEvent: values.selectedEvent,
+                                  // 保存submitData相关的配置
+                                  ...(values.actionType === "submitData" && {
+                                    workflowId: values.workflowId,
+                                    apiKey: values.apiKey,
+                                    databaseUrl: values.databaseUrl
+                                  })
+                                },
+                              ]);
+                              setModalVisit(false);
+                              return true;
+                            }}
+                          onOpenChange={(visible) => {
+                            setModalVisit(visible);
+                            // 当模态框关闭时重置表单
+                            if (!visible && modalFormRef.current) {
+                              modalFormRef.current.resetFields();
+                            }
                           }}
                         >
                           <ProFormSelect
@@ -661,45 +755,87 @@ export default (props: {
                                 );
                               }
                               if (actionType === "assignVariable") {
-                                return (
-                                  <>
-                                    <ProFormText
-                                      name="variableName"
-                                      label="变量名"
-                                      width="md"
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message: "请输入变量名",
-                                        },
-                                      ]}
-                                    />
-                                    <ProFormRadio.Group
-                                      name="variableValue"
-                                      label="变量值"
-                                      options={[
-                                        { label: "固定值", value: "fixed" },
-                                        { label: "表单值", value: "formValue" },
-                                      ]}
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message: "请选择变量值类型",
-                                        },
-                                      ]}
-                                    />
-                                  </>
-                                );
-                              }
-                              return null;
+                                  return (
+                                    <>
+                                      <ProFormText
+                                        name="variableName"
+                                        label="变量名"
+                                        width="md"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "请输入变量名",
+                                          },
+                                        ]}
+                                      />
+                                      <ProFormRadio.Group
+                                        name="variableValue"
+                                        label="变量值"
+                                        options={[
+                                          { label: "固定值", value: "fixed" },
+                                          { label: "表单值", value: "formValue" },
+                                        ]}
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "请选择变量值类型",
+                                          },
+                                        ]}
+                                      />
+                                    </>
+                                  );
+                                }
+                                if (actionType === "submitData") {
+                                  return (
+                                    <>
+                                      <ProFormText
+                                        name="workflowId"
+                                        label="工作流ID"
+                                        width="md"
+                                        placeholder="请输入Coze工作流ID"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "请输入工作流ID",
+                                          },
+                                        ]}
+                                      />
+                                      <ProFormText
+                                        name="apiKey"
+                                        label="API密钥"
+                                        width="md"
+                                        placeholder="请输入Coze API密钥"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "请输入API密钥",
+                                          },
+                                        ]}
+                                      />
+                                      <ProFormText
+                                        name="databaseUrl"
+                                        label="数据库地址"
+                                        width="md"
+                                        placeholder="请输入数据库连接地址"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "请输入数据库地址",
+                                          },
+                                        ]}
+                                      />
+                                    </>
+                                  );
+                                }
+                                return null;
                             }}
                           </ProFormDependency>
                         </ModalForm>
-                      </>
+                      </ProForm.Group>
                     ) : (
                       <div>暂无事件属性</div>
                     )}
-                  </ProForm.Group>
+                  </>
                 ),
               },
             ],

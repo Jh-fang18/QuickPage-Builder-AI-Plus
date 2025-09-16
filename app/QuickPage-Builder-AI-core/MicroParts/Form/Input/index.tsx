@@ -52,9 +52,9 @@ const InputMP = ({
   useEffect(() => {
     form.setFieldValue(
       inputType,
-      baseData.data[0]?.itemProps.initialValue || ""
+      baseData.data[0]?.itemProps?.initialValue || ""
     );
-  }, [baseData.data[0]?.itemProps.initialValue || null]);
+  }, [baseData.data[0]?.itemProps?.initialValue || null]);
 
   return (
     <Form.Item<FieldType>

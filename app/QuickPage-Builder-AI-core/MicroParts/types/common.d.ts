@@ -28,11 +28,17 @@ export type SupportedDataTypes =
   | FormMPDataItem;
 
 /** 微件props基础数据项 */
-export interface BaseDataItem<T = any> {
+export interface BaseDataItem<T = Record<string, any>> {
   /** 可修改的属性继承自ant对应模块 */
-  itemProps: T & {
+  itemProps?: T & {
     gridScale?: number;
     gridPadding?: number;
+    /** 事件列表 */
+    eventsList?: {
+      id: number;
+      actionType: string;
+      selectedEvent: string;
+    }[];
   };
 }
 
@@ -68,10 +74,6 @@ export interface SubmitDataItem extends BaseDataItem<ButtonProps> {
 export interface FormMPDataItem extends BaseDataItem<FormProps> {
   /** 表单名称 */
   name: string;
-  itemProps?: BaseDataItem<FormProps>["itemProps"] & {
-    /** 事件列表 */
-    eventsList?: [];
-  };
 }
 
 // 发布票务微件基础数据
