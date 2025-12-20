@@ -320,9 +320,16 @@ export default (props: {
 
   // 通用数据处理函数
   const processData = (values: any): SupportedDataTypes => {
+    // 从表单数据中排除 eventsList，因为它不应该从表单数据中转换
+    const { eventsList: _, ...formValues } = values;
+    const nestedItemProps = convertFlatToNested(formValues);
+    
+    // 确保 eventsList 不会被包含在转换后的数据中
+    const { eventsList: __, ...cleanItemProps } = nestedItemProps;
+    
     const _data = {
       ...originalData,
-      itemProps: convertFlatToNested(values),
+      itemProps: cleanItemProps,
     };
     if (!validateDataType(_data)) {
       throw new Error("Invalid data type");
@@ -333,28 +340,27 @@ export default (props: {
 
   // 更新组件数据的公共函数
   const updateComponentData = (formattedData: SupportedDataTypes) => {
-    const _formattedData = {
-      ...formattedData,
-      itemProps: {
-        ...(formattedData.itemProps || {}),
-        eventsList: [...(formattedData.itemProps?.eventsList || [])],
-      },
+    // 从 formattedData.itemProps 中排除 eventsList，因为它不应该从表单数据中转换
+    const { eventsList: _, ...cleanItemProps } = formattedData.itemProps || {};
+    
+    // 构建最终的 itemProps，包含 eventsList（如果存在）
+    const finalItemProps: any = {
+      ...cleanItemProps,
     };
 
     // 当name在formattedData中时，可以确保 formattedData 是 FormMPDataItem 类型且有 eventsList 属性
     if (
-      "name" in _formattedData &&
-      _formattedData.itemProps &&
-      "eventsList" in _formattedData.itemProps
+      "name" in formattedData &&
+      eventsList.length > 0
     ) {
-      // 这里可以安全地访问 eventsList
-      if (eventsList.length > 0) {
-        _formattedData.itemProps = {
-          ..._formattedData.itemProps,
-          eventsList: [...eventsList],
-        };
-      }
+      // 从 state 中获取 eventsList 并添加到 itemProps 中
+      finalItemProps.eventsList = [...eventsList];
     }
+    
+    const _formattedData = {
+      ...formattedData,
+      itemProps: finalItemProps,
+    };
 
     const updatedComponent = {
       ...props.component,
@@ -385,6 +391,9 @@ export default (props: {
 
   // 仅更新父组件数据，不修改 originalData
   const updateParentComponentData = (formattedData: SupportedDataTypes) => {
+    // 从 formattedData.itemProps 中排除 eventsList，因为它不应该被传递到 DOM
+    const { eventsList: _, ...cleanItemProps } = formattedData.itemProps || {};
+    
     const updatedComponent = {
       ...props.component,
       props: {
@@ -394,7 +403,11 @@ export default (props: {
             ...originalData,
             itemProps: {
               ...originalData?.itemProps,
-              ...formattedData.itemProps,
+              ...cleanItemProps,
+              // 保留原有的 eventsList（如果存在）
+              ...(originalData?.itemProps?.eventsList && {
+                eventsList: originalData.itemProps.eventsList,
+              }),
             },
           },
         ],
