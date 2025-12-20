@@ -640,6 +640,14 @@ export default function Core({
     if (firstEle instanceof HTMLElement) {
       firstEle.style.width = "100%";
       firstEle.style.overflow = "hidden";
+
+      // 判断如果是form标签，则设置其第一个子元素宽度为100%
+      if (
+        firstEle.tagName.toLowerCase() === "form" &&
+        firstEle.firstElementChild instanceof HTMLElement
+      ) {
+        firstEle.firstElementChild.style.width = "100%";
+      }
     }
 
     // 控制微件宽度
@@ -910,103 +918,132 @@ export default function Core({
     e.preventDefault();
     e.stopPropagation();
 
-    let oBlock = blockRefs["block" + index], //获取当前点击微件
-      disX = e.clientX - 0,
-      oLeft: number | string = 0;
+    const oBlock = blockRefs["block" + index], //获取当前点击微件
+      oCcs = getComponentCcs(_activatedComponents[index].ccs), //获取当前点击微件的ccs
+      gridUnit = gridScale + gridPadding,
+      _gridArea = getComponentCcs(oBlock.style.gridArea); // 获取当前微件的gridArea值
+
+    let disX = e.clientX - 0, // 鼠标点击位置
+      oLeft: string | number = 0, // 上一次移动距离
+      _maxLeft = Math.max(0, (_gridArea[1] - 1) * gridUnit), // 最大可向左移动距离
+      _lMaxWidth = 0;
 
     oBlock.style.borderColor = "red";
 
+    // 修改微件实例宽度为100%，以便自适应变型的宽度
+    const firstEle = oBlock.firstElementChild;
+    if (firstEle instanceof HTMLElement) {
+      firstEle.style.width = "100%";
+      firstEle.style.overflow = "hidden";
+
+      // 判断如果是form标签，则设置其第一个子元素宽度为100%
+      if (
+        firstEle.tagName.toLowerCase() === "form" &&
+        firstEle.firstElementChild instanceof HTMLElement
+      ) {
+        firstEle.firstElementChild.style.width = "100%";
+      }
+    }
+
+    // 控制微件宽度
     document.onmousemove = (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      if (String(oLeft) === "$") return;
-      let left: number | string = e.clientX - disX;
-      if (
-        typeof oLeft === "number" &&
-        typeof left === "number" &&
-        oLeft < left
-      ) {
-        //减去一个gridPadding才是微件的大小
-        let _rminWidth =
-          _activatedComponents[index].minWidth * (gridScale + gridPadding) -
-          gridPadding;
-        let _cWidth = oBlock.offsetWidth + (oLeft - left);
-        if (_cWidth >= _rminWidth) {
+      let left: string | number = e.clientX - disX,
+        _lminWidth =
+          _activatedComponents[index].minWidth * gridUnit - gridPadding;
+
+      // $ 表示已到画布边缘
+      // # 表示已到元素最小值
+      if (oLeft === "$" || oLeft === "#") {
+        if (
+          (left < 0 &&
+            left >=
+              _lminWidth -
+                (_gridArea[3] - _gridArea[1]) * gridUnit +
+                gridPadding) ||
+          (left >= 0 && Math.abs(left) < _maxLeft)
+        ) {
+          console.log("_maxLeft2", _maxLeft);
+          if (oLeft === "$") oLeft = left + 1;
+          else if (oLeft === "#") oLeft = left - 1;
+          console.log("1");
+        } else return;
+      } else oLeft = Number(oLeft);
+
+      let _cWidth = oBlock.offsetWidth + (oLeft - left),
+        _maxWidth = (gridColumn - _gridArea[1] + 1) * gridUnit - gridPadding;
+
+      if (oLeft > left) {
+        if (_cWidth >= _maxWidth) {
+          // 元素宽度超过最大宽度，标记为$
+          oBlock.style.width = _maxWidth + "px";
+          oBlock.style.left = left + "px";
+          left = "$";
+        } else {
           oBlock.style.width = _cWidth + "px";
           oBlock.style.left = left + "px";
-        } else {
-          oBlock.style.width = _rminWidth + "px";
-          left = "$";
         }
       } else {
-        oBlock.style.width = `${
-          Number(oBlock.offsetWidth) - (Number(left) - Number(oLeft))
-        }px`;
-        oBlock.style.left = left + "px";
+        if (_cWidth <= _lminWidth) {
+          // 元素宽度小于最小宽度，标记为#
+          oBlock.style.width = _lminWidth + "px";
+          oBlock.style.left = left + "px";
+          left = "#";
+        } else {
+          oBlock.style.width = _cWidth + "px";
+          oBlock.style.left = left + "px";
+        }
       }
 
       oLeft = left;
+
+      //======== 处理当前元素左侧的元素 ========//
     };
+
+    // 松开后对微件的处理
     document.onmouseup = () => {
-      //需加上一个gridPadding才是计算宽度
-      let _width = Math.ceil(
-          (oBlock.offsetWidth + gridPadding) / (gridScale + gridPadding)
-        ),
-        _left = Math.ceil(oBlock.offsetLeft / (gridScale + gridPadding));
+      const _width = Math.ceil(oBlock.offsetWidth / gridUnit),
+        _gridArea = getComponentCcs(oBlock.style.gridArea);
+
+      // 计算新的左边界位置
+      let _newLeft = _gridArea[1];
       if (oLeft === "$") {
-        _left = _left + 1;
-      } else {
-        //超过边界，固定为1
-        if (_left <= 0) _left = 1;
-        //_left = 0;
+        _newLeft = 1; // 最左边
+      } else if (typeof oLeft === "number" && oLeft !== 0) {
+        _newLeft = Math.max(
+          1,
+          _gridArea[1] - Math.floor(Math.abs(oLeft) / gridUnit)
+        );
       }
 
-      let _gridArea = oBlock.style.gridArea
-        .split("/")
-        .map((item) => Number(item));
-      let _prevCcs =
-        index - 1 >= 0
-          ? _activatedComponents[index - 1].ccs
-              .split("/")
-              .map((item) => Number(item))
-          : [_gridArea[0], _gridArea[1], 1, 1];
+      // 更新元素的grid-area
+      _gridArea[1] = _newLeft;
+      _gridArea[3] = _newLeft + _width;
 
-      //判断是否换行
-      if (
-        _prevCcs[0] === _gridArea[0] &&
-        _prevCcs[3] + _width <= gridColumn + 1
-      ) {
-        if (_prevCcs[3] === _gridArea[1]) _gridArea[1] = _prevCcs[3];
-        else _gridArea[1] = _left;
-        _gridArea[3] = _gridArea[1] + _width;
-      } else {
-        _gridArea[0] = _prevCcs[2];
-        _gridArea[1] = _left;
-        _gridArea[2] = _prevCcs[2] + _activatedComponents[index].height;
-        _gridArea[3] =
-          _left + _width < gridColumn + 1 ? _left + _width : gridColumn + 1;
-      }
-
-      console.log(_gridArea);
-
+      // 浏览器补丁
+      oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法起效
       oBlock.style.gridArea = _gridArea.join("/");
-      oBlock.style.width = "100%"; //必须设回百分比，不然grid-area无法见效
-      oBlock.style.left = "0"; //必须设为0，不然无法恢复正确位置
 
+      // 更新元素状态
       const newActivatedComponents: ComponentItem[] = [..._activatedComponents];
-      newActivatedComponents[index].ccs = oBlock.style.gridArea;
+      newActivatedComponents[index].ccs = _gridArea.join("/");
       newActivatedComponents[index].width = _gridArea[3] - _gridArea[1];
       newActivatedComponents[index].props.gridColumn =
         _gridArea[3] - _gridArea[1];
 
       _setActivatedComponents([...newActivatedComponents]);
-      focusComponent(index);
 
-      //清空事件
+      // 清空事件
       document.onmousemove = null;
       document.onmousedown = null;
       document.onmouseup = null;
+
+      // 取消overflow:hidden，确保内部元素不会被裁剪
+      if (firstEle instanceof HTMLElement) {
+        firstEle.style.overflow = "inherit";
+      }
     };
   };
 
@@ -1288,7 +1325,9 @@ export default function Core({
 
   useEffect(() => {
     //console.log("activatedComponents", activatedComponents);
-    _setActivatedComponents(activatedComponents ? [...activatedComponents] : []);
+    _setActivatedComponents(
+      activatedComponents ? [...activatedComponents] : []
+    );
   }, [activatedComponents]);
 
   /** 脱困机制 end */

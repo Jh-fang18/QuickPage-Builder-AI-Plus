@@ -56,9 +56,12 @@ const InputMP = ({
     );
   }, [baseData.data[0]?.itemProps?.initialValue || null]);
 
+  // 从 itemProps 中排除 eventsList 属性
+  const { eventsList, ...filteredItemProps } = baseData.data[0]?.itemProps || {};
+
   return (
     <Form.Item<FieldType>
-      {...(baseData.data[0]?.itemProps || {})}
+      {...filteredItemProps}
       name={inputType}
       style={{ width, height, margin: 0 }}
     >

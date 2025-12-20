@@ -47,7 +47,7 @@ const SubmitMP = ({
 
   // 从 itemProps 中排除 submitText 属性
   // submitText不是Button自带的属性，故需分离
-  const { submitText, ...filteredItemProps } = baseData.data[0].itemProps || {};
+  const { submitText, eventsList, ...filteredItemProps } = baseData.data[0].itemProps || {};
 
   return (
     <Form.Item label={null} style={{ width, height, margin: 0 }}>
