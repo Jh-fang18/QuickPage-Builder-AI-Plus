@@ -1,5 +1,3 @@
-## Next.js App Router Course - Starter
+## QuickPage-Builder-AI-core 升级版
 
-This is the starter template for the Next.js App Router Course. It contains the starting code for the dashboard application.
-
-For more information, see the [course curriculum](https://nextjs.org/learn) on the Next.js Website.
+临时预览地址：https://nextjs-dashboard.zh-cn.edgeone.cool/QuickPage-Builder-AI-core/dashboard/pageBuilder/create
