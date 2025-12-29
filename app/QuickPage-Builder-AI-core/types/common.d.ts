@@ -75,7 +75,7 @@ export interface ComponentItem<T = any> {
     moduleProps?: {
       [key: string]: any;
       /** 微件来源 */
-      source: string; 
+      source?: string; 
     };
     /** 子微件可修改的属性 */
     data?: T[];
