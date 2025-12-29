@@ -1,4 +1,4 @@
-## Next.js App Router Course - Starter
+## QuickPage-Builder-AI-core 升级版
 
 This is the starter template for the Next.js App Router Course. It contains the starting code for the dashboard application.
 
@@ -35,3 +35,7 @@ postgresql://user:password@db.example.com:5432/nextjs_dashboard?sslmode=require
 - 确保数据库允许来自 EdgeOne Page 服务器的连接
 - 生产环境建议使用 SSL 连接（`sslmode=require`）
 - 如果数据库不支持 SSL，可以将 `sslmode=require` 改为 `sslmode=prefer` 或 `sslmode=disable`
+
+### 预览地址
+
+临时预览地址：https://nextjs-dashboard.zh-cn.edgeone.cool/QuickPage-Builder-AI-core/dashboard/pageBuilder/create
