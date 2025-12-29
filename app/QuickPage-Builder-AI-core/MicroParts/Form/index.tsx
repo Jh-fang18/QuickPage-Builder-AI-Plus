@@ -37,6 +37,8 @@ const createEmptyFunction = (
 };
 
 const FormMP = (props: FormMPProps) => {
+  // 设置微件来源
+  props.moduleProps.source = "FormMP";
   // 基础静态数据获取和定义
   const baseData = useBaseData<FormMPDataItem, FormMPProps["moduleProps"]>({
     gridColumn: props.gridColumn,

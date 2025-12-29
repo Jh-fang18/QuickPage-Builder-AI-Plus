@@ -10,6 +10,8 @@ import type { ContainerPCProps } from "../types/common";
  * 它接收一系列属性并将其传递给相应的子组件。
  */
 const ContainerPC = (props: ContainerPCProps) => {
+  // 设置微件来源
+  if (props.moduleProps.source === undefined) props.moduleProps.source = "ContainerPC";
   //HTML展示是无需向上传递activatedComponents，故分离出onActivatedComponents回调函数
   const { onActivatedComponents, ...restProps } = props;
   return props.html ? <HTML {...restProps} /> : <Core {...props} />;

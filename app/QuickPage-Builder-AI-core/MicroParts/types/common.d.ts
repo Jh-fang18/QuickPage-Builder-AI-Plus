@@ -11,6 +11,8 @@ export interface BaseDataType<T = any> {
   currentIndex?: string;
   moduleProps?: {
     // 微件模块属性, 不能修改的属性
+    /** 微件来源 */
+    source: string; 
     /** 形态 */
     morph?: {
       up: boolean;

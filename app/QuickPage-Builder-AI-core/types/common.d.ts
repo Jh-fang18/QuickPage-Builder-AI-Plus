@@ -60,9 +60,13 @@ export interface ComponentItem<T = any> {
   ccs: string;
   /** 用于记录当前微件的行索引, 即在画布的位置顺序 */
   rowIndex: number;
+  /** 微件来源 */
+  source: string;
   /** 微件的属性 */
   props: {
     [key: string]: any;
+    /** 子微件已激活的组件列表 */
+    activatedComponents?: ComponentItem[];
     /** 子微件内部容器的宽度 */
     gridColumn?: number;
     /** 子微件内部容器的高度 */
@@ -70,6 +74,8 @@ export interface ComponentItem<T = any> {
     /** 子微件不能修改的属性 */
     moduleProps?: {
       [key: string]: any;
+      /** 微件来源 */
+      source: string; 
     };
     /** 子微件可修改的属性 */
     data?: T[];

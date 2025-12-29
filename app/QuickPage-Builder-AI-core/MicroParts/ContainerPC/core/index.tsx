@@ -30,12 +30,14 @@ export default function Core({
   moduleProps = {
     // 微件z-index深度
     zIndex: 0,
+    /** 微件来源 */
+    source: "",
   },
 }: ContainerPCProps) {
   // ======================
   // 响应式变量
   // ======================
-
+  
   const [divTop, setDivTop] = useState(0);
   const [divBottom, setDivBottom] = useState(0);
   const [divBottomTop, setDivBottomTop] = useState(0);
@@ -52,7 +54,8 @@ export default function Core({
       accept: "MENU_ITEM",
       drop(item: ComponentItem, monitor) {
         if (monitor.didDrop()) return;
-
+        if (moduleProps.source !== "FormMP" && item.url === "InputMP") return;
+        
         if (monitor.isOver()) {
           const _component: ComponentItem = {
             ...item,
