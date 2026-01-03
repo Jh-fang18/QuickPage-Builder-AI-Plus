@@ -2,7 +2,7 @@
 
 ### 预览地址
 
-临时预览地址：https://nextjs-dashboard.zh-cn.edgeone.cool/QuickPage-Builder-AI-core/dashboard/pageBuilder/create
+临时预览地址：[https://nextjs-dashboard.zh-cn.edgeone.cool/QuickPage-Builder-AI-core/dashboard/pageBuilder/create](https://nextjs-dashboard.zh-cn.edgeone.cool/QuickPage-Builder-AI-core/dashboard/pageBuilder/create)
 
 ## EdgeOne Page 部署配置
 
