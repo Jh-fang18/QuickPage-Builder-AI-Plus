@@ -5,7 +5,6 @@ import type {
   ComponentItem,
   SelfServiceData,
   SelfServiceDataItem,
-  FormState,
   TempInfoData,
 } from "../../../types/common";
 

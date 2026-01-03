@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 import { sql } from '../lib/db';
 

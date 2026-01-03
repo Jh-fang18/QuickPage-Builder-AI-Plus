@@ -60,8 +60,6 @@ export interface ComponentItem<T = any> {
   ccs: string;
   /** 用于记录当前微件的行索引, 即在画布的位置顺序 */
   rowIndex: number;
-  /** 微件来源 */
-  source: string;
   /** 微件的属性 */
   props: {
     [key: string]: any;
