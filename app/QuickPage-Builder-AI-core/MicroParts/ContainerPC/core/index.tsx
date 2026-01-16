@@ -247,12 +247,14 @@ export default function Core({
    * @param componentCcs 变形元素
    * @param oCcs 未变形元素
    * @param index 变形元素索引
+   * @param workingComponents 工作副本数组（用于递归操作，避免直接修改 state）
    */
   const rightMoveComponents = (
     componentCcs: number[],
     oCcs: number[],
-    index: number
-  ) => {
+    index: number,
+    workingComponents: ComponentItem[]
+  ): number => {
     const // 已变形或位移元素的位置
       _ccs = componentCcs,
       // 未变形或位移元素的位置
@@ -262,11 +264,11 @@ export default function Core({
       _downMaxWidth = 0;
 
     // 变型元素后的元素查找，并执行左移操作
-    for (let i = index + 1; i < _activatedComponents.length; i++) {
-      let _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
+    for (let i = index + 1; i < workingComponents.length; i++) {
+      let _lastCcs = getComponentCcs(workingComponents[i].ccs);
 
-      const _width = _activatedComponents[i].width,
-        _rwidth = i - 1 === index ? 0 : _activatedComponents[i - 1].width;
+      const _width = workingComponents[i].width,
+        _rwidth = i - 1 === index ? 0 : workingComponents[i - 1].width;
 
       if (
         _ccs[3] > _lastCcs[1] &&
@@ -274,10 +276,10 @@ export default function Core({
         _ccs[0] < _lastCcs[2] &&
         _ccs[2] > _lastCcs[0]
       ) {
-        _activatedComponents[i].ccs = `${_lastCcs[0]}
+        workingComponents[i].ccs = `${_lastCcs[0]}
         /${_ccs[3]}
         /${_lastCcs[2]}
-        /${_ccs[3] + _activatedComponents[i].width}`;
+        /${_ccs[3] + workingComponents[i].width}`;
 
         if (_width > _rwidth) _downMaxWidth = _width;
         else _downMaxWidth = _rwidth;
@@ -285,9 +287,10 @@ export default function Core({
         _downMaxWidth = Math.max(
           _downMaxWidth,
           rightMoveComponents(
-            getComponentCcs(_activatedComponents[i].ccs),
+            getComponentCcs(workingComponents[i].ccs),
             _lastCcs,
-            i
+            i,
+            workingComponents
           )
         );
       }
@@ -298,10 +301,10 @@ export default function Core({
 
     // 变型元素前的元素查找，并执行左移操作
     for (let i = index - 1; i >= 0; i--) {
-      let _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
+      let _lastCcs = getComponentCcs(workingComponents[i].ccs);
 
-      const _width = _activatedComponents[i].width,
-        _rwidth = i + 1 === index ? 0 : _activatedComponents[i + 1].width;
+      const _width = workingComponents[i].width,
+        _rwidth = i + 1 === index ? 0 : workingComponents[i + 1].width;
 
       if (
         _ccs[3] > _lastCcs[1] &&
@@ -309,12 +312,12 @@ export default function Core({
         _ccs[0] < _lastCcs[2] &&
         _ccs[2] > _lastCcs[0]
       ) {
-        _activatedComponents[i].ccs = `${_lastCcs[0]}
+        workingComponents[i].ccs = `${_lastCcs[0]}
         /${_ccs[3] - (_oCcs[3] - _lastCcs[1] <= 0 ? 0 : _oCcs[3] - _lastCcs[1])}
         /${_lastCcs[2]}
         /${
           _ccs[3] +
-          _activatedComponents[i].width -
+          workingComponents[i].width -
           (_oCcs[3] - _lastCcs[1] <= 0 ? 0 : _oCcs[3] - _lastCcs[1])
         }`;
 
@@ -324,9 +327,10 @@ export default function Core({
         _upMaxWidth = Math.max(
           _upMaxWidth,
           rightMoveComponents(
-            getComponentCcs(_activatedComponents[i].ccs),
+            getComponentCcs(workingComponents[i].ccs),
             _lastCcs,
-            i
+            i,
+            workingComponents
           )
         );
       }
@@ -713,9 +717,15 @@ export default function Core({
       _componentCcs[3] =
         Math.ceil((oBlock.offsetWidth + 0.5) / (gridScale + gridPadding)) + 1;
 
+      // 创建工作副本以避免直接修改 state
+      const workingComponents = _activatedComponents.map(comp => ({ ...comp }));
+      
       // 获取移动元素的宽度和
-      const _inter = rightMoveComponents(_componentCcs, oCcs, index);
+      const _inter = rightMoveComponents(_componentCcs, oCcs, index, workingComponents);
       if (_inter) _rMaxWidth = _inter;
+      
+      // 更新状态
+      _setActivatedComponents(workingComponents);
 
       // 存储 Maxwidth ！！！！！！
 

@@ -293,7 +293,7 @@ const validateDataType = (data: any): data is SupportedDataTypes => {
   return hasValidStructure;
 };
 
-export default (props: {
+const DrawerFormComponent = (props: {
   index: number;
   component: ComponentItem;
   onCurrentActivatedComponent: (
@@ -862,3 +862,5 @@ export default (props: {
     </>
   );
 };
+
+export default DrawerFormComponent;

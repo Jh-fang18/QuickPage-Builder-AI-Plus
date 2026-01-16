@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, Suspense, useEffect } from "react";
+import { useMemo, Suspense } from "react";
 
 // 导入类型
 import type { ContainerPCHTMLProps } from "../../types/common";
@@ -34,16 +34,13 @@ export default function HTML({
   },
 }: ContainerPCHTMLProps) {
   // ======================
-  // 响应式变量
-  // ======================
-
-  const [_activatedComponents, _setActivatedComponents] = useState<
-    ComponentItem[]
-  >(activatedComponents ? [...activatedComponents] : []);
-
-  // ======================
   // 计算属性
   // ======================
+
+  // 计算激活组件列表（创建副本以避免引用问题）
+  const _activatedComponents = useMemo(() => {
+    return activatedComponents ? [...activatedComponents] : [];
+  }, [activatedComponents]);
 
   // 计算网格列数
   const getGridTemplateColumns = useMemo(() => {
@@ -54,24 +51,6 @@ export default function HTML({
   const getGridTemplateRows = useMemo(() => {
     return Array(gridRow).fill(`${gridScale}px`).join(" ");
   }, [gridRow, gridScale]);
-
-  /* ====================== 核心方法 ====================== */
-
-  // ======================
-  // 工具函数
-  // ======================
-
-  /** end **/
-
-  // ======================
-  // 控制元素大小函数
-  // ======================
-
-  /** end **/
-
-  useEffect(() => {
-    _setActivatedComponents([...activatedComponents]);
-  }, [activatedComponents]);
 
   return (
     <>
