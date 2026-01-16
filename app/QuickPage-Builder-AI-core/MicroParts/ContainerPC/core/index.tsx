@@ -531,7 +531,7 @@ export default function Core({
     }
 
     // 控制微件高度
-    document.onmousemove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation(); // 阻止默认事件
 
@@ -588,7 +588,7 @@ export default function Core({
     };
 
     // 松开后对微件后的元素进行处理
-    document.onmouseup = () => {
+    const handleMouseUp = () => {
       // 需加上一个gridPadding才是计算高度
       let _height = Math.ceil(
         (oBlock.offsetHeight + gridPadding) / (gridScale + gridPadding)
@@ -610,11 +610,14 @@ export default function Core({
 
       _setActivatedComponents([...newActivatedComponents]);
 
-      //清空事件
-      document.onmousemove = null;
-      document.onmousedown = null;
-      document.onmouseup = null;
+      // 移除事件监听器
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
+
+    // 添加事件监听器
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
   /**
