@@ -658,7 +658,7 @@ export default function Core({
     }
 
     // 控制微件宽度
-    document.onmousemove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -749,7 +749,7 @@ export default function Core({
     };
 
     // 松开后对微件后的元素进行处理
-    document.onmouseup = () => {
+    const handleMouseUp = () => {
       const _width = Math.ceil(oBlock.offsetWidth / (gridScale + gridPadding)),
         _gridArea = getComponentCcs(oBlock.style.gridArea);
 
@@ -771,16 +771,19 @@ export default function Core({
 
       _setActivatedComponents([...newActivatedComponents]);
 
-      // 清空事件
-      document.onmousemove = null;
-      document.onmousedown = null;
-      document.onmouseup = null;
+      // 移除事件监听器
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
 
       // 取消overflow:hidden，确保内部元素不会被裁剪
       if (firstEle instanceof HTMLElement) {
         firstEle.style.overflow = "inherit";
       }
     };
+
+    // 添加事件监听器
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
   /**
