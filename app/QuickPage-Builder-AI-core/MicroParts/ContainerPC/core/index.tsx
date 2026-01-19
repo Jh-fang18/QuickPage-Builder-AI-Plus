@@ -181,15 +181,6 @@ export default function Core({
   // 非响应式变量
   // ======================
 
-  let columnDifferences = 0;
-  let rowDifferences = 0;
-  let columnDeviationValue = 0;
-  let rowDeviationValue = 0;
-  let leftMax = 0;
-  let topMax = 0;
-  let downMax = 0;
-  let rightMax = 0;
-
   const blockZIndex = currentIndex.split("-").length;
   const blockRefs: Record<string, HTMLDivElement> = {};
   const borderStyle = {
@@ -364,30 +355,41 @@ export default function Core({
    * 获取微件位置
    * @param e 鼠标事件
    * @param gDiv 容器
+   * @param positionParams 位置参数对象
    */
   const getPosition = (
     e: MouseEvent | React.MouseEvent<HTMLSpanElement>,
-    gDiv: HTMLElement
+    gDiv: HTMLElement,
+    positionParams: {
+      rowDeviationValue: number;
+      columnDeviationValue: number;
+      topMax: number;
+      rightMax: number;
+      downMax: number;
+      leftMax: number;
+      rowDifferences: number;
+      columnDifferences: number;
+    }
   ) => {
     let _positions = "";
-    let _y = e.clientY - gDiv.getBoundingClientRect().top - rowDeviationValue;
+    let _y = e.clientY - gDiv.getBoundingClientRect().top - positionParams.rowDeviationValue;
     let _x =
-      e.clientX - gDiv.getBoundingClientRect().left - columnDeviationValue;
+      e.clientX - gDiv.getBoundingClientRect().left - positionParams.columnDeviationValue;
 
     // console.log("1", _y);
     // console.log("1", _x);
-    // console.log("rowDeviationValue", rowDeviationValue);
-    // console.log("columnDeviationValue", columnDeviationValue);
+    // console.log("rowDeviationValue", positionParams.rowDeviationValue);
+    // console.log("columnDeviationValue", positionParams.columnDeviationValue);
 
     //设置边界值
-    if (topMax && e.clientY - gDiv.getBoundingClientRect().top <= topMax)
-      _y = topMax;
-    if (rightMax && e.clientX - gDiv.getBoundingClientRect().left >= rightMax)
-      _x = rightMax - columnDeviationValue;
-    if (downMax && e.clientY - gDiv.getBoundingClientRect().top >= downMax)
-      _y = downMax - rowDeviationValue;
-    if (leftMax && e.clientX - gDiv.getBoundingClientRect().left <= leftMax)
-      _x = leftMax;
+    if (positionParams.topMax && e.clientY - gDiv.getBoundingClientRect().top <= positionParams.topMax)
+      _y = positionParams.topMax;
+    if (positionParams.rightMax && e.clientX - gDiv.getBoundingClientRect().left >= positionParams.rightMax)
+      _x = positionParams.rightMax - positionParams.columnDeviationValue;
+    if (positionParams.downMax && e.clientY - gDiv.getBoundingClientRect().top >= positionParams.downMax)
+      _y = positionParams.downMax - positionParams.rowDeviationValue;
+    if (positionParams.leftMax && e.clientX - gDiv.getBoundingClientRect().left <= positionParams.leftMax)
+      _x = positionParams.leftMax;
 
     // console.log("2", _y);
     // console.log("2", _x);
@@ -411,9 +413,9 @@ export default function Core({
           ) {
             _positions =
               "g" +
-              (i + 1 - rowDifferences > 0 ? i + 1 - rowDifferences : 1) +
+              (i + 1 - positionParams.rowDifferences > 0 ? i + 1 - positionParams.rowDifferences : 1) +
               "x" +
-              (j + 1 - columnDifferences > 0 ? j + 1 - columnDifferences : 1);
+              (j + 1 - positionParams.columnDifferences > 0 ? j + 1 - positionParams.columnDifferences : 1);
             //console.log("_positions1", _positions);
             break;
           }
@@ -1113,17 +1115,29 @@ export default function Core({
 
     if (gDiv === null) return;
 
-    //因每次点击位置不同，故初始化差值
-    columnDifferences = 0;
-    rowDifferences = 0;
-    columnDeviationValue = 0;
-    rowDeviationValue = 0;
-    leftMax = 0;
-    topMax = 0;
-    downMax = 0;
-    rightMax = 0;
+    //因每次点击位置不同，故初始化差值（作为局部变量）
+    let columnDifferences = 0;
+    let rowDifferences = 0;
+    let columnDeviationValue = 0;
+    let rowDeviationValue = 0;
+    let leftMax = 0;
+    let topMax = 0;
+    let downMax = 0;
+    let rightMax = 0;
 
-    let _positions = getPosition(e, gDiv)
+    // 初始化位置参数对象（先使用默认值获取初始位置）
+    const initialPositionParams = {
+      rowDeviationValue: 0,
+      columnDeviationValue: 0,
+      topMax: 0,
+      rightMax: 0,
+      downMax: 0,
+      leftMax: 0,
+      rowDifferences: 0,
+      columnDifferences: 0,
+    };
+
+    let _positions = getPosition(e, gDiv, initialPositionParams)
       .replace("g", "")
       .split("x")
       .map((item) => Number(item));
@@ -1170,6 +1184,18 @@ export default function Core({
       e.clientX -
       gDiv.getBoundingClientRect().left -
       (_componentCcs[1] - 1) * (gridScale + gridPadding);
+
+    // 创建位置参数对象供后续使用
+    const positionParams = {
+      rowDeviationValue,
+      columnDeviationValue,
+      topMax,
+      rightMax,
+      downMax,
+      leftMax,
+      rowDifferences,
+      columnDifferences,
+    };
 
     focusComponent(index);
     setShouldShow(index);
@@ -1228,7 +1254,7 @@ export default function Core({
 
       if (gDiv === null || oDiv === null) return;
 
-      let _positions = getPosition(e, gDiv);
+      let _positions = getPosition(e, gDiv, positionParams);
       //console.log("second", _positions);
       //console.log(e.target);
       if (_positions && _positions.split("x")[1] != "NaN") {
