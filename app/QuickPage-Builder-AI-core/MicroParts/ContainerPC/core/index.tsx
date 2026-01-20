@@ -64,6 +64,7 @@ export default function Core({
       accept: "MENU_ITEM",
       drop(item: ComponentItem, monitor) {
         if (monitor.didDrop()) return;
+        // 阻止InputMP组件被拖拽到其他非FormMP组件中
         if (moduleProps.source !== "FormMP" && item.url === "InputMP") return;
         
         if (monitor.isOver()) {
