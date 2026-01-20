@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, Suspense } from "react";
+import { useMemo, useState, useEffect, Suspense, useCallback } from "react";
 import { useDrop } from "react-dnd";
 import { Modal, message } from "antd";
 
@@ -45,9 +45,19 @@ export default function Core({
   const [divRightLeft, setDivRightLeft] = useState(0);
   const [divLeft, setDivLeft] = useState(0);
   const [shouldShow, setShouldShow] = useState<number>(-1);
-  const [_activatedComponents, _setActivatedComponents] = useState<
-    ComponentItem[]
-  >(activatedComponents ? [...activatedComponents] : []); // 传入props的类型还需定义
+  
+  // 使用父级传入的 activatedComponents 作为单一数据源（受控组件）
+  const _activatedComponents = useMemo<ComponentItem[]>(() => {
+    return activatedComponents ? [...activatedComponents] : [];
+  }, [activatedComponents]);
+
+  // 统一更新函数：通过回调将最新列表传回父组件
+  const updateActivatedComponents = useCallback((components: ComponentItem[]) => {
+    if (onActivatedComponents) {
+      onActivatedComponents([...components], currentIndex);
+    }
+  }, [onActivatedComponents, currentIndex]);
+
   const [modal, contextHolder] = Modal.useModal();
   const [{ isOverCurrent }, drop] = useDrop(
     () => ({
@@ -136,7 +146,7 @@ export default function Core({
           // console.log("_component", _component.url);
           // console.log("_activatedComponents", _activatedComponents);
 
-          _setActivatedComponents([
+          updateActivatedComponents([
             ..._activatedComponents,
             { ..._component, props: { ..._component.props } },
           ]);
@@ -148,7 +158,7 @@ export default function Core({
         };
       },
     }),
-    [_activatedComponents]
+    [_activatedComponents, updateActivatedComponents, moduleProps.source, gridRow, gridColumn]
   );
 
   // ======================
@@ -443,7 +453,7 @@ export default function Core({
 
     newActivatedComponents.splice(index, 1);
 
-    _setActivatedComponents([...newActivatedComponents]);
+    updateActivatedComponents([...newActivatedComponents]);
   };
 
   /**
@@ -610,7 +620,7 @@ export default function Core({
       newActivatedComponents[index].height = _gridArea[2] - _gridArea[0]; // 更新元素高度
       newActivatedComponents[index].props.gridRow = _gridArea[2] - _gridArea[0];
 
-      _setActivatedComponents([...newActivatedComponents]);
+      updateActivatedComponents([...newActivatedComponents]);
 
       // 移除事件监听器
       document.removeEventListener("mousemove", handleMouseMove);
@@ -729,8 +739,8 @@ export default function Core({
       const _inter = rightMoveComponents(_componentCcs, oCcs, index, workingComponents);
       if (_inter) _rMaxWidth = _inter;
       
-      // 更新状态
-      _setActivatedComponents(workingComponents);
+      // 更新状态（通过回调同步给父组件）
+      updateActivatedComponents(workingComponents);
 
       // 存储 Maxwidth ！！！！！！
 
@@ -771,7 +781,7 @@ export default function Core({
       newActivatedComponents[index].props.gridColumn =
         _gridArea[3] - _gridArea[1];
 
-      _setActivatedComponents([...newActivatedComponents]);
+      updateActivatedComponents([...newActivatedComponents]);
 
       // 移除事件监听器
       document.removeEventListener("mousemove", handleMouseMove);
@@ -883,7 +893,7 @@ export default function Core({
       newActivatedComponents[index].height = _height;
       newActivatedComponents[index].props.gridRow = _gridArea[2] - _gridArea[0];
 
-      _setActivatedComponents([...newActivatedComponents]);
+      updateActivatedComponents([...newActivatedComponents]);
 
       //======== 处理当前元素后的元素 ========//
 
@@ -916,7 +926,7 @@ export default function Core({
                 "/" +
                 _lastCcs[3];
 
-              _setActivatedComponents([...newActivatedComponents]);
+              updateActivatedComponents([...newActivatedComponents]);
 
               _lastCcs = getComponentCcs(_activatedComponents[i].ccs);
               downMoveComponents(_lastCcs, i);
@@ -1056,7 +1066,7 @@ export default function Core({
       newActivatedComponents[index].props.gridColumn =
         _gridArea[3] - _gridArea[1];
 
-      _setActivatedComponents([...newActivatedComponents]);
+      updateActivatedComponents([...newActivatedComponents]);
 
       // 移除事件监听器
       document.removeEventListener("mousemove", handleMouseMove);
@@ -1274,7 +1284,7 @@ export default function Core({
         oDiv.style.left = "0px";
         oDiv.style.top = "0px";
         focusComponent(index);
-        _setActivatedComponents([...newActivatedComponents]);
+        updateActivatedComponents([...newActivatedComponents]);
         setShouldShow(-1);
         setDiv(oDiv, gDiv);
       }
@@ -1362,28 +1372,13 @@ export default function Core({
           }
         : item
     );
-    _setActivatedComponents([...newActivatedComponents]);
+    updateActivatedComponents([...newActivatedComponents]);
   };
 
   /** 事件函数 end */
 
   /* ====================== 脱困机制 ====================== */
-
-  useEffect(() => {
-    // console.log("update currentIndex", currentIndex);
-    // console.log("update _activatedComponents", _activatedComponents);
-    if (onActivatedComponents) {
-      onActivatedComponents([..._activatedComponents], currentIndex);
-    }
-  }, [_activatedComponents, currentIndex, onActivatedComponents]);
-
-  useEffect(() => {
-    //console.log("activatedComponents", activatedComponents);
-    _setActivatedComponents(
-      activatedComponents ? [...activatedComponents] : []
-    );
-  }, [activatedComponents]);
-
+  /** 完全受控模式：所有变更已通过 updateActivatedComponents 向上同步，无需额外的 useEffect */
   /** 脱困机制 end */
 
   return (

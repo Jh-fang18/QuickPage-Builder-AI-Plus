@@ -1,7 +1,7 @@
 "use client";
 
 // 导入库
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, useCallback } from "react";
 import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -75,7 +75,6 @@ export default function Editor({
   // ======================
   const _gridScale = gridScale;
   const _gridPadding = gridPadding;
-  const currentActivatedComponentsRef = useRef<ComponentItem[]>([]);
   const contentIdRef = useRef<number>(0);
   const oldContentRef = useRef<string>("");
 
@@ -323,23 +322,21 @@ export default function Editor({
   /**
    * 保存模板
    */
-  const handleSave = () => {
-    //console.log("TOP", currentActivatedComponentsRef.current);
+  const handleSave = useCallback(() => {
     setWorkbenchData(
-      currentActivatedComponentsRef.current,
+      activatedComponents, // 直接使用 state，已经是最新值
       contentIdRef.current,
       oldContentRef.current,
       tempId
     ); // 保存已激活模板信息到sessionStorage
-  };
+  }, [activatedComponents, tempId]);
 
   /**
    * 预览模板
    */
   const handlePreview = () => {
     setPreview(true);
-    // 需要触发渲染，数据流传回时不会自动更新activatedComponents
-    setActivatedComponents(currentActivatedComponentsRef.current);
+    // activatedComponents 已经是最新值（完全受控模式），无需额外设置
   };
 
   /**
@@ -350,9 +347,15 @@ export default function Editor({
   };
 
   const getActivatedComponents = (components: ComponentItem[]) => {
-    currentActivatedComponentsRef.current = [...components];
-    handleSave();
+    setActivatedComponents([...components]); // 更新 state，触发组件重新渲染
   };
+
+  // 自动保存：当 activatedComponents 变化时自动保存到 sessionStorage
+  useEffect(() => {
+    if (activatedComponents.length > 0 || contentIdRef.current !== 0) {
+      handleSave();
+    }
+  }, [activatedComponents, handleSave]);
 
   // 页面挂在后, 获取微件数据
   useEffect(() => {
