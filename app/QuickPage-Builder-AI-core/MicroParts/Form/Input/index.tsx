@@ -49,12 +49,12 @@ const InputMP = ({
   // 副作用
   // ======================
 
+  // 提取复杂表达式到单独变量，以便静态检查
+  const initialValue = baseData.data[0]?.itemProps?.initialValue || "";
+
   useEffect(() => {
-    form.setFieldValue(
-      inputType,
-      baseData.data[0]?.itemProps?.initialValue || ""
-    );
-  }, [baseData.data[0]?.itemProps?.initialValue || null]);
+    form.setFieldValue(inputType, initialValue);
+  }, [form, inputType, initialValue, baseData.data]);
 
   // 从 itemProps 中排除 eventsList 属性
   const { eventsList, ...filteredItemProps } = baseData.data[0]?.itemProps || {};
